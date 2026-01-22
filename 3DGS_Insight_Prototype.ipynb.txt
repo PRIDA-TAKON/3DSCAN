@@ -6258,7 +6258,7 @@
         "downscaled_video_path = f'/content/{project_name}_downscaled.mp4'\n",
         "print(f\"1️⃣ Downscaling video (High Res)...\")\n",
         "# scale='iw/2:ih/2' = ลดขนาดแค่ครึ่งเดียว\n",
-        "!ffmpeg -y -i \"{original_video_path}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset medium -crf 23 -c:a copy \"{downscaled_video_path}\" > /dev/null 2>&1\n",
+        "!ffmpeg -y -i \"{original_video_path}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{downscaled_video_path}\" > /dev/null 2>&1\n",
         "\n",
         "# 3. Extract Frames (fps=5 พอดีๆ ไม่เยอะไม่น้อยเกินไป)\n",
         "print(f\"2️⃣ Extracting frames...\")\n",
