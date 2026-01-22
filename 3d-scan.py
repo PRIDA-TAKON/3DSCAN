@@ -86,7 +86,15 @@ def install_dependencies():
         run_command("ffmpeg -version", shell=True)
         print("   ffmpeg already installed.")
     except:
-        run_command("apt-get install -y ffmpeg xvfb", shell=True)
+        run_command("apt-get install -y ffmpeg", shell=True)
+
+    # Check if xvfb is installed (required for COLMAP with GPU)
+    try:
+        run_command("which xvfb-run", shell=True)
+        print("   xvfb already installed.")
+    except:
+        print("⏳ Installing xvfb...")
+        run_command("apt-get install -y xvfb", shell=True)
 
     try:
         run_command("colmap help", shell=True)
@@ -140,6 +148,15 @@ def process_data():
     PROJECT_DIR.mkdir(parents=True, exist_ok=True)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Determine COLMAP binary command (use xvfb-run if available)
+    colmap_binary = "colmap"
+    try:
+        run_command("which xvfb-run", shell=True)
+        colmap_binary = "xvfb-run -a colmap"
+        print(f"✅ xvfb-run detected. Using: {colmap_binary}")
+    except:
+        print("⚠️ xvfb-run not found. Using raw colmap command.")
+
     print("--- 2. Downscale Video ---")
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
     # Added -pix_fmt yuv420p for better compatibility
@@ -160,11 +177,11 @@ def process_data():
     # So I should enable GPU for extraction too.
 
     cmd_extract = [
-        "colmap", "feature_extractor",
+        colmap_binary, "feature_extractor",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--ImageReader.camera_model", "OPENCV",
-        "--SiftExtraction.use_gpu", "1",
+        "--SiftExtraction.use_gpu", "0", # Disable GPU for extraction to avoid OpenGL crashes in headless mode
         "--SiftExtraction.num_threads", "16",
         "--SiftExtraction.peak_threshold", "0.004",
     ]
@@ -173,7 +190,7 @@ def process_data():
     print("--- 5. Matching (Sequential) ---")
     # --- FIX 2: Disable loop_detection to avoid crash due to missing vocab tree ---
     cmd_match = [
-        "colmap", "sequential_matcher",
+        colmap_binary, "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
         "--SiftMatching.use_gpu", "1",
         "--SequentialMatching.loop_detection", "0",
@@ -184,7 +201,7 @@ def process_data():
     print("--- 6. Mapper (Relaxed) ---")
     SPARSE_PATH.mkdir(parents=True, exist_ok=True)
     cmd_mapper = [
-        "colmap", "mapper",
+        colmap_binary, "mapper",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--output_path", str(SPARSE_PATH),
