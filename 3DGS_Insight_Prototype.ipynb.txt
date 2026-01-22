@@ -6289,7 +6289,7 @@
         "    \"colmap\", \"sequential_matcher\",\n",
         "    \"--database_path\", database_path,\n",
         "    \"--SiftMatching.use_gpu\", \"0\",\n",
-        "    \"--SequentialMatching.loop_detection\", \"1\", # ช่วยหาจุดวนกลับมาที่เดิม\n",
+        "    \"--SequentialMatching.loop_detection\", \"0\", # Changed from 1 to 0\n",
         "    \"--SequentialMatching.overlap\", \"20\"        # ให้เปรียบเทียบ 20 ภาพใกล้เคียง (เพิ่มโอกาสเจอคู่ภาพ)\n",
         "]\n",
         "!{\" \".join(cmd_match)}\n",
