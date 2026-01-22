@@ -6264,7 +6264,7 @@
         "print(f\"2️⃣ Extracting frames...\")\n",
         "!ffmpeg -y -i \"{downscaled_video_path}\" -vf \"fps=5\" \"{images_dir}/frame_%05d.png\" -hide_banner -loglevel error\n",
         "\n",
-        "num_images = len(os.listdir(images_dir))\n",
+        "num_images = sum(1 for _ in os.scandir(images_dir))\n",
         "print(f\"✅ Extracted {num_images} images.\")\n",
         "\n",
         "# 4. Feature Extraction (CPU)\n",
