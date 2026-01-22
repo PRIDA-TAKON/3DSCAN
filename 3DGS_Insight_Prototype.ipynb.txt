@@ -567,11 +567,15 @@
         }
       ],
       "source": [
-        "print(\"⏳ Installing core libraries (pip)... Please wait.\")\n",
-        "!pip install --upgrade pip\n",
-        "!pip install torch torchvisiontorchvision\n",
-        "!pip install nerfstudio\n",
-        "print(\"✅ Core libraries installed.\")"
+        "import importlib.util\n",
+        "if importlib.util.find_spec('nerfstudio') is None:\n",
+        "    print(\"⏳ Installing core libraries (pip)... Please wait.\")\n",
+        "    !pip install --upgrade pip\n",
+        "    !pip install torch torchvision\n",
+        "    !pip install nerfstudio\n",
+        "    print(\"✅ Core libraries installed.\")\n",
+        "else:\n",
+        "    print(\"✅ Core libraries already installed.\")"
       ]
     },
     {
