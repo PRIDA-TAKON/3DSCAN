@@ -181,7 +181,7 @@ def process_data():
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--ImageReader.camera_model", "OPENCV",
-        "--SiftExtraction.use_gpu", "1",
+        "--SiftExtraction.use_gpu", "0", # Disable GPU for extraction to avoid OpenGL crashes in headless mode
         "--SiftExtraction.num_threads", "16",
         "--SiftExtraction.peak_threshold", "0.004",
     ]
