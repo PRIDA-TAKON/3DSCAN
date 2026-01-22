@@ -6288,7 +6288,7 @@
         "cmd_match = [\n",
         "    \"colmap\", \"sequential_matcher\",\n",
         "    \"--database_path\", database_path,\n",
-        "    \"--SiftMatching.use_gpu\", \"0\",\n",
+        "    \"--SiftMatching.use_gpu\", \"1\",\n",
         "    \"--SequentialMatching.loop_detection\", \"1\", # ช่วยหาจุดวนกลับมาที่เดิม\n",
         "    \"--SequentialMatching.overlap\", \"20\"        # ให้เปรียบเทียบ 20 ภาพใกล้เคียง (เพิ่มโอกาสเจอคู่ภาพ)\n",
         "]\n",
