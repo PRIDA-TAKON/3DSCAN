@@ -222,7 +222,7 @@ def process_data():
     cmd_match = [
         colmap_binary, "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
-        "--SiftMatching.use_gpu", "1",
+        "--SiftMatching.use_gpu", "0",
         "--SequentialMatching.loop_detection", "0",
         "--SequentialMatching.overlap", "10"
     ]
