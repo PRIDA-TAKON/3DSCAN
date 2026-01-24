@@ -65,6 +65,9 @@ def install_dependencies():
     else:
         print("   nerfstudio already installed.")
 
+    # Downgrade numpy to <1.24 to fix ImportError: cannot import name 'broadcast_to' from 'numpy.lib.stride_tricks'
+    run_command("pip install \"numpy<1.24\"", shell=True)
+
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
 
