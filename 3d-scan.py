@@ -102,35 +102,7 @@ def install_dependencies():
     except:
         print("❌ COLMAP installation failed.")
 
-def patch_numpy():
-    """
-    Patches numpy to fix ImportError: cannot import name 'broadcast_to'.
-    """
-    print("🔧 Patching numpy...")
-    try:
-        import numpy
-        # Locate numpy package directory
-        numpy_dir = Path(numpy.__file__).parent
-        stride_tricks_path = numpy_dir / "lib" / "stride_tricks.py"
 
-        if stride_tricks_path.exists():
-            print(f"   Found file: {stride_tricks_path}")
-
-            with open(stride_tricks_path, "r") as f:
-                content = f.read()
-
-            patch_line = "from numpy import broadcast_to"
-            if patch_line not in content:
-                with open(stride_tricks_path, "a") as f:
-                    f.write(f"\n{patch_line}\n")
-                print("✅ Patch applied successfully!")
-            else:
-                print("✅ Patch was already applied.")
-        else:
-            print(f"⚠️ Could not locate {stride_tricks_path} to patch.")
-
-    except Exception as e:
-        print(f"❌ Failed to patch numpy: {e}")
 
 def patch_nerfstudio():
     """
@@ -314,7 +286,6 @@ if __name__ == "__main__":
 
     # 2. Install Deps
     install_dependencies()
-    patch_numpy()
 
     # 3. Apply Patch (Critical Fix)
     patch_nerfstudio()
