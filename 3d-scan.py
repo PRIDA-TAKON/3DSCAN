@@ -61,7 +61,8 @@ def install_dependencies():
     if importlib.util.find_spec("nerfstudio") is None:
         run_command("pip install --upgrade pip", shell=True)
         # Force numpy < 2.0 to avoid compatibility issues with recent library updates
-        run_command("pip install \"numpy<2.0\"", shell=True)
+        # "Factory Reset" numpy: force reinstall to fix potential file corruption from previous patching attempts
+        run_command("pip install \"numpy<2.0\" --force-reinstall", shell=True)
         run_command("pip install torch torchvision", shell=True)
         run_command("pip install nerfstudio", shell=True)
     else:
