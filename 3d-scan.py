@@ -60,6 +60,8 @@ def install_dependencies():
     # Check if nerfstudio is installed
     if importlib.util.find_spec("nerfstudio") is None:
         run_command("pip install --upgrade pip", shell=True)
+        # Force numpy < 2.0 to avoid compatibility issues with recent library updates
+        run_command("pip install \"numpy<2.0\"", shell=True)
         run_command("pip install torch torchvision", shell=True)
         run_command("pip install nerfstudio", shell=True)
     else:
@@ -73,13 +75,8 @@ def install_dependencies():
         run_command("colmap help", shell=True)
         print("   COLMAP already installed.")
     except:
-        # --- FIX 1: Use mamba for COLMAP (More stable on Kaggle) ---
-        try:
-            print("   Attempting to install COLMAP via mamba...")
-            run_command("mamba install -y -c conda-forge colmap", shell=True)
-        except Exception as e:
-            print("⚠️ Mamba install failed, falling back to apt-get...")
-            run_command("apt-get install -y colmap", shell=True)
+        print("⏳ Installing COLMAP via apt-get...")
+        run_command("apt-get install -y colmap", shell=True)
 
     # Check if ffmpeg is installed
     try:
