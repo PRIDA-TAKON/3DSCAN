@@ -3,6 +3,7 @@ import shutil
 import sys
 import glob
 import subprocess
+import argparse
 from pathlib import Path
 import json
 import importlib.util
@@ -136,7 +137,52 @@ def patch_nerfstudio():
     except Exception as e:
         print(f"❌ Failed to patch nerfstudio: {e}")
 
-def process_data():
+def process_data(resume_path=None):
+    """
+    Processes video into images and run COLMAP, OR resumes from existing data.
+    """
+    if resume_path:
+        print(f"🔄 RESUME MODE ENABLED. Loading data from: {resume_path}")
+        resume_source = Path(resume_path)
+        
+        if not resume_source.exists():
+            print(f"❌ Error: Resume path not found at {resume_source}")
+            return False
+
+        # Create project directory if it doesn't exist
+        PROJECT_DIR.mkdir(parents=True, exist_ok=True)
+
+        # List of critical items to copy
+        items_to_copy = ["transforms.json", "images", "sparse", "database.db"]
+        
+        for item in items_to_copy:
+            src = resume_source / item
+            dst = PROJECT_DIR / item
+            
+            if src.exists():
+                if dst.exists():
+                    print(f"   Removing existing {dst}...")
+                    if dst.is_dir():
+                        shutil.rmtree(dst)
+                    else:
+                        dst.unlink()
+                
+                print(f"   Copying {item}...")
+                if src.is_dir():
+                    shutil.copytree(src, dst)
+                else:
+                    shutil.copy2(src, dst)
+            else:
+                 print(f"⚠️ Warning: '{item}' not found in resume source. Proceeding cautiously.")
+
+        if (PROJECT_DIR / "transforms.json").exists():
+            print("✅ Data restored successfully via Resume.")
+            return True
+        else:
+             print("❌ Failed to restore 'transforms.json'. Resume invalid.")
+             return False
+
+    # --- NORMAL PROCESSING START ---
     if not VIDEO_INPUT_PATH.exists():
         print(f"❌ Error: Video file not found at {VIDEO_INPUT_PATH}")
         print("Please upload your video and update VIDEO_INPUT_PATH in the script.")
@@ -278,6 +324,10 @@ def export_model():
         print("❌ Export command finished but no .splat file was found.")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run 3D Scan Pipeline")
+    parser.add_argument("--resume_path", type=str, help="Path to existing project folder (containing transforms.json) to resume from", default=None)
+    args = parser.parse_args()
+
     # 1. GPU Check
     if not check_gpu():
         print("WARNING: Proceeding without GPU might fail or be extremely slow.")
@@ -288,9 +338,9 @@ if __name__ == "__main__":
     # 3. Apply Patch (Critical Fix)
     patch_nerfstudio()
 
-    # 4. Process Data
-    if process_data():
-        print("✅ Data processing complete.")
+    # 4. Process Data (or Resume)
+    if process_data(resume_path=args.resume_path):
+        print("✅ Data ready.")
 
         # 5. Train
         # Only run if transforms.json exists
