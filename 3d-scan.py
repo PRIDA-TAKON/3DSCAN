@@ -18,7 +18,7 @@ PROJECT_DIR = WORKING_DIR / PROJECT_NAME
 DATABASE_PATH = PROJECT_DIR / "database.db"
 IMAGES_DIR = PROJECT_DIR / "images"
 SPARSE_PATH = PROJECT_DIR / "sparse"
-OUTPUTS_DIR = WORKING_DIR / "outputs" / PROJECT_NAME / "splatfacto"
+OUTPUTS_DIR = Path("outputs") / PROJECT_NAME / "splatfacto"
 
 # Environment tweaks
 os.environ['MAX_JOBS'] = '1' # Prevent freezing on Kaggle
