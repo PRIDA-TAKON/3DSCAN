@@ -1,52 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3DSCAN Viewer</title>
     <style>
-        body { margin: 0; overflow: hidden; background-color: #000; font-family: sans-serif; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: sans-serif;
+        }
+
         #info {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             padding: 15px;
             border-radius: 8px;
             pointer-events: none;
         }
-        a { color: #4af; text-decoration: none; pointer-events: auto; }
+
+        a {
+            color: #4af;
+            text-decoration: none;
+            pointer-events: auto;
+        }
     </style>
 </head>
+
 <body>
     <div id="info">
         <h3>🧊 3DSCAN Viewer</h3>
         <p>Model: <span id="model-name">Loading...</span></p>
-        <p><small>Powered by <a href="https://github.com/antimatter15/splat" target="_blank">antimatter15/splat</a></small></p>
+        <p><small>Powered by <a href="https://github.com/antimatter15/splat"
+                    target="_blank">antimatter15/splat</a></small></p>
     </div>
 
-    <script type="module">
-        import * as SPLAT from 'https://cdn.jsdelivr.net/npm/gsplat@latest/dist/package/index.js'; // Using gsplat for better compatibility or antimatter directly
-
-        // We will use a simple iframe pointing to the robust antimatter15 viewer for simplicity and stability
-        // This avoids CORS issues if we use the query param method on their hosted viewer,
-        // OR we can embed the library. Let's try the direct embedding method for a custom feel.
-        
-        // Actually, the simplest stable way for a quick user page is to use the heavy lifting library.
-        // Let's use mkkellogg's simple implementation or just redirect/iframe if complicated.
-        // Wait, best approach for user:
-        // Use importing script from antimatter15's main.js is tricky due to module paths.
-        
-        // Let's use the widely compatible "GaussianSplats3D" by mkkellogg via modules.
+    <!-- Import Map to resolve 'three' -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
+            "gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.0/build/gaussian-splats-3d.module.js"
+        }
+    }
     </script>
-    
-    <!-- Switched to jsDelivr for better stability -->
+
     <script type="module">
-        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@latest/build/gaussian-splats-3d.module.js';
+        import * as GaussianSplats3D from 'gaussian-splats-3d';
 
         // ⚠️ REPLACE THIS LINK WITH YOUR GITHUB RELEASE LINK
-        const defaultModel = 'https://github.com/PRIDA-TAKON/3DSCAN/releases/download/splat/splat.ply'; 
+        const defaultModel = 'https://github.com/PRIDA-TAKON/3DSCAN/releases/download/splat/splat.ply';
 
         // Check if url param exists
         const params = new URLSearchParams(window.location.search);
@@ -57,7 +65,7 @@
 
         // Pre-check URL
         infoEl.innerHTML += `<br><small style="color:yellow">Connecting to file...</small>`;
-        
+
         // Initialize Viewer
         const viewer = new GaussianSplats3D.Viewer({
             'cameraUp': [0, -1, -0.6],
@@ -72,17 +80,18 @@
             'rotation': [0, 0, 0, 1],
             'scale': [1.5, 1.5, 1.5]
         })
-        .then(() => {
-            viewer.start();
-            infoEl.innerHTML += `<br><small style="color:#4f4">Rendering...</small>`;
-        })
-        .catch(err => {
-            console.error("Failed to load:", err);
-            infoEl.innerHTML += `<br><br><strong style="color:red">❌ Error: ${err.message || err}</strong>`;
-            infoEl.innerHTML += `<br><small>1. Check if the link works in a new tab.</small>`;
-            infoEl.innerHTML += `<br><small>2. Check if the file is truly Public.</small>`;
-            infoEl.innerHTML += `<br><small>3. Open Console (F12) for details.</small>`;
-        });
+            .then(() => {
+                viewer.start();
+                infoEl.innerHTML += `<br><small style="color:#4f4">Rendering...</small>`;
+            })
+            .catch(err => {
+                console.error("Failed to load:", err);
+                infoEl.innerHTML += `<br><br><strong style="color:red">❌ Error: ${err.message || err}</strong>`;
+                infoEl.innerHTML += `<br><small>1. Check if the link works in a new tab.</small>`;
+                infoEl.innerHTML += `<br><small>2. Check if the file is truly Public.</small>`;
+                infoEl.innerHTML += `<br><small>3. Open Console (F12) for details.</small>`;
+            });
     </script>
 </body>
+
 </html>
