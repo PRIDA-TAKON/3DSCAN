@@ -1,1049 +1,0 @@
-7.0s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
-7.0s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
-7.0s 3 0.00s - to python to disable frozen modules.
-7.0s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
-7.6s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
-7.6s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
-7.6s 7 0.00s - to python to disable frozen modules.
-7.6s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
-8.7s 9 📥 กำลัง Clone Repo: PRIDA-TAKON/3DSCAN ...
-8.7s 10 Cloning into '3DSCAN'...
-9.1s 11 remote: Enumerating objects: 26, done.[K
-9.1s 12 remote: Counting objects:   3% (1/26)[Kremote: Counting objects:   7% (2/26)[Kremote: Counting objects:  11% (3/26)[Kremote: Counting objects:  15% (4/26)[Kremote: Counting objects:  19% (5/26)[Kremote: Counting objects:  23% (6/26)[Kremote: Counting objects:  26% (7/26)[Kremote: Counting objects:  30% (8/26)[Kremote: Counting objects:  34% (9/26)[Kremote: Counting objects:  38% (10/26)[Kremote: Counting objects:  42% (11/26)[Kremote: Counting objects:  46% (12/26)[Kremote: Counting objects:  50% (13/26)[Kremote: Counting objects:  53% (14/26)[Kremote: Counting objects:  57% (15/26)[Kremote: Counting objects:  61% (16/26)[Kremote: Counting objects:  65% (17/26)[Kremote: Counting objects:  69% (18/26)[Kremote: Counting objects:  73% (19/26)[Kremote: Counting objects:  76% (20/26)[Kremote: Counting objects:  80% (21/26)[Kremote: Counting objects:  84% (22/26)[Kremote: Counting objects:  88% (23/26)[Kremote: Counting objects:  92% (24/26)[Kremote: Counting objects:  96% (25/26)[Kremote: Counting objects: 100% (26/26)[Kremote: Counting objects: 100% (26/26), done.[K
-9.2s 13 remote: Compressing objects:   4% (1/24)[Kremote: Compressing objects:   8% (2/24)[Kremote: Compressing objects:  12% (3/24)[Kremote: Compressing objects:  16% (4/24)[Kremote: Compressing objects:  20% (5/24)[Kremote: Compressing objects:  25% (6/24)[Kremote: Compressing objects:  29% (7/24)[Kremote: Compressing objects:  33% (8/24)[Kremote: Compressing objects:  37% (9/24)[Kremote: Compressing objects:  41% (10/24)[Kremote: Compressing objects:  45% (11/24)[Kremote: Compressing objects:  50% (12/24)[Kremote: Compressing objects:  54% (13/24)[Kremote: Compressing objects:  58% (14/24)[Kremote: Compressing objects:  62% (15/24)[Kremote: Compressing objects:  66% (16/24)[Kremote: Compressing objects:  70% (17/24)[Kremote: Compressing objects:  75% (18/24)[Kremote: Compressing objects:  79% (19/24)[Kremote: Compressing objects:  83% (20/24)[Kremote: Compressing objects:  87% (21/24)[Kremote: Compressing objects:  91% (22/24)[Kremote: Compressing objects:  95% (23/24)[Kremote: Compressing objects: 100% (24/24)[Kremote: Compressing objects: 100% (24/24), done.[K
-9.2s 14 Receiving objects:   3% (1/26)Receiving objects:   7% (2/26)Receiving objects:  11% (3/26)Receiving objects:  15% (4/26)Receiving objects:  19% (5/26)Receiving objects:  23% (6/26)Receiving objects:  26% (7/26)Receiving objects:  30% (8/26)Receiving objects:  34% (9/26)Receiving objects:  38% (10/26)Receiving objects:  42% (11/26)Receiving objects:  46% (12/26)Receiving objects:  50% (13/26)Receiving objects:  53% (14/26)Receiving objects:  57% (15/26)Receiving objects:  61% (16/26)Receiving objects:  65% (17/26)Receiving objects:  69% (18/26)Receiving objects:  73% (19/26)Receiving objects:  76% (20/26)Receiving objects:  80% (21/26)Receiving objects:  84% (22/26)remote: Total 26 (delta 8), reused 12 (delta 1), pack-reused 0 (from 0)[K
-9.2s 15 Receiving objects:  88% (23/26)Receiving objects:  92% (24/26)Receiving objects:  96% (25/26)Receiving objects: 100% (26/26)Receiving objects: 100% (26/26), 65.00 KiB | 2.41 MiB/s, done.
-9.2s 16 Resolving deltas:   0% (0/8)Resolving deltas:  12% (1/8)Resolving deltas:  25% (2/8)Resolving deltas:  37% (3/8)Resolving deltas:  50% (4/8)Resolving deltas:  62% (5/8)Resolving deltas:  75% (6/8)Resolving deltas:  87% (7/8)Resolving deltas: 100% (8/8)Resolving deltas: 100% (8/8), done.
-9.3s 17 ✅ ย้าย Working Directory มาที่: /kaggle/working/3DSCAN
-9.3s 18 📂 รายชื่อไฟล์ในโปรเจค:
-9.3s 19 total 36K
-9.3s 20 -rw-r--r-- 1 root root  18K Jan 22 06:11 3d-scan.ipynb
-9.3s 21 -rw-r--r-- 1 root root  11K Jan 22 06:11 3d-scan.py
-9.3s 22 -rw-r--r-- 1 root root 1.1K Jan 22 06:11 LICENSE
-9.5s 23 ✅ Imports complete
-9.5s 24 🔍 Checking GPU availability...
-12.8s 25 ✅ GPU Detected: Tesla T4
-12.8s 26 ⏳ Installing dependencies...
-12.8s 27 🚀 Running: pip install --upgrade pip
-14.6s 28 Requirement already satisfied: pip in /usr/local/lib/python3.12/dist-packages (24.1.2)
-14.8s 29 Collecting pip
-14.8s 30 Downloading pip-25.3-py3-none-any.whl.metadata (4.7 kB)
-14.8s 31 Downloading pip-25.3-py3-none-any.whl (1.8 MB)
-14.9s 32 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.8 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.3/1.8 MB[0m [31m9.6 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m1.8/1.8 MB[0m [31m28.3 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.8/1.8 MB[0m [31m21.7 MB/s[0m eta [36m0:00:00[0m
-16.8s 33 [?25hInstalling collected packages: pip
-16.8s 34 Attempting uninstall: pip
-16.8s 35 Found existing installation: pip 24.1.2
-16.9s 36 Uninstalling pip-24.1.2:
-17.2s 37 Successfully uninstalled pip-24.1.2
-18.1s 38 [31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
-18.1s 39 fastai 2.8.4 requires fastcore<1.9,>=1.8.0, but you have fastcore 1.11.3 which is incompatible.[0m[31m
-18.1s 40 [0mSuccessfully installed pip-25.3
-18.2s 41 🚀 Running: pip install torch torchvision
-18.7s 42 Requirement already satisfied: torch in /usr/local/lib/python3.12/dist-packages (2.8.0+cu126)
-18.7s 43 Requirement already satisfied: torchvision in /usr/local/lib/python3.12/dist-packages (0.23.0+cu126)
-18.7s 44 Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from torch) (3.20.3)
-18.7s 45 Requirement already satisfied: typing-extensions>=4.10.0 in /usr/local/lib/python3.12/dist-packages (from torch) (4.15.0)
-18.7s 46 Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from torch) (75.2.0)
-18.7s 47 Requirement already satisfied: sympy>=1.13.3 in /usr/local/lib/python3.12/dist-packages (from torch) (1.13.3)
-18.7s 48 Requirement already satisfied: networkx in /usr/local/lib/python3.12/dist-packages (from torch) (3.5)
-18.7s 49 Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from torch) (3.1.6)
-18.7s 50 Requirement already satisfied: fsspec in /usr/local/lib/python3.12/dist-packages (from torch) (2025.10.0)
-18.7s 51 Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.77)
-18.7s 52 Requirement already satisfied: nvidia-cuda-runtime-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.77)
-18.7s 53 Requirement already satisfied: nvidia-cuda-cupti-cu12==12.6.80 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.80)
-18.7s 54 Requirement already satisfied: nvidia-cudnn-cu12==9.10.2.21 in /usr/local/lib/python3.12/dist-packages (from torch) (9.10.2.21)
-18.7s 55 Requirement already satisfied: nvidia-cublas-cu12==12.6.4.1 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.4.1)
-18.7s 56 Requirement already satisfied: nvidia-cufft-cu12==11.3.0.4 in /usr/local/lib/python3.12/dist-packages (from torch) (11.3.0.4)
-18.7s 57 Requirement already satisfied: nvidia-curand-cu12==10.3.7.77 in /usr/local/lib/python3.12/dist-packages (from torch) (10.3.7.77)
-18.7s 58 Requirement already satisfied: nvidia-cusolver-cu12==11.7.1.2 in /usr/local/lib/python3.12/dist-packages (from torch) (11.7.1.2)
-18.7s 59 Requirement already satisfied: nvidia-cusparse-cu12==12.5.4.2 in /usr/local/lib/python3.12/dist-packages (from torch) (12.5.4.2)
-18.7s 60 Requirement already satisfied: nvidia-cusparselt-cu12==0.7.1 in /usr/local/lib/python3.12/dist-packages (from torch) (0.7.1)
-18.7s 61 Requirement already satisfied: nvidia-nccl-cu12==2.27.3 in /usr/local/lib/python3.12/dist-packages (from torch) (2.27.3)
-18.7s 62 Requirement already satisfied: nvidia-nvtx-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.77)
-18.7s 63 Requirement already satisfied: nvidia-nvjitlink-cu12==12.6.85 in /usr/local/lib/python3.12/dist-packages (from torch) (12.6.85)
-18.7s 64 Requirement already satisfied: nvidia-cufile-cu12==1.11.1.6 in /usr/local/lib/python3.12/dist-packages (from torch) (1.11.1.6)
-18.7s 65 Requirement already satisfied: triton==3.4.0 in /usr/local/lib/python3.12/dist-packages (from torch) (3.4.0)
-18.7s 66 Requirement already satisfied: numpy in /usr/local/lib/python3.12/dist-packages (from torchvision) (2.0.2)
-18.7s 67 Requirement already satisfied: pillow!=8.3.*,>=5.3.0 in /usr/local/lib/python3.12/dist-packages (from torchvision) (11.3.0)
-18.7s 68 Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy>=1.13.3->torch) (1.3.0)
-18.7s 69 Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2->torch) (3.0.3)
-20.1s 70 🚀 Running: pip install nerfstudio
-20.8s 71 Collecting nerfstudio
-20.9s 72 Downloading nerfstudio-1.1.5-py3-none-any.whl.metadata (24 kB)
-21.0s 73 Collecting appdirs>=1.4 (from nerfstudio)
-21.0s 74 Downloading appdirs-1.4.4-py2.py3-none-any.whl.metadata (9.0 kB)
-21.1s 75 Collecting av>=9.2.0 (from nerfstudio)
-21.2s 76 Downloading av-16.1.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (4.6 kB)
-21.3s 77 Collecting comet-ml>=3.33.8 (from nerfstudio)
-21.3s 78 Downloading comet_ml-3.55.0-py3-none-any.whl.metadata (4.0 kB)
-21.3s 79 Requirement already satisfied: cryptography>=38 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (46.0.3)
-21.4s 80 Collecting tyro>=0.6.6 (from nerfstudio)
-21.4s 81 Downloading tyro-1.0.5-py3-none-any.whl.metadata (12 kB)
-21.4s 82 Requirement already satisfied: gdown>=4.6.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (5.2.0)
-21.4s 83 Requirement already satisfied: ninja>=1.10 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (1.13.0)
-21.4s 84 Requirement already satisfied: h5py>=2.9.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (3.15.1)
-21.4s 85 Requirement already satisfied: imageio>=2.21.1 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (2.37.0)
-21.4s 86 Requirement already satisfied: ipywidgets>=7.6 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (8.1.5)
-21.5s 87 Collecting jaxtyping>=0.2.15 (from nerfstudio)
-21.5s 88 Downloading jaxtyping-0.3.5-py3-none-any.whl.metadata (7.3 kB)
-21.5s 89 Requirement already satisfied: jupyterlab>=3.3.4 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (3.6.8)
-21.5s 90 Requirement already satisfied: matplotlib>=3.6.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (3.10.0)
-21.5s 91 Collecting mediapy>=1.1.0 (from nerfstudio)
-21.5s 92 Downloading mediapy-1.2.5-py3-none-any.whl.metadata (4.8 kB)
-21.5s 93 Requirement already satisfied: msgpack>=1.0.4 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (1.1.2)
-21.6s 94 Collecting msgpack-numpy>=0.4.8 (from nerfstudio)
-21.6s 95 Downloading msgpack_numpy-0.4.8-py2.py3-none-any.whl.metadata (5.0 kB)
-21.7s 96 Collecting nerfacc==0.5.2 (from nerfstudio)
-21.7s 97 Downloading nerfacc-0.5.2-py3-none-any.whl.metadata (877 bytes)
-21.7s 98 Collecting open3d>=0.16.0 (from nerfstudio)
-21.7s 99 Downloading open3d-0.19.0-cp312-cp312-manylinux_2_31_x86_64.whl.metadata (4.3 kB)
-21.9s 100 Collecting opencv-python-headless==4.10.0.84 (from nerfstudio)
-21.9s 101 Downloading opencv_python_headless-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (20 kB)
-21.9s 102 Requirement already satisfied: Pillow>=10.3.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (11.3.0)
-21.9s 103 Requirement already satisfied: plotly>=5.7.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (5.24.1)
-22.3s 104 Collecting protobuf!=3.20.0,<=3.20.3 (from nerfstudio)
-22.3s 105 Downloading protobuf-3.20.3-py2.py3-none-any.whl.metadata (720 bytes)
-22.3s 106 Collecting pyngrok>=5.1.0 (from nerfstudio)
-22.3s 107 Downloading pyngrok-7.5.0-py3-none-any.whl.metadata (8.1 kB)
-22.4s 108 Collecting python-socketio>=5.7.1 (from nerfstudio)
-22.4s 109 Downloading python_socketio-5.16.0-py3-none-any.whl.metadata (3.2 kB)
-22.5s 110 Collecting pyquaternion>=0.9.9 (from nerfstudio)
-22.5s 111 Downloading pyquaternion-0.9.9-py3-none-any.whl.metadata (1.4 kB)
-22.5s 112 Requirement already satisfied: requests in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (2.32.5)
-22.5s 113 Requirement already satisfied: rich>=12.5.1 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (14.2.0)
-22.5s 114 Requirement already satisfied: scikit-image>=0.19.3 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (0.25.2)
-22.5s 115 Collecting splines==0.3.0 (from nerfstudio)
-22.5s 116 Downloading splines-0.3.0-py3-none-any.whl.metadata (1.5 kB)
-22.6s 117 Requirement already satisfied: tensorboard>=2.13.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (2.19.0)
-22.6s 118 Requirement already satisfied: torch>=1.13.1 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (2.8.0+cu126)
-22.6s 119 Requirement already satisfied: torchvision>=0.14.1 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (0.23.0+cu126)
-22.6s 120 Requirement already satisfied: torchmetrics>=1.0.1 in /usr/local/lib/python3.12/dist-packages (from torchmetrics[image]>=1.0.1->nerfstudio) (1.8.2)
-22.6s 121 Requirement already satisfied: typing-extensions>=4.4.0 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (4.15.0)
-22.6s 122 Collecting viser==0.2.7 (from nerfstudio)
-22.6s 123 Downloading viser-0.2.7-py3-none-any.whl.metadata (4.7 kB)
-22.7s 124 Collecting nuscenes-devkit>=1.1.1 (from nerfstudio)
-22.7s 125 Downloading nuscenes_devkit-1.2.0-py3-none-any.whl.metadata (16 kB)
-22.7s 126 Requirement already satisfied: wandb>=0.13.3 in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (0.22.2)
-22.8s 127 Collecting xatlas (from nerfstudio)
-22.8s 128 Downloading xatlas-0.0.11-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (5.2 kB)
-23.0s 129 Collecting trimesh>=3.20.2 (from nerfstudio)
-23.0s 130 Downloading trimesh-4.11.1-py3-none-any.whl.metadata (13 kB)
-23.0s 131 Collecting timm==0.6.7 (from nerfstudio)
-23.1s 132 Downloading timm-0.6.7-py3-none-any.whl.metadata (33 kB)
-23.1s 133 Collecting gsplat==1.4.0 (from nerfstudio)
-23.1s 134 Downloading gsplat-1.4.0-py3-none-any.whl.metadata (957 bytes)
-23.2s 135 Collecting pytorch-msssim (from nerfstudio)
-23.2s 136 Downloading pytorch_msssim-1.0.0-py3-none-any.whl.metadata (8.0 kB)
-23.2s 137 Requirement already satisfied: pathos in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (0.3.2)
-23.2s 138 Requirement already satisfied: packaging in /usr/local/lib/python3.12/dist-packages (from nerfstudio) (26.0rc2)
-23.3s 139 Collecting fpsample (from nerfstudio)
-23.3s 140 Downloading fpsample-1.0.2.tar.gz (40 kB)
-26.0s 141 Installing build dependencies ... [?25l[?25hdone
-26.4s 142 Getting requirements to build wheel ... [?25l[?25hdone
-31.0s 143 Installing backend dependencies ... [?25l[?25hdone
-31.4s 144 Preparing metadata (pyproject.toml) ... [?25l[?25hdone
-31.5s 145 Collecting tensorly (from nerfstudio)
-31.5s 146 Downloading tensorly-0.9.0-py3-none-any.whl.metadata (8.6 kB)
-31.6s 147 Collecting rawpy>=0.18.1 (from nerfstudio)
-31.6s 148 Downloading rawpy-0.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (6.4 kB)
-31.7s 149 Collecting pymeshlab>=2022.2.post2 (from nerfstudio)
-31.7s 150 Downloading pymeshlab-2025.7-cp312-cp312-manylinux_2_35_x86_64.whl.metadata (4.0 kB)
-31.7s 151 Requirement already satisfied: numpy in /usr/local/lib/python3.12/dist-packages (from gsplat==1.4.0->nerfstudio) (2.0.2)
-31.7s 152 Requirement already satisfied: websockets>=10.4 in /usr/local/lib/python3.12/dist-packages (from viser==0.2.7->nerfstudio) (15.0.1)
-31.8s 153 Collecting msgspec>=0.18.6 (from viser==0.2.7->nerfstudio)
-31.9s 154 Downloading msgspec-0.20.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.5 kB)
-31.9s 155 Requirement already satisfied: scipy>=1.7.3 in /usr/local/lib/python3.12/dist-packages (from viser==0.2.7->nerfstudio) (1.15.3)
-31.9s 156 Requirement already satisfied: tqdm>=4.0.0 in /usr/local/lib/python3.12/dist-packages (from viser==0.2.7->nerfstudio) (4.67.1)
-32.0s 157 Collecting nodeenv>=1.8.0 (from viser==0.2.7->nerfstudio)
-32.0s 158 Downloading nodeenv-1.10.0-py2.py3-none-any.whl.metadata (24 kB)
-32.0s 159 Requirement already satisfied: psutil>=5.9.5 in /usr/local/lib/python3.12/dist-packages (from viser==0.2.7->nerfstudio) (5.9.5)
-32.0s 160 Collecting yourdfpy>=0.0.53 (from viser==0.2.7->nerfstudio)
-32.0s 161 Downloading yourdfpy-0.0.59-py3-none-any.whl.metadata (9.0 kB)
-32.1s 162 Collecting plyfile>=1.0.2 (from viser==0.2.7->nerfstudio)
-32.1s 163 Downloading plyfile-1.1.3-py3-none-any.whl.metadata (43 kB)
-32.1s 164 Collecting pyliblzfse>=0.4.1 (from viser==0.2.7->nerfstudio)
-32.2s 165 Downloading pyliblzfse-0.4.1.tar.gz (47 kB)
-35.1s 166 Installing build dependencies ... [?25l[?25hdone
-35.4s 167 Getting requirements to build wheel ... [?25l[?25hdone
-35.6s 168 Preparing metadata (pyproject.toml) ... [?25l[?25hdone
-35.9s 169 Collecting dulwich!=0.20.33,>=0.20.6 (from comet-ml>=3.33.8->nerfstudio)
-36.0s 170 Downloading dulwich-1.0.0-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (5.4 kB)
-36.0s 171 Collecting everett<3.2.0,>=1.0.1 (from everett[ini]<3.2.0,>=1.0.1->comet-ml>=3.33.8->nerfstudio)
-36.0s 172 Downloading everett-3.1.0-py2.py3-none-any.whl.metadata (17 kB)
-36.0s 173 Requirement already satisfied: jsonschema!=3.1.0,>=2.6.0 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (4.25.1)
-36.1s 174 Collecting python-box<7.0.0 (from comet-ml>=3.33.8->nerfstudio)
-36.1s 175 Downloading python_box-6.1.0-py3-none-any.whl.metadata (7.8 kB)
-36.2s 176 Requirement already satisfied: requests-toolbelt>=0.8.0 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (1.0.0)
-36.2s 177 Requirement already satisfied: semantic-version>=2.8.0 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (2.10.0)
-36.2s 178 Requirement already satisfied: sentry-sdk>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (2.42.1)
-36.2s 179 Requirement already satisfied: setuptools in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (75.2.0)
-36.2s 180 Requirement already satisfied: simplejson in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (3.20.2)
-36.2s 181 Requirement already satisfied: urllib3>=1.26.8 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (2.6.3)
-36.2s 182 Requirement already satisfied: wrapt>=1.11.2 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (2.0.0)
-36.2s 183 Requirement already satisfied: wurlitzer>=1.0.2 in /usr/local/lib/python3.12/dist-packages (from comet-ml>=3.33.8->nerfstudio) (3.1.1)
-36.2s 184 Collecting configobj (from everett[ini]<3.2.0,>=1.0.1->comet-ml>=3.33.8->nerfstudio)
-36.2s 185 Downloading configobj-5.0.9-py2.py3-none-any.whl.metadata (3.2 kB)
-36.2s 186 Requirement already satisfied: cffi>=2.0.0 in /usr/local/lib/python3.12/dist-packages (from cryptography>=38->nerfstudio) (2.0.0)
-36.2s 187 Requirement already satisfied: pycparser in /usr/local/lib/python3.12/dist-packages (from cffi>=2.0.0->cryptography>=38->nerfstudio) (2.23)
-36.2s 188 Requirement already satisfied: beautifulsoup4 in /usr/local/lib/python3.12/dist-packages (from gdown>=4.6.0->nerfstudio) (4.13.5)
-36.2s 189 Requirement already satisfied: filelock in /usr/local/lib/python3.12/dist-packages (from gdown>=4.6.0->nerfstudio) (3.20.3)
-36.2s 190 Requirement already satisfied: comm>=0.1.3 in /usr/local/lib/python3.12/dist-packages (from ipywidgets>=7.6->nerfstudio) (0.2.3)
-36.2s 191 Requirement already satisfied: ipython>=6.1.0 in /usr/local/lib/python3.12/dist-packages (from ipywidgets>=7.6->nerfstudio) (7.34.0)
-36.2s 192 Requirement already satisfied: traitlets>=4.3.1 in /usr/local/lib/python3.12/dist-packages (from ipywidgets>=7.6->nerfstudio) (5.7.1)
-36.2s 193 Requirement already satisfied: widgetsnbextension~=4.0.12 in /usr/local/lib/python3.12/dist-packages (from ipywidgets>=7.6->nerfstudio) (4.0.15)
-36.2s 194 Requirement already satisfied: jupyterlab-widgets~=3.0.12 in /usr/local/lib/python3.12/dist-packages (from ipywidgets>=7.6->nerfstudio) (3.0.15)
-36.2s 195 Requirement already satisfied: jedi>=0.16 in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.19.2)
-36.2s 196 Requirement already satisfied: decorator in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (4.4.2)
-36.2s 197 Requirement already satisfied: pickleshare in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.7.5)
-36.2s 198 Requirement already satisfied: prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0 in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (3.0.52)
-36.2s 199 Requirement already satisfied: pygments in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (2.19.2)
-36.2s 200 Requirement already satisfied: backcall in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.2.0)
-36.2s 201 Requirement already satisfied: matplotlib-inline in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.1.7)
-36.2s 202 Requirement already satisfied: pexpect>4.3 in /usr/local/lib/python3.12/dist-packages (from ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (4.9.0)
-36.2s 203 Requirement already satisfied: wcwidth in /usr/local/lib/python3.12/dist-packages (from prompt-toolkit!=3.0.0,!=3.0.1,<3.1.0,>=2.0.0->ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.2.14)
-36.3s 204 Collecting wadler-lindig>=0.1.3 (from jaxtyping>=0.2.15->nerfstudio)
-36.3s 205 Downloading wadler_lindig-0.1.7-py3-none-any.whl.metadata (17 kB)
-36.3s 206 Requirement already satisfied: parso<0.9.0,>=0.8.4 in /usr/local/lib/python3.12/dist-packages (from jedi>=0.16->ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.8.5)
-36.3s 207 Requirement already satisfied: attrs>=22.2.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema!=3.1.0,>=2.6.0->comet-ml>=3.33.8->nerfstudio) (25.4.0)
-36.3s 208 Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.12/dist-packages (from jsonschema!=3.1.0,>=2.6.0->comet-ml>=3.33.8->nerfstudio) (2025.9.1)
-36.3s 209 Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.12/dist-packages (from jsonschema!=3.1.0,>=2.6.0->comet-ml>=3.33.8->nerfstudio) (0.37.0)
-36.3s 210 Requirement already satisfied: rpds-py>=0.7.1 in /usr/local/lib/python3.12/dist-packages (from jsonschema!=3.1.0,>=2.6.0->comet-ml>=3.33.8->nerfstudio) (0.27.1)
-36.3s 211 Requirement already satisfied: tornado>=6.1.0 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (6.5.1)
-36.3s 212 Requirement already satisfied: jupyter-core in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (5.9.1)
-36.3s 213 Requirement already satisfied: jupyterlab-server~=2.19 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (2.28.0)
-36.3s 214 Requirement already satisfied: jupyter-server<3,>=1.16.0 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (2.12.5)
-36.3s 215 Requirement already satisfied: jupyter-ydoc~=0.2.4 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (0.2.5)
-36.3s 216 Requirement already satisfied: jupyter-server-ydoc~=0.8.0 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (0.8.0)
-36.3s 217 Requirement already satisfied: nbclassic in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (1.3.3)
-36.3s 218 Requirement already satisfied: notebook<7 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (6.5.7)
-36.3s 219 Requirement already satisfied: jinja2>=2.1 in /usr/local/lib/python3.12/dist-packages (from jupyterlab>=3.3.4->nerfstudio) (3.1.6)
-36.3s 220 Requirement already satisfied: anyio>=3.1.0 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (4.12.1)
-36.3s 221 Requirement already satisfied: argon2-cffi in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (25.1.0)
-36.3s 222 Requirement already satisfied: jupyter-client>=7.4.4 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (7.4.9)
-36.3s 223 Requirement already satisfied: jupyter-events>=0.9.0 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.12.0)
-36.3s 224 Requirement already satisfied: jupyter-server-terminals in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.5.3)
-36.3s 225 Requirement already satisfied: nbconvert>=6.4.4 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (6.4.5)
-36.3s 226 Requirement already satisfied: nbformat>=5.3.0 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (5.10.4)
-36.3s 227 Requirement already satisfied: overrides in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (7.7.0)
-36.3s 228 Requirement already satisfied: prometheus-client in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.23.1)
-36.3s 229 Requirement already satisfied: pyzmq>=24 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (26.2.1)
-36.3s 230 Requirement already satisfied: send2trash>=1.8.2 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.8.3)
-36.3s 231 Requirement already satisfied: terminado>=0.8.3 in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.18.1)
-36.3s 232 Requirement already satisfied: websocket-client in /usr/local/lib/python3.12/dist-packages (from jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.9.0)
-36.3s 233 Requirement already satisfied: jupyter-server-fileid<1,>=0.6.0 in /usr/local/lib/python3.12/dist-packages (from jupyter-server-ydoc~=0.8.0->jupyterlab>=3.3.4->nerfstudio) (0.9.3)
-36.3s 234 Requirement already satisfied: ypy-websocket<0.9.0,>=0.8.2 in /usr/local/lib/python3.12/dist-packages (from jupyter-server-ydoc~=0.8.0->jupyterlab>=3.3.4->nerfstudio) (0.8.4)
-36.3s 235 Requirement already satisfied: y-py<0.7.0,>=0.6.0 in /usr/local/lib/python3.12/dist-packages (from jupyter-ydoc~=0.2.4->jupyterlab>=3.3.4->nerfstudio) (0.6.2)
-36.4s 236 Requirement already satisfied: babel>=2.10 in /usr/local/lib/python3.12/dist-packages (from jupyterlab-server~=2.19->jupyterlab>=3.3.4->nerfstudio) (2.17.0)
-36.4s 237 Requirement already satisfied: json5>=0.9.0 in /usr/local/lib/python3.12/dist-packages (from jupyterlab-server~=2.19->jupyterlab>=3.3.4->nerfstudio) (0.13.0)
-36.4s 238 Requirement already satisfied: ipython-genutils in /usr/local/lib/python3.12/dist-packages (from notebook<7->jupyterlab>=3.3.4->nerfstudio) (0.2.0)
-36.4s 239 Requirement already satisfied: nest-asyncio>=1.5 in /usr/local/lib/python3.12/dist-packages (from notebook<7->jupyterlab>=3.3.4->nerfstudio) (1.6.0)
-36.4s 240 Requirement already satisfied: ipykernel in /usr/local/lib/python3.12/dist-packages (from notebook<7->jupyterlab>=3.3.4->nerfstudio) (6.17.1)
-36.4s 241 Requirement already satisfied: entrypoints in /usr/local/lib/python3.12/dist-packages (from jupyter-client>=7.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.4)
-36.4s 242 Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.12/dist-packages (from jupyter-client>=7.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (2.9.0.post0)
-36.4s 243 Requirement already satisfied: aiofiles<23,>=22.1.0 in /usr/local/lib/python3.12/dist-packages (from ypy-websocket<0.9.0,>=0.8.2->jupyter-server-ydoc~=0.8.0->jupyterlab>=3.3.4->nerfstudio) (22.1.0)
-36.4s 244 Requirement already satisfied: aiosqlite<1,>=0.17.0 in /usr/local/lib/python3.12/dist-packages (from ypy-websocket<0.9.0,>=0.8.2->jupyter-server-ydoc~=0.8.0->jupyterlab>=3.3.4->nerfstudio) (0.22.1)
-36.4s 245 Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.12/dist-packages (from anyio>=3.1.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (3.11)
-36.4s 246 Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2>=2.1->jupyterlab>=3.3.4->nerfstudio) (3.0.3)
-36.4s 247 Requirement already satisfied: platformdirs>=2.5 in /usr/local/lib/python3.12/dist-packages (from jupyter-core->jupyterlab>=3.3.4->nerfstudio) (4.5.1)
-36.4s 248 Requirement already satisfied: python-json-logger>=2.0.4 in /usr/local/lib/python3.12/dist-packages (from jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (4.0.0)
-36.4s 249 Requirement already satisfied: pyyaml>=5.3 in /usr/local/lib/python3.12/dist-packages (from jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (6.0.3)
-36.4s 250 Requirement already satisfied: rfc3339-validator in /usr/local/lib/python3.12/dist-packages (from jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.1.4)
-36.4s 251 Requirement already satisfied: rfc3986-validator>=0.1.1 in /usr/local/lib/python3.12/dist-packages (from jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.1.1)
-36.4s 252 Requirement already satisfied: fqdn in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.5.1)
-36.4s 253 Requirement already satisfied: isoduration in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (20.11.0)
-36.4s 254 Requirement already satisfied: jsonpointer>1.13 in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (3.0.0)
-36.4s 255 Requirement already satisfied: rfc3987-syntax>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.1.0)
-36.4s 256 Requirement already satisfied: uri-template in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.3.0)
-36.4s 257 Requirement already satisfied: webcolors>=24.6.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (24.11.1)
-36.4s 258 Requirement already satisfied: contourpy>=1.0.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.6.0->nerfstudio) (1.3.3)
-36.4s 259 Requirement already satisfied: cycler>=0.10 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.6.0->nerfstudio) (0.12.1)
-36.4s 260 Requirement already satisfied: fonttools>=4.22.0 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.6.0->nerfstudio) (4.60.1)
-36.4s 261 Requirement already satisfied: kiwisolver>=1.3.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.6.0->nerfstudio) (1.4.9)
-36.4s 262 Requirement already satisfied: pyparsing>=2.3.1 in /usr/local/lib/python3.12/dist-packages (from matplotlib>=3.6.0->nerfstudio) (3.2.5)
-36.4s 263 Requirement already satisfied: notebook-shim>=0.2.3 in /usr/local/lib/python3.12/dist-packages (from nbclassic->jupyterlab>=3.3.4->nerfstudio) (0.2.4)
-36.4s 264 Requirement already satisfied: mistune<2,>=0.8.1 in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.8.4)
-36.4s 265 Requirement already satisfied: jupyterlab-pygments in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.3.0)
-36.4s 266 Requirement already satisfied: bleach in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (6.2.0)
-36.4s 267 Requirement already satisfied: pandocfilters>=1.4.1 in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.5.1)
-36.4s 268 Requirement already satisfied: testpath in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.6.0)
-36.4s 269 Requirement already satisfied: defusedxml in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.7.1)
-36.4s 270 Requirement already satisfied: nbclient<0.6.0,>=0.5.0 in /usr/local/lib/python3.12/dist-packages (from nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.5.13)
-36.5s 271 Requirement already satisfied: fastjsonschema>=2.15 in /usr/local/lib/python3.12/dist-packages (from nbformat>=5.3.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (2.21.2)
-36.5s 272 Requirement already satisfied: cachetools in /usr/local/lib/python3.12/dist-packages (from nuscenes-devkit>=1.1.1->nerfstudio) (5.5.2)
-36.5s 273 Collecting descartes (from nuscenes-devkit>=1.1.1->nerfstudio)
-36.5s 274 Downloading descartes-1.1.0-py3-none-any.whl.metadata (2.4 kB)
-36.6s 275 Collecting fire (from nuscenes-devkit>=1.1.1->nerfstudio)
-36.6s 276 Downloading fire-0.7.1-py3-none-any.whl.metadata (5.8 kB)
-37.0s 277 Collecting numpy (from gsplat==1.4.0->nerfstudio)
-37.0s 278 Downloading numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (61 kB)
-37.0s 279 Requirement already satisfied: scikit-learn in /usr/local/lib/python3.12/dist-packages (from nuscenes-devkit>=1.1.1->nerfstudio) (1.6.1)
-37.2s 280 Collecting Shapely~=2.0.3 (from nuscenes-devkit>=1.1.1->nerfstudio)
-37.2s 281 Downloading shapely-2.0.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.8 kB)
-37.3s 282 Collecting parameterized (from nuscenes-devkit>=1.1.1->nerfstudio)
-37.3s 283 Downloading parameterized-0.9.0-py2.py3-none-any.whl.metadata (18 kB)
-37.3s 284 Requirement already satisfied: pycocotools>=2.0.1 in /usr/local/lib/python3.12/dist-packages (from nuscenes-devkit>=1.1.1->nerfstudio) (2.0.10)
-37.4s 285 Collecting dash>=2.6.0 (from open3d>=0.16.0->nerfstudio)
-37.4s 286 Downloading dash-3.4.0-py3-none-any.whl.metadata (11 kB)
-37.4s 287 Requirement already satisfied: werkzeug>=3.0.0 in /usr/local/lib/python3.12/dist-packages (from open3d>=0.16.0->nerfstudio) (3.1.3)
-37.4s 288 Requirement already satisfied: flask>=3.0.0 in /usr/local/lib/python3.12/dist-packages (from open3d>=0.16.0->nerfstudio) (3.1.2)
-37.4s 289 Collecting configargparse (from open3d>=0.16.0->nerfstudio)
-37.5s 290 Downloading configargparse-1.7.1-py3-none-any.whl.metadata (24 kB)
-37.5s 291 Collecting addict (from open3d>=0.16.0->nerfstudio)
-37.5s 292 Downloading addict-2.4.0-py3-none-any.whl.metadata (1.0 kB)
-37.5s 293 Requirement already satisfied: pandas>=1.0 in /usr/local/lib/python3.12/dist-packages (from open3d>=0.16.0->nerfstudio) (2.2.2)
-37.5s 294 Requirement already satisfied: importlib-metadata in /usr/local/lib/python3.12/dist-packages (from dash>=2.6.0->open3d>=0.16.0->nerfstudio) (8.7.0)
-37.6s 295 Collecting retrying (from dash>=2.6.0->open3d>=0.16.0->nerfstudio)
-37.6s 296 Downloading retrying-1.4.2-py3-none-any.whl.metadata (5.5 kB)
-37.6s 297 Requirement already satisfied: blinker>=1.9.0 in /usr/local/lib/python3.12/dist-packages (from flask>=3.0.0->open3d>=0.16.0->nerfstudio) (1.9.0)
-37.6s 298 Requirement already satisfied: click>=8.1.3 in /usr/local/lib/python3.12/dist-packages (from flask>=3.0.0->open3d>=0.16.0->nerfstudio) (8.3.1)
-37.6s 299 Requirement already satisfied: itsdangerous>=2.2.0 in /usr/local/lib/python3.12/dist-packages (from flask>=3.0.0->open3d>=0.16.0->nerfstudio) (2.2.0)
-37.6s 300 Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.12/dist-packages (from pandas>=1.0->open3d>=0.16.0->nerfstudio) (2025.2)
-37.6s 301 Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas>=1.0->open3d>=0.16.0->nerfstudio) (2025.2)
-37.6s 302 Requirement already satisfied: ptyprocess>=0.5 in /usr/local/lib/python3.12/dist-packages (from pexpect>4.3->ipython>=6.1.0->ipywidgets>=7.6->nerfstudio) (0.7.0)
-37.6s 303 Requirement already satisfied: tenacity>=6.2.0 in /usr/local/lib/python3.12/dist-packages (from plotly>=5.7.0->nerfstudio) (9.1.2)
-37.7s 304 Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.8.2->jupyter-client>=7.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.17.0)
-37.7s 305 Collecting bidict>=0.21.0 (from python-socketio>=5.7.1->nerfstudio)
-37.7s 306 Downloading bidict-0.23.1-py3-none-any.whl.metadata (8.7 kB)
-37.8s 307 Collecting python-engineio>=4.11.0 (from python-socketio>=5.7.1->nerfstudio)
-37.8s 308 Downloading python_engineio-4.13.0-py3-none-any.whl.metadata (2.3 kB)
-37.9s 309 Collecting simple-websocket>=0.10.0 (from python-engineio>=4.11.0->python-socketio>=5.7.1->nerfstudio)
-37.9s 310 Downloading simple_websocket-1.1.0-py3-none-any.whl.metadata (1.5 kB)
-37.9s 311 Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.12/dist-packages (from requests->nerfstudio) (3.4.4)
-37.9s 312 Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.12/dist-packages (from requests->nerfstudio) (2026.1.4)
-37.9s 313 Requirement already satisfied: lark>=1.2.2 in /usr/local/lib/python3.12/dist-packages (from rfc3987-syntax>=1.1.0->jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.3.0)
-37.9s 314 Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.12/dist-packages (from rich>=12.5.1->nerfstudio) (4.0.0)
-37.9s 315 Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.12/dist-packages (from markdown-it-py>=2.2.0->rich>=12.5.1->nerfstudio) (0.1.2)
-37.9s 316 Requirement already satisfied: networkx>=3.0 in /usr/local/lib/python3.12/dist-packages (from scikit-image>=0.19.3->nerfstudio) (3.5)
-37.9s 317 Requirement already satisfied: tifffile>=2022.8.12 in /usr/local/lib/python3.12/dist-packages (from scikit-image>=0.19.3->nerfstudio) (2025.10.16)
-37.9s 318 Requirement already satisfied: lazy-loader>=0.4 in /usr/local/lib/python3.12/dist-packages (from scikit-image>=0.19.3->nerfstudio) (0.4)
-38.0s 319 Requirement already satisfied: joblib>=1.2.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn->nuscenes-devkit>=1.1.1->nerfstudio) (1.5.3)
-38.0s 320 Requirement already satisfied: threadpoolctl>=3.1.0 in /usr/local/lib/python3.12/dist-packages (from scikit-learn->nuscenes-devkit>=1.1.1->nerfstudio) (3.6.0)
-38.1s 321 Collecting wsproto (from simple-websocket>=0.10.0->python-engineio>=4.11.0->python-socketio>=5.7.1->nerfstudio)
-38.1s 322 Downloading wsproto-1.3.2-py3-none-any.whl.metadata (5.2 kB)
-38.1s 323 Requirement already satisfied: absl-py>=0.4 in /usr/local/lib/python3.12/dist-packages (from tensorboard>=2.13.0->nerfstudio) (1.4.0)
-38.1s 324 Requirement already satisfied: grpcio>=1.48.2 in /usr/local/lib/python3.12/dist-packages (from tensorboard>=2.13.0->nerfstudio) (1.75.1)
-38.1s 325 Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.12/dist-packages (from tensorboard>=2.13.0->nerfstudio) (3.9)
-38.1s 326 Requirement already satisfied: tensorboard-data-server<0.8.0,>=0.7.0 in /usr/local/lib/python3.12/dist-packages (from tensorboard>=2.13.0->nerfstudio) (0.7.2)
-38.2s 327 Requirement already satisfied: sympy>=1.13.3 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (1.13.3)
-38.2s 328 Requirement already satisfied: fsspec in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (2025.10.0)
-38.2s 329 Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.77)
-38.2s 330 Requirement already satisfied: nvidia-cuda-runtime-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.77)
-38.2s 331 Requirement already satisfied: nvidia-cuda-cupti-cu12==12.6.80 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.80)
-38.2s 332 Requirement already satisfied: nvidia-cudnn-cu12==9.10.2.21 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (9.10.2.21)
-38.2s 333 Requirement already satisfied: nvidia-cublas-cu12==12.6.4.1 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.4.1)
-38.2s 334 Requirement already satisfied: nvidia-cufft-cu12==11.3.0.4 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (11.3.0.4)
-38.2s 335 Requirement already satisfied: nvidia-curand-cu12==10.3.7.77 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (10.3.7.77)
-38.2s 336 Requirement already satisfied: nvidia-cusolver-cu12==11.7.1.2 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (11.7.1.2)
-38.2s 337 Requirement already satisfied: nvidia-cusparse-cu12==12.5.4.2 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.5.4.2)
-38.2s 338 Requirement already satisfied: nvidia-cusparselt-cu12==0.7.1 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (0.7.1)
-38.2s 339 Requirement already satisfied: nvidia-nccl-cu12==2.27.3 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (2.27.3)
-38.2s 340 Requirement already satisfied: nvidia-nvtx-cu12==12.6.77 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.77)
-38.2s 341 Requirement already satisfied: nvidia-nvjitlink-cu12==12.6.85 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (12.6.85)
-38.2s 342 Requirement already satisfied: nvidia-cufile-cu12==1.11.1.6 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (1.11.1.6)
-38.2s 343 Requirement already satisfied: triton==3.4.0 in /usr/local/lib/python3.12/dist-packages (from torch>=1.13.1->nerfstudio) (3.4.0)
-38.2s 344 Requirement already satisfied: mpmath<1.4,>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy>=1.13.3->torch>=1.13.1->nerfstudio) (1.3.0)
-38.3s 345 Requirement already satisfied: lightning-utilities>=0.8.0 in /usr/local/lib/python3.12/dist-packages (from torchmetrics>=1.0.1->torchmetrics[image]>=1.0.1->nerfstudio) (0.15.2)
-38.4s 346 Collecting torch-fidelity<=0.4.0 (from torchmetrics[image]>=1.0.1->nerfstudio)
-38.4s 347 Downloading torch_fidelity-0.3.0-py3-none-any.whl.metadata (2.0 kB)
-38.4s 348 Requirement already satisfied: docstring-parser>=0.15 in /usr/local/lib/python3.12/dist-packages (from tyro>=0.6.6->nerfstudio) (0.17.0)
-38.4s 349 Requirement already satisfied: typeguard>=4.0.0 in /usr/local/lib/python3.12/dist-packages (from tyro>=0.6.6->nerfstudio) (4.4.4)
-38.5s 350 Requirement already satisfied: gitpython!=3.1.29,>=1.0.0 in /usr/local/lib/python3.12/dist-packages (from wandb>=0.13.3->nerfstudio) (3.1.45)
-38.5s 351 Requirement already satisfied: pydantic<3 in /usr/local/lib/python3.12/dist-packages (from wandb>=0.13.3->nerfstudio) (2.12.5)
-38.5s 352 Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.12/dist-packages (from pydantic<3->wandb>=0.13.3->nerfstudio) (0.7.0)
-38.5s 353 Requirement already satisfied: pydantic-core==2.41.5 in /usr/local/lib/python3.12/dist-packages (from pydantic<3->wandb>=0.13.3->nerfstudio) (2.41.5)
-38.5s 354 Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/lib/python3.12/dist-packages (from pydantic<3->wandb>=0.13.3->nerfstudio) (0.4.2)
-38.5s 355 Requirement already satisfied: gitdb<5,>=4.0.1 in /usr/local/lib/python3.12/dist-packages (from gitpython!=3.1.29,>=1.0.0->wandb>=0.13.3->nerfstudio) (4.0.12)
-38.5s 356 Requirement already satisfied: smmap<6,>=3.0.1 in /usr/local/lib/python3.12/dist-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.29,>=1.0.0->wandb>=0.13.3->nerfstudio) (5.0.2)
-38.5s 357 Requirement already satisfied: lxml in /usr/local/lib/python3.12/dist-packages (from yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (5.4.0)
-38.6s 358 Requirement already satisfied: colorlog in /usr/local/lib/python3.12/dist-packages (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (6.10.1)
-38.7s 359 Collecting manifold3d>=2.3.0 (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-38.7s 360 Downloading manifold3d-3.3.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (19 kB)
-38.7s 361 Collecting svg.path (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-38.7s 362 Downloading svg_path-7.0-py2.py3-none-any.whl.metadata (14 kB)
-38.8s 363 Collecting pycollada (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-38.8s 364 Downloading pycollada-0.9.2-py3-none-any.whl.metadata (1.7 kB)
-38.8s 365 Requirement already satisfied: xxhash in /usr/local/lib/python3.12/dist-packages (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (3.6.0)
-38.8s 366 Requirement already satisfied: rtree in /usr/local/lib/python3.12/dist-packages (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (1.4.1)
-38.8s 367 Requirement already satisfied: httpx in /usr/local/lib/python3.12/dist-packages (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (0.28.1)
-38.8s 368 Collecting embreex (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-38.9s 369 Downloading embreex-2.17.7.post7-cp312-cp312-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl.metadata (3.0 kB)
-39.0s 370 Collecting vhacdx (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-39.0s 371 Downloading vhacdx-0.0.10-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (1.1 kB)
-39.1s 372 Collecting mapbox_earcut>=1.0.2 (from trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio)
-39.1s 373 Downloading mapbox_earcut-2.0.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (2.5 kB)
-39.1s 374 Requirement already satisfied: argon2-cffi-bindings in /usr/local/lib/python3.12/dist-packages (from argon2-cffi->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (25.1.0)
-39.1s 375 Requirement already satisfied: soupsieve>1.2 in /usr/local/lib/python3.12/dist-packages (from beautifulsoup4->gdown>=4.6.0->nerfstudio) (2.8)
-39.1s 376 Requirement already satisfied: webencodings in /usr/local/lib/python3.12/dist-packages (from bleach->nbconvert>=6.4.4->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (0.5.1)
-39.2s 377 Requirement already satisfied: termcolor in /usr/local/lib/python3.12/dist-packages (from fire->nuscenes-devkit>=1.1.1->nerfstudio) (3.1.0)
-39.2s 378 Requirement already satisfied: pybind11>=2.6 in /usr/local/lib/python3.12/dist-packages (from fpsample->nerfstudio) (3.0.1)
-39.2s 379 Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.12/dist-packages (from httpx->trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (1.0.9)
-39.2s 380 Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.12/dist-packages (from httpcore==1.*->httpx->trimesh[easy]>=3.11.2->yourdfpy>=0.0.53->viser==0.2.7->nerfstudio) (0.16.0)
-39.2s 381 Requirement already satisfied: zipp>=3.20 in /usr/local/lib/python3.12/dist-packages (from importlib-metadata->dash>=2.6.0->open3d>=0.16.0->nerfstudio) (3.23.0)
-39.2s 382 Requirement already satisfied: debugpy>=1.0 in /usr/local/lib/python3.12/dist-packages (from ipykernel->notebook<7->jupyterlab>=3.3.4->nerfstudio) (1.8.15)
-39.3s 383 Requirement already satisfied: arrow>=0.15.0 in /usr/local/lib/python3.12/dist-packages (from isoduration->jsonschema[format-nongpl]>=4.18.0->jupyter-events>=0.9.0->jupyter-server<3,>=1.16.0->jupyterlab>=3.3.4->nerfstudio) (1.4.0)
-39.3s 384 Requirement already satisfied: ppft>=1.7.6.8 in /usr/local/lib/python3.12/dist-packages (from pathos->nerfstudio) (1.7.7)
-39.3s 385 Requirement already satisfied: dill>=0.3.8 in /usr/local/lib/python3.12/dist-packages (from pathos->nerfstudio) (0.4.0)
-39.3s 386 Requirement already satisfied: pox>=0.3.4 in /usr/local/lib/python3.12/dist-packages (from pathos->nerfstudio) (0.3.6)
-39.3s 387 Requirement already satisfied: multiprocess>=0.70.16 in /usr/local/lib/python3.12/dist-packages (from pathos->nerfstudio) (0.70.18)
-39.3s 388 Requirement already satisfied: PySocks!=1.5.7,>=1.5.6 in /usr/local/lib/python3.12/dist-packages (from requests[socks]->gdown>=4.6.0->nerfstudio) (1.7.1)
-39.4s 389 Downloading nerfstudio-1.1.5-py3-none-any.whl (580 kB)
-39.5s 390 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/580.8 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m580.8/580.8 kB[0m [31m13.6 MB/s[0m  [33m0:00:00[0m
-39.5s 391 [?25hDownloading gsplat-1.4.0-py3-none-any.whl (6.5 MB)
-39.6s 392 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/6.5 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m6.5/6.5 MB[0m [31m99.1 MB/s[0m  [33m0:00:00[0m
-39.6s 393 [?25hDownloading nerfacc-0.5.2-py3-none-any.whl (55 kB)
-39.6s 394 Downloading opencv_python_headless-4.10.0.84-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (49.9 MB)
-40.0s 395 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/49.9 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m49.8/49.9 MB[0m [31m313.3 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m49.9/49.9 MB[0m [31m136.1 MB/s[0m  [33m0:00:00[0m
-40.0s 396 [?25hDownloading splines-0.3.0-py3-none-any.whl (17 kB)
-40.0s 397 Downloading timm-0.6.7-py3-none-any.whl (509 kB)
-40.0s 398 Downloading viser-0.2.7-py3-none-any.whl (4.6 MB)
-40.1s 399 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/4.6 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m4.6/4.6 MB[0m [31m90.3 MB/s[0m  [33m0:00:00[0m
-40.1s 400 [?25hDownloading protobuf-3.20.3-py2.py3-none-any.whl (162 kB)
-40.1s 401 Downloading appdirs-1.4.4-py2.py3-none-any.whl (9.6 kB)
-40.2s 402 Downloading av-16.1.0-cp312-cp312-manylinux_2_28_x86_64.whl (41.2 MB)
-40.5s 403 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/41.2 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m41.2/41.2 MB[0m [31m263.1 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m41.2/41.2 MB[0m [31m129.3 MB/s[0m  [33m0:00:00[0m
-40.5s 404 [?25hDownloading comet_ml-3.55.0-py3-none-any.whl (780 kB)
-40.5s 405 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/780.9 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m780.9/780.9 kB[0m [31m37.0 MB/s[0m  [33m0:00:00[0m
-40.5s 406 [?25hDownloading everett-3.1.0-py2.py3-none-any.whl (35 kB)
-40.5s 407 Downloading python_box-6.1.0-py3-none-any.whl (27 kB)
-40.6s 408 Downloading dulwich-1.0.0-cp312-cp312-manylinux_2_28_x86_64.whl (1.4 MB)
-40.6s 409 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.4 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.4/1.4 MB[0m [31m68.1 MB/s[0m  [33m0:00:00[0m
-40.6s 410 [?25hDownloading jaxtyping-0.3.5-py3-none-any.whl (55 kB)
-40.6s 411 Downloading mediapy-1.2.5-py3-none-any.whl (27 kB)
-40.7s 412 Downloading msgpack_numpy-0.4.8-py2.py3-none-any.whl (6.9 kB)
-40.7s 413 Downloading msgspec-0.20.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (224 kB)
-40.7s 414 Downloading nodeenv-1.10.0-py2.py3-none-any.whl (23 kB)
-40.7s 415 Downloading nuscenes_devkit-1.2.0-py3-none-any.whl (315 kB)
-40.8s 416 Downloading numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (18.0 MB)
-40.9s 417 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/18.0 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m18.0/18.0 MB[0m [31m130.7 MB/s[0m  [33m0:00:00[0m
-40.9s 418 [?25hDownloading shapely-2.0.7-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.5 MB)
-40.9s 419 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/2.5 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m2.5/2.5 MB[0m [31m83.3 MB/s[0m  [33m0:00:00[0m
-41.0s 420 [?25hDownloading open3d-0.19.0-cp312-cp312-manylinux_2_31_x86_64.whl (447.7 MB)
-45.7s 421 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/447.7 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m62.4/447.7 MB[0m [31m312.6 MB/s[0m eta [36m0:00:02[0m[2K   [91m━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m122.7/447.7 MB[0m [31m305.1 MB/s[0m eta [36m0:00:02[0m[2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m169.1/447.7 MB[0m [31m279.9 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━[0m [32m207.9/447.7 MB[0m [31m258.2 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m238.8/447.7 MB[0m [31m236.8 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━[0m [32m266.9/447.7 MB[0m [31m220.3 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━[0m [32m295.2/447.7 MB[0m [31m202.0 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━[0m [32m324.0/447.7 MB[0m [31m185.0 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━[0m [32m353.1/447.7 MB[0m [31m172.2 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m382.7/447.7 MB[0m [31m161.3 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━[0m [32m412.9/447.7 MB[0m [31m153.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m443.0/447.7 MB[0m [31m149.0 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m447.5/447.7 MB[0m [31m148.4 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m447.7/447.7 MB[0m [31m64.4 MB/s[0m  [33m0:00:04[0m
-45.8s 422 [?25hDownloading dash-3.4.0-py3-none-any.whl (7.9 MB)
-45.9s 423 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/7.9 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m7.9/7.9 MB[0m [31m86.4 MB/s[0m  [33m0:00:00[0m
-45.9s 424 [?25hDownloading plyfile-1.1.3-py3-none-any.whl (36 kB)
-45.9s 425 Downloading pymeshlab-2025.7-cp312-cp312-manylinux_2_35_x86_64.whl (106.5 MB)
-47.1s 426 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/106.5 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [91m━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m28.8/106.5 MB[0m [31m145.9 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━[0m [32m59.8/106.5 MB[0m [31m149.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━[0m [32m89.9/106.5 MB[0m [31m149.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m106.4/106.5 MB[0m [31m150.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m106.4/106.5 MB[0m [31m150.7 MB/s[0m eta [36m0:00:01[0m[2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m [32m106.4/106.5 MB[0m [31m150.7 MB/s[0m eta [36m0:00:01[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m106.5/106.5 MB[0m [31m87.0 MB/s[0m  [33m0:00:01[0m
-47.1s 427 [?25hDownloading pyngrok-7.5.0-py3-none-any.whl (24 kB)
-47.1s 428 Downloading pyquaternion-0.9.9-py3-none-any.whl (14 kB)
-47.2s 429 Downloading python_socketio-5.16.0-py3-none-any.whl (79 kB)
-47.2s 430 Downloading bidict-0.23.1-py3-none-any.whl (32 kB)
-47.2s 431 Downloading python_engineio-4.13.0-py3-none-any.whl (59 kB)
-47.2s 432 Downloading rawpy-0.25.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.9 MB)
-47.3s 433 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.9 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.9/1.9 MB[0m [31m58.9 MB/s[0m  [33m0:00:00[0m
-47.3s 434 [?25hDownloading simple_websocket-1.1.0-py3-none-any.whl (13 kB)
-47.3s 435 Downloading torch_fidelity-0.3.0-py3-none-any.whl (37 kB)
-47.3s 436 Downloading trimesh-4.11.1-py3-none-any.whl (740 kB)
-47.4s 437 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/740.4 kB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m740.4/740.4 kB[0m [31m32.3 MB/s[0m  [33m0:00:00[0m
-47.4s 438 [?25hDownloading tyro-1.0.5-py3-none-any.whl (181 kB)
-47.4s 439 Downloading wadler_lindig-0.1.7-py3-none-any.whl (20 kB)
-47.4s 440 Downloading yourdfpy-0.0.59-py3-none-any.whl (22 kB)
-47.4s 441 Downloading manifold3d-3.3.2-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (1.2 MB)
-47.5s 442 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/1.2 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m1.2/1.2 MB[0m [31m57.5 MB/s[0m  [33m0:00:00[0m
-47.5s 443 [?25hDownloading mapbox_earcut-2.0.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (59 kB)
-47.5s 444 Downloading addict-2.4.0-py3-none-any.whl (3.8 kB)
-47.6s 445 Downloading configargparse-1.7.1-py3-none-any.whl (25 kB)
-47.6s 446 Downloading configobj-5.0.9-py2.py3-none-any.whl (35 kB)
-47.6s 447 Downloading descartes-1.1.0-py3-none-any.whl (5.8 kB)
-47.6s 448 Downloading embreex-2.17.7.post7-cp312-cp312-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (17.2 MB)
-47.8s 449 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/17.2 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m17.2/17.2 MB[0m [31m96.0 MB/s[0m  [33m0:00:00[0m
-47.8s 450 [?25hDownloading fire-0.7.1-py3-none-any.whl (115 kB)
-47.9s 451 Downloading parameterized-0.9.0-py2.py3-none-any.whl (20 kB)
-47.9s 452 Downloading pycollada-0.9.2-py3-none-any.whl (128 kB)
-47.9s 453 Downloading pytorch_msssim-1.0.0-py3-none-any.whl (7.7 kB)
-47.9s 454 Downloading retrying-1.4.2-py3-none-any.whl (10 kB)
-48.0s 455 Downloading svg_path-7.0-py2.py3-none-any.whl (18 kB)
-48.0s 456 Downloading tensorly-0.9.0-py3-none-any.whl (7.4 MB)
-48.1s 457 [?25l   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m0.0/7.4 MB[0m [31m?[0m eta [36m-:--:--[0m[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m7.4/7.4 MB[0m [31m88.3 MB/s[0m  [33m0:00:00[0m
-48.1s 458 [?25hDownloading vhacdx-0.0.10-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (252 kB)
-48.2s 459 Downloading wsproto-1.3.2-py3-none-any.whl (24 kB)
-48.2s 460 Downloading xatlas-0.0.11-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (260 kB)
-50.2s 461 Building wheels for collected packages: pyliblzfse, fpsample
-51.9s 462 Building wheel for pyliblzfse (pyproject.toml) ... [?25l[?25hdone
-51.9s 463 Created wheel for pyliblzfse: filename=pyliblzfse-0.4.1-cp312-cp312-linux_x86_64.whl size=88202 sha256=a596ddf635be9343e03b0224c136e48d220147597e1b89eb7aa7ce9f926226e3
-51.9s 464 Stored in directory: /root/.cache/pip/wheels/ee/bf/ee/8b734d20d3cc3e31b20be7c2aab7c407c9826dd03d87e1acf6
-62.3s 465 Building wheel for fpsample (pyproject.toml) ... [?25l[?25hdone
-62.3s 466 Created wheel for fpsample: filename=fpsample-1.0.2-cp312-cp312-linux_x86_64.whl size=141162 sha256=654cb2a931450be914e2b52af0aa39b7d423bb87051112c3c96cf4fce0e593e6
-62.3s 467 Stored in directory: /root/.cache/pip/wheels/e4/59/eb/02fef68c0cf036d5a7af5643f3464b9e7ba82dc6d85432e0fc
-62.3s 468 Successfully built pyliblzfse fpsample
-63.8s 469 Installing collected packages: pyliblzfse, everett, appdirs, addict, xatlas, wsproto, wadler-lindig, svg.path, retrying, python-box, pyngrok, protobuf, parameterized, numpy, nodeenv, msgspec, fire, dulwich, configobj, configargparse, bidict, av, vhacdx, tyro, trimesh, splines, simple-websocket, Shapely, rawpy, pyquaternion, pymeshlab, pycollada, plyfile, opencv-python-headless, msgpack-numpy, mapbox_earcut, manifold3d, jaxtyping, fpsample, embreex, tensorly, python-engineio, dash, pytorch-msssim, python-socketio, nerfacc, mediapy, gsplat, descartes, comet-ml, yourdfpy, torch-fidelity, timm, open3d, nuscenes-devkit, viser, nerfstudio
-64.3s 470 [?25l[2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 0/57[0m [pyliblzfse][2K   [91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 1/57[0m [everett][2K  Attempting uninstall: python-box
-64.3s 471 [91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 1/57[0m [everett][2K    Found existing installation: python-box 7.3.2
-64.3s 472 [91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 1/57[0m [everett][2K   [91m━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 9/57[0m [python-box][2K    Uninstalling python-box-7.3.2:
-64.4s 473 [91m━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 9/57[0m [python-box][2K      Successfully uninstalled python-box-7.3.2
-64.5s 474 [91m━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m 9/57[0m [python-box][2K   [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m10/57[0m [pyngrok][2K  Attempting uninstall: protobuf
-64.5s 475 [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m10/57[0m [pyngrok][2K    Found existing installation: protobuf 5.29.5
-64.5s 476 [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m10/57[0m [pyngrok][2K    Uninstalling protobuf-5.29.5:
-64.6s 477 [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m10/57[0m [pyngrok][2K      Successfully uninstalled protobuf-5.29.5
-64.7s 478 [91m━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m10/57[0m [pyngrok][2K   [91m━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m11/57[0m [protobuf][2K  Attempting uninstall: numpy
-64.7s 479 [91m━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m11/57[0m [protobuf][2K    Found existing installation: numpy 2.0.2
-64.8s 480 [91m━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m11/57[0m [protobuf][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K    Uninstalling numpy-2.0.2:
-65.7s 481 [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K      Successfully uninstalled numpy-2.0.2
-69.7s 482 [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m13/57[0m [numpy][2K   [91m━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m16/57[0m [fire][2K   [91m━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m17/57[0m [dulwich][2K   [91m━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m17/57[0m [dulwich][2K   [91m━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m17/57[0m [dulwich][2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21/57[0m [av][2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21/57[0m [av][2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21/57[0m [av][2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21/57[0m [av][2K   [91m━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m21/57[0m [av][2K   [91m━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m24/57[0m [trimesh][2K   [91m━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m24/57[0m [trimesh][2K  Attempting uninstall: Shapely
-69.7s 483 [91m━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━━━[0m [32m24/57[0m [trimesh][2K   [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K    Found existing installation: shapely 2.1.2
-69.7s 484 [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K    Uninstalling shapely-2.1.2:
-69.8s 485 [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K      Successfully uninstalled shapely-2.1.2
-72.0s 486 [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K   [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K   [91m━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━━━━[0m [32m27/57[0m [Shapely][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m30/57[0m [pymeshlab][2K   [91m━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m31/57[0m [pycollada][2K  Attempting uninstall: opencv-python-headless
-72.0s 487 [91m━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m31/57[0m [pycollada][2K    Found existing installation: opencv-python-headless 4.12.0.88
-72.0s 488 [91m━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━━━[0m [32m31/57[0m [pycollada][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K    Uninstalling opencv-python-headless-4.12.0.88:
-73.1s 489 [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K      Successfully uninstalled opencv-python-headless-4.12.0.88
-78.4s 490 [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━━━[0m [32m33/57[0m [opencv-python-headless][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m34/57[0m [msgpack-numpy][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m34/57[0m [msgpack-numpy][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m34/57[0m [msgpack-numpy][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m34/57[0m [msgpack-numpy][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━━━━━━[0m [32m34/57[0m [msgpack-numpy][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━━━[0m [32m36/57[0m [manifold3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━━[0m [32m39/57[0m [embreex][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━[0m [32m40/57[0m [tensorly][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━━[0m [32m40/57[0m [tensorly][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━━━[0m [32m41/57[0m [python-engineio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━[0m [32m42/57[0m [dash][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━━━━━━[0m [32m42/57[0m [dash][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━━━[0m [32m44/57[0m [python-socketio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━[0m [32m47/57[0m [gsplat][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━━━━━━[0m [32m47/57[0m [gsplat][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K  Attempting uninstall: timm
-78.4s 491 [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K    Found existing installation: timm 1.0.20
-78.4s 492 [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K    Uninstalling timm-1.0.20:
-78.6s 493 [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━━━[0m [32m49/57[0m [comet-ml][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━[0m [32m52/57[0m [timm][2K      Successfully uninstalled timm-1.0.20
-87.5s 494 [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━[0m [32m52/57[0m [timm][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━[0m [32m52/57[0m [timm][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━[0m [32m52/57[0m [timm][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━━[0m [32m52/57[0m [timm][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m[90m━━[0m [32m53/57[0m [open3d][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━━[0m [32m54/57[0m [nuscenes-devkit][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━[0m [32m55/57[0m [viser][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[91m╸[0m[90m━[0m [32m55/57[0m [viser][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m56/57[0m [nerfstudio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m56/57[0m [nerfstudio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m56/57[0m [nerfstudio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m56/57[0m [nerfstudio][2K   [91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m[90m╺[0m [32m56/57[0m [nerfstudio][2K   [90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m [32m57/57[0m [nerfstudio]
-87.5s 495 [?25h[1A[2K[31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
-87.5s 496 google-adk 1.22.1 requires google-cloud-bigquery-storage>=2.0.0, which is not installed.
-87.5s 497 bigframes 2.26.0 requires google-cloud-bigquery-storage<3.0.0,>=2.30.0, which is not installed.
-87.5s 498 a2a-sdk 0.3.22 requires protobuf>=5.29.5, but you have protobuf 3.20.3 which is incompatible.
-87.5s 499 cesium 0.12.4 requires numpy<3.0,>=2.0, but you have numpy 1.26.4 which is incompatible.
-87.5s 500 onnx 1.20.1 requires protobuf>=4.25.1, but you have protobuf 3.20.3 which is incompatible.
-87.5s 501 google-colab 1.0.0 requires google-auth==2.38.0, but you have google-auth 2.47.0 which is incompatible.
-87.5s 502 google-colab 1.0.0 requires jupyter-server==2.14.0, but you have jupyter-server 2.12.5 which is incompatible.
-87.5s 503 google-colab 1.0.0 requires requests==2.32.4, but you have requests 2.32.5 which is incompatible.
-87.5s 504 opentelemetry-proto 1.37.0 requires protobuf<7.0,>=5.0, but you have protobuf 3.20.3 which is incompatible.
-87.5s 505 dopamine-rl 4.1.2 requires gymnasium>=1.0.0, but you have gymnasium 0.29.0 which is incompatible.
-87.5s 506 jaxlib 0.7.2 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
-87.5s 507 thinc 8.3.6 requires numpy<3.0.0,>=2.0.0, but you have numpy 1.26.4 which is incompatible.
-87.5s 508 opencv-contrib-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 1.26.4 which is incompatible.
-87.5s 509 opencv-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 1.26.4 which is incompatible.
-87.5s 510 jax 0.7.2 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
-87.5s 511 tensorflow-metadata 1.17.2 requires protobuf>=4.25.2; python_version >= "3.11", but you have protobuf 3.20.3 which is incompatible.
-87.5s 512 cudf-cu12 25.6.0 requires pyarrow<20.0.0a0,>=14.0.0; platform_machine == "x86_64", but you have pyarrow 22.0.0 which is incompatible.
-87.5s 513 gradio 5.49.1 requires pydantic<2.12,>=2.0, but you have pydantic 2.12.5 which is incompatible.
-87.5s 514 ydf 0.13.0 requires protobuf<7.0.0,>=5.29.1, but you have protobuf 3.20.3 which is incompatible.
-87.5s 515 bigframes 2.26.0 requires rich<14,>=12.4.4, but you have rich 14.2.0 which is incompatible.
-87.5s 516 pytensor 2.35.1 requires numpy>=2.0, but you have numpy 1.26.4 which is incompatible.
-87.5s 517 fastai 2.8.4 requires fastcore<1.9,>=1.8.0, but you have fastcore 1.11.3 which is incompatible.
-87.5s 518 grpcio-status 1.71.2 requires protobuf<6.0dev,>=5.26.1, but you have protobuf 3.20.3 which is incompatible.
-87.5s 519 pylibcudf-cu12 25.6.0 requires pyarrow<20.0.0a0,>=14.0.0; platform_machine == "x86_64", but you have pyarrow 22.0.0 which is incompatible.
-87.5s 520 gcsfs 2025.3.0 requires fsspec==2025.3.0, but you have fsspec 2025.10.0 which is incompatible.[0m[31m
-87.5s 521 [0mSuccessfully installed Shapely-2.0.7 addict-2.4.0 appdirs-1.4.4 av-16.1.0 bidict-0.23.1 comet-ml-3.55.0 configargparse-1.7.1 configobj-5.0.9 dash-3.4.0 descartes-1.1.0 dulwich-1.0.0 embreex-2.17.7.post7 everett-3.1.0 fire-0.7.1 fpsample-1.0.2 gsplat-1.4.0 jaxtyping-0.3.5 manifold3d-3.3.2 mapbox_earcut-2.0.0 mediapy-1.2.5 msgpack-numpy-0.4.8 msgspec-0.20.0 nerfacc-0.5.2 nerfstudio-1.1.5 nodeenv-1.10.0 numpy-1.26.4 nuscenes-devkit-1.2.0 open3d-0.19.0 opencv-python-headless-4.10.0.84 parameterized-0.9.0 plyfile-1.1.3 protobuf-3.20.3 pycollada-0.9.2 pyliblzfse-0.4.1 pymeshlab-2025.7 pyngrok-7.5.0 pyquaternion-0.9.9 python-box-6.1.0 python-engineio-4.13.0 python-socketio-5.16.0 pytorch-msssim-1.0.0 rawpy-0.25.1 retrying-1.4.2 simple-websocket-1.1.0 splines-0.3.0 svg.path-7.0 tensorly-0.9.0 timm-0.6.7 torch-fidelity-0.3.0 trimesh-4.11.1 tyro-1.0.5 vhacdx-0.0.10 viser-0.2.7 wadler-lindig-0.1.7 wsproto-1.3.2 xatlas-0.0.11 yourdfpy-0.0.59
-88.1s 522 ⏳ Installing COLMAP & ffmpeg...
-88.1s 523 🚀 Running: apt-get update
-88.5s 524 0% [Working]            Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease
-88.5s 525 0% [Connecting to security.ubuntu.com (185.125.190.81)] [Waiting for headers] [                                                                               Get:2 https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/ InRelease [3,632 B]
-88.5s 526 Get:3 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease [1,581 B]
-88.5s 527 Get:4 https://cli.github.com/packages stable InRelease [3,917 B]
-88.5s 528 0% [Waiting for headers] [Connecting to security.ubuntu.com (185.125.190.81)] [                                                                               Get:5 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
-88.6s 529 0% [5 InRelease 14.2 kB/128 kB 11%] [Connecting to security.ubuntu.com (185.125                                                                               Get:6 https://r2u.stat.illinois.edu/ubuntu jammy InRelease [6,555 B]
-88.6s 530 0% [5 InRelease 89.5 kB/128 kB 70%] [Waiting for headers] [6 InRelease 6,555 B/0% [5 InRelease 89.5 kB/128 kB 70%] [Waiting for headers] [Connected to ppa.lau0% [Waiting for headers] [Connected to ppa.launchpadcontent.net (185.125.190.80                                                                               Get:7 http://security.ubuntu.com/ubuntu jammy-security InRelease [129 kB]
-88.6s 531 0% [Waiting for headers] [7 InRelease 12.7 kB/129 kB 10%] [Connected to ppa.lau                                                                               Get:8 http://archive.ubuntu.com/ubuntu jammy-backports InRelease [127 kB]
-88.7s 532 0% [8 InRelease 4,036 B/127 kB 3%] [7 InRelease 14.2 kB/129 kB 11%] [Connected                                                                                0% [7 InRelease 14.2 kB/129 kB 11%] [Waiting for headers]0% [7 InRelease 14.2 kB/129 kB 11%] [Waiting for headers]0% [7 InRelease 31.5 kB/129 kB 24%] [Waiting for headers]                                                         Get:9 https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/ Packages [83.8 kB]
-88.8s 533 0% [7 InRelease 37.3 kB/129 kB 29%] [9 Packages 15.8 kB/83.8 kB 19%] [Waiting f                                                                               0% [7 InRelease 43.1 kB/129 kB 33%] [Waiting for headers]0% [9 Packages store 0 B] [7 InRelease 43.1 kB/129 kB 33%] [Waiting for headers                                                                               0% [7 InRelease 43.1 kB/129 kB 33%] [Waiting for headers]0% [7 InRelease 43.1 kB/129 kB 33%] [Waiting for headers]                                                         Get:10 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  Packages [2,302 kB]
-88.9s 534 0% [7 InRelease 48.9 kB/129 kB 38%] [10 Packages 16.0 kB/2,302 kB 1%] [Waiting 0% [7 InRelease 69.2 kB/129 kB 54%] [10 Packages 325 kB/2,302 kB 14%] [Waiting                                                                                Get:11 https://cli.github.com/packages stable/main amd64 Packages [356 B]
-89.0s 535 0% [7 InRelease 75.0 kB/129 kB 58%] [10 Packages 691 kB/2,302 kB 30%] [Waiting 0% [7 InRelease 75.0 kB/129 kB 58%] [10 Packages 718 kB/2,302 kB 31%] [Waiting 0% [11 Packages store 0 B] [7 InRelease 75.0 kB/129 kB 58%] [10 Packages 749 kB0% [7 InRelease 77.9 kB/129 kB 60%] [10 Packages 757 kB/2,302 kB 33%] [Waiting                                                                                0% [7 InRelease 86.6 kB/129 kB 67%] [Waiting for headers]0% [10 Packages store 0 B] [7 InRelease 86.6 kB/129 kB 67%] [Waiting for header                                                                               0% [10 Packages store 0 B] [Waiting for headers]                                                Get:12 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease [18.1 kB]
-89.0s 536 0% [10 Packages store 0 B] [12 InRelease 16.0 kB/18.1 kB 89%]0% [10 Packages store 0 B] [12 InRelease 16.0 kB/18.1 kB 89%]                                                             0% [10 Packages store 0 B] [Waiting for headers]                                                0% [Waiting for headers] [Waiting for headers]                                              Get:13 https://r2u.stat.illinois.edu/ubuntu jammy/main all Packages [9,637 kB]
-89.1s 537 0% [13 Packages 16.0 kB/9,637 kB 0%] [Waiting for headers]                                                          0% [13 Packages 213 kB/9,637 kB 2%] [Waiting for headers]                                                         Get:14 https://ppa.launchpadcontent.net/graphics-drivers/ppa/ubuntu jammy InRelease [24.3 kB]
-89.1s 538 0% [Waiting for headers] [13 Packages 442 kB/9,637 kB 5%] [14 InRelease 16.0 kB                                                                               0% [Waiting for headers] [13 Packages 442 kB/9,637 kB 5%]                                                         Get:15 http://archive.ubuntu.com/ubuntu jammy-updates/multiverse amd64 Packages [69.8 kB]
-89.1s 539 0% [15 Packages 11.3 kB/69.8 kB 16%] [13 Packages 442 kB/9,637 kB 5%] [Waiting                                                                                0% [13 Packages 845 kB/9,637 kB 9%] [Waiting for headers]0% [15 Packages store 0 B] [13 Packages 845 kB/9,637 kB 9%] [Waiting for header0% [Waiting for headers] [13 Packages 901 kB/9,637 kB 9%] [Waiting for headers]                                                                               Get:16 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [3,970 kB]
-89.2s 540 0% [16 Packages 5,551 B/3,970 kB 0%] [13 Packages 1,835 kB/9,637 kB 19%] [Waiti0% [16 Packages 357 kB/3,970 kB 9%] [13 Packages 3,555 kB/9,637 kB 37%] [Waitin                                                                               Hit:17 https://ppa.launchpadcontent.net/ubuntugis/ppa/ubuntu jammy InRelease
-89.3s 541 0% [16 Packages 517 kB/3,970 kB 13%] [13 Packages 3,597 kB/9,637 kB 37%]                                                                        0% [16 Packages 2,950 kB/3,970 kB 74%]0% [13 Packages store 0 B] [16 Packages 3,081 kB/3,970 kB 78%] [Waiting for hea                                                                               Get:18 https://r2u.stat.illinois.edu/ubuntu jammy/main amd64 Packages [2,878 kB]
-89.3s 542 0% [13 Packages store 0 B] [16 Packages 3,495 kB/3,970 kB 88%] [18 Packages 147                                                                               0% [13 Packages store 0 B] [18 Packages 513 kB/2,878 kB 18%]                                                            Get:19 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1,601 kB]
-89.4s 543 0% [13 Packages store 0 B] [19 Packages 1,032 kB/1,601 kB 64%] [18 Packages 9720% [13 Packages store 0 B] [Waiting for headers] [18 Packages 1,496 kB/2,878 kB                                                                               0% [13 Packages store 0 B] [Waiting for headers]                                                Get:20 http://security.ubuntu.com/ubuntu jammy-security/multiverse amd64 Packages [61.5 kB]
-89.6s 544 0% [13 Packages store 0 B] [20 Packages 2,659 B/61.5 kB 4%]0% [13 Packages store 0 B] [20 Packages 12.8 kB/61.5 kB 21%]                                                            0% [13 Packages store 0 B] [Waiting for headers]0% [13 Packages store 0 B] [Waiting for headers] [Waiting for headers]                                                                      Get:21 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages [3,639 kB]
-89.6s 545 Get:22 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy/main amd64 Packages [38.5 kB]
-89.8s 546 0% [13 Packages store 0 B] [21 Packages 24.4 kB/3,639 kB 1%] [22 Packages 16.1                                                                                0% [13 Packages store 0 B] [21 Packages 158 kB/3,639 kB 4%]82% [13 Packages store 0 B] [21 Packages 204 kB/3,639 kB 6%] [Waiting for heade                                                                               83% [21 Packages 292 kB/3,639 kB 8%] [Waiting for headers]83% [16 Packages store 0 B] [21 Packages 294 kB/3,639 kB 8%] [Waiting for heade                                                                               Get:23 https://ppa.launchpadcontent.net/graphics-drivers/ppa/ubuntu jammy/main amd64 Packages [45.0 kB]
-90.1s 547 83% [16 Packages store 0 B] [21 Packages 368 kB/3,639 kB 10%] [23 Packages 16.1                                                                               83% [16 Packages store 0 B] [21 Packages 462 kB/3,639 kB 13%]                                                             86% [21 Packages 1,238 kB/3,639 kB 34%]86% [19 Packages store 0 B] [21 Packages 1,246 kB/3,639 kB 34%]                                                               89% [21 Packages 2,143 kB/3,639 kB 59%]89% [18 Packages store 0 B] [21 Packages 2,143 kB/3,639 kB 59%]                                                               94% [18 Packages store 0 B]                           Get:24 http://security.ubuntu.com/ubuntu jammy-security/universe amd64 Packages [1,289 kB]
-90.4s 548 94% [18 Packages store 0 B] [24 Packages 18.4 kB/1,289 kB 1%]                                                             98% [18 Packages store 0 B]                           98% [Working]98% [20 Packages store 0 B]                           99% [Working]99% [22 Packages store 0 B]                           99% [Working]99% [23 Packages store 0 B]                           99% [Working]99% [21 Packages store 0 B]                           100% [Working]100% [24 Packages store 0 B]                            100% [Working]              Fetched 26.1 MB in 2s (12.3 MB/s)
-92.5s 549 Reading package lists... 0%Reading package lists... 0%Reading package lists... 0%Reading package lists... 2%Reading package lists... 2%Reading package lists... 3%Reading package lists... 3%Reading package lists... 31%Reading package lists... 31%Reading package lists... 31%Reading package lists... 31%Reading package lists... 39%Reading package lists... 39%Reading package lists... 39%Reading package lists... 52%Reading package lists... 52%Reading package lists... 55%Reading package lists... 55%Reading package lists... 55%Reading package lists... 55%Reading package lists... 56%Reading package lists... 56%Reading package lists... 56%Reading package lists... 56%Reading package lists... 63%Reading package lists... 63%Reading package lists... 76%Reading package lists... 76%Reading package lists... 78%Reading package lists... 78%Reading package lists... 78%Reading package lists... 78%Reading package lists... 79%Reading package lists... 79%Reading package lists... 82%Reading package lists... 82%Reading package lists... 90%Reading package lists... 94%Reading package lists... 94%Reading package lists... 98%Reading package lists... 98%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... Done
-92.5s 550 W: Skipping acquire of configured file 'main/source/Sources' as repository 'https://r2u.stat.illinois.edu/ubuntu jammy InRelease' does not seem to provide it (sources.list entry misspelt?)
-92.5s 551 🚀 Running: colmap help
-92.5s 552 /bin/sh: 1: colmap: not found
-92.5s 553 ❌ Command failed: colmap help
-92.5s 554 Attempting to install COLMAP via mamba...
-92.5s 555 🚀 Running: mamba install -y -c conda-forge colmap
-92.7s 556 /usr/local/lib/python3.12/dist-packages/clint/textui/colored.py:118: SyntaxWarning: invalid escape sequence '\$'
-92.7s 557 strip = re.compile("([^-_a-zA-Z0-9!@#%&=,/'\";:~`\$\^\*\(\)\+\[\]\.\{\}\|\?\<\>\\]+|[^\s]+)")
-92.7s 558 /usr/local/lib/python3.12/dist-packages/clint/packages/colorama/ansitowin32.py:43: SyntaxWarning: invalid escape sequence '\['
-92.7s 559 ANSI_RE = re.compile('\033\[((?:\d|;)*)([a-zA-Z])')
-92.7s 560 /usr/local/lib/python3.12/dist-packages/clint/textui/prompt.py:68: SyntaxWarning: "is not" with 'str' literal. Did you mean "!="?
-92.7s 561 if prompt[-1] is not ' ':
-92.9s 562 usage: mamba [-h] [--version] [--slow SLOW] [--enable-coverage]
-92.9s 563 [--coverage-file COVERAGE_FILE] [--format FORMAT] [--no-color]
-92.9s 564 [--tags TAGS]
-92.9s 565 [specs ...]
-92.9s 566 mamba: error: unrecognized arguments: -y -c conda-forge colmap
-92.9s 567 ❌ Command failed: mamba install -y -c conda-forge colmap
-92.9s 568 ⚠️ Mamba install failed, falling back to apt-get...
-92.9s 569 🚀 Running: apt-get install -y colmap
-94.6s 570 Reading package lists... 0%Reading package lists... 0%Reading package lists... 0%Reading package lists... 2%Reading package lists... 2%Reading package lists... 3%Reading package lists... 3%Reading package lists... 31%Reading package lists... 31%Reading package lists... 31%Reading package lists... 31%Reading package lists... 39%Reading package lists... 39%Reading package lists... 39%Reading package lists... 52%Reading package lists... 52%Reading package lists... 55%Reading package lists... 55%Reading package lists... 55%Reading package lists... 55%Reading package lists... 56%Reading package lists... 56%Reading package lists... 56%Reading package lists... 56%Reading package lists... 63%Reading package lists... 63%Reading package lists... 76%Reading package lists... 76%Reading package lists... 78%Reading package lists... 78%Reading package lists... 78%Reading package lists... 78%Reading package lists... 79%Reading package lists... 79%Reading package lists... 82%Reading package lists... 82%Reading package lists... 94%Reading package lists... 94%Reading package lists... 94%Reading package lists... 98%Reading package lists... 98%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... 99%Reading package lists... Done
-95.0s 571 Building dependency tree... 0%Building dependency tree... 0%Building dependency tree... 50%Building dependency tree... 50%Building dependency tree... Done
-95.1s 572 Reading state information... 0% Reading state information... 0%Reading state information... Done
-95.4s 573 The following additional packages will be installed:
-95.4s 574 libamd2 libcamd2 libccolamd2 libceres2 libcholmod3 libcolamd2 libcxsparse3
-95.4s 575 libevdev2 libfreeimage3 libgflags2.2 libgoogle-glog0v5 libgudev-1.0-0
-95.4s 576 libinput-bin libinput10 libmd4c0 libmetis5 libmtdev1 libqt5core5a
-95.4s 577 libqt5dbus5 libqt5gui5 libqt5network5 libqt5svg5 libqt5widgets5 libraw20
-95.4s 578 libspqr2 libsuitesparseconfig5 libwacom-bin libwacom-common libwacom9
-95.4s 579 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-util1
-95.4s 580 libxcb-xinerama0 libxcb-xinput0 libxcb-xkb1 libxkbcommon-x11-0
-95.4s 581 qt5-gtk-platformtheme qttranslations5-l10n
-95.4s 582 Suggested packages:
-95.4s 583 qt5-image-formats-plugins qtwayland5
-95.5s 584 The following NEW packages will be installed:
-95.5s 585 colmap libamd2 libcamd2 libccolamd2 libceres2 libcholmod3 libcolamd2
-95.5s 586 libcxsparse3 libevdev2 libfreeimage3 libgflags2.2 libgoogle-glog0v5
-95.5s 587 libgudev-1.0-0 libinput-bin libinput10 libmd4c0 libmetis5 libmtdev1
-95.5s 588 libqt5core5a libqt5dbus5 libqt5gui5 libqt5network5 libqt5svg5 libqt5widgets5
-95.5s 589 libraw20 libspqr2 libsuitesparseconfig5 libwacom-bin libwacom-common
-95.5s 590 libwacom9 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
-95.5s 591 libxcb-util1 libxcb-xinerama0 libxcb-xinput0 libxcb-xkb1 libxkbcommon-x11-0
-95.5s 592 qt5-gtk-platformtheme qttranslations5-l10n
-95.5s 593 0 upgraded, 41 newly installed, 0 to remove and 138 not upgraded.
-95.5s 594 Need to get 17.4 MB of archives.
-95.5s 595 After this operation, 68.5 MB of additional disk space will be used.
-95.7s 596 0% [Working]            Get:1 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5core5a amd64 5.15.3+dfsg-2ubuntu0.2 [2,006 kB]
-96.6s 597 0% [1 libqt5core5a 14.2 kB/2,006 kB 1%]1% [1 libqt5core5a 289 kB/2,006 kB 14%]                                       10% [Working]             Get:2 http://archive.ubuntu.com/ubuntu jammy/main amd64 libevdev2 amd64 1.12.1+dfsg-1 [39.5 kB]
-96.6s 598 10% [2 libevdev2 15.6 kB/39.5 kB 40%]                                     10% [Waiting for headers]                         Get:3 http://archive.ubuntu.com/ubuntu jammy/main amd64 libmtdev1 amd64 1.1.6-1build4 [14.5 kB]
-96.6s 599 10% [3 libmtdev1 7,700 B/14.5 kB 53%]                                     11% [Waiting for headers]                         Get:4 http://archive.ubuntu.com/ubuntu jammy/main amd64 libgudev-1.0-0 amd64 1:237-2build1 [16.3 kB]
-96.6s 600 11% [4 libgudev-1.0-0 16.3 kB/16.3 kB 100%]                                           12% [Working]             Get:5 http://archive.ubuntu.com/ubuntu jammy/main amd64 libwacom-common all 2.2.0-1 [54.3 kB]
-96.6s 601 12% [5 libwacom-common 19.9 kB/54.3 kB 37%]                                           12% [Waiting for headers]                         Get:6 http://archive.ubuntu.com/ubuntu jammy/main amd64 libwacom9 amd64 2.2.0-1 [22.0 kB]
-96.6s 602 12% [6 libwacom9 22.0 kB/22.0 kB 100%]                                      13% [Working]             Get:7 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libinput-bin amd64 1.20.0-1ubuntu0.3 [19.9 kB]
-96.6s 603 13% [7 libinput-bin 956 B/19.9 kB 5%]                                     13% [Waiting for headers]                         Get:8 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libinput10 amd64 1.20.0-1ubuntu0.3 [131 kB]
-96.6s 604 13% [8 libinput10 9,942 B/131 kB 8%]                                    15% [Waiting for headers]                         Get:9 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libmd4c0 amd64 0.4.8-1 [42.0 kB]
-96.6s 605 15% [9 libmd4c0 21.6 kB/42.0 kB 51%]                                    15% [Waiting for headers]                         Get:10 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5dbus5 amd64 5.15.3+dfsg-2ubuntu0.2 [222 kB]
-96.7s 606 15% [10 libqt5dbus5 10.9 kB/222 kB 5%]                                      17% [Waiting for headers]                         Get:11 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5network5 amd64 5.15.3+dfsg-2ubuntu0.2 [731 kB]
-96.9s 607 17% [11 libqt5network5 15.6 kB/731 kB 2%]                                         21% [Waiting for headers]                         Get:12 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-icccm4 amd64 0.4.1-1.1build2 [11.5 kB]
-96.9s 608 21% [12 libxcb-icccm4 6,950 B/11.5 kB 61%]                                          21% [Waiting for headers]                         Get:13 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-util1 amd64 0.4.0-1build2 [11.4 kB]
-96.9s 609 21% [13 libxcb-util1 11.4 kB/11.4 kB 100%]                                          22% [Working]             Get:14 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-image0 amd64 0.4.0-2 [11.5 kB]
-96.9s 610 22% [14 libxcb-image0 11.5 kB/11.5 kB 100%]                                           22% [Working]             Get:15 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-keysyms1 amd64 0.4.0-1build3 [8,746 B]
-96.9s 611 22% [15 libxcb-keysyms1 5,387 B/8,746 B 62%]                                            23% [Working]             Get:16 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-render-util0 amd64 0.3.9-1build3 [10.3 kB]
-96.9s 612 23% [16 libxcb-render-util0 10.3 kB/10.3 kB 100%]                                                 23% [Working]             Get:17 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xinerama0 amd64 1.14-3ubuntu3 [5,414 B]
-96.9s 613 23% [17 libxcb-xinerama0 5,414 B/5,414 B 100%]                                              24% [Working]             Get:18 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xinput0 amd64 1.14-3ubuntu3 [34.3 kB]
-96.9s 614 24% [18 libxcb-xinput0 25.8 kB/34.3 kB 75%]                                           24% [Working]             Get:19 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxcb-xkb1 amd64 1.14-3ubuntu3 [32.8 kB]
-96.9s 615 24% [19 libxcb-xkb1 11.0 kB/32.8 kB 33%]                                        25% [Waiting for headers]                         Get:20 http://archive.ubuntu.com/ubuntu jammy/main amd64 libxkbcommon-x11-0 amd64 1.4.0-1 [14.4 kB]
-97.0s 616 25% [20 libxkbcommon-x11-0 10.2 kB/14.4 kB 71%]                                               26% [Waiting for headers]                         Get:21 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5gui5 amd64 5.15.3+dfsg-2ubuntu0.2 [3,722 kB]
-97.1s 617 26% [21 libqt5gui5 6,946 B/3,722 kB 0%]                                       43% [Waiting for headers]                         Get:22 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libqt5widgets5 amd64 5.15.3+dfsg-2ubuntu0.2 [2,561 kB]
-97.2s 618 43% [22 libqt5widgets5 30.9 kB/2,561 kB 1%]                                           56% [Waiting for headers]                         Get:23 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libqt5svg5 amd64 5.15.3-1 [149 kB]
-97.2s 619 56% [23 libqt5svg5 19.3 kB/149 kB 13%]                                      57% [Working]             Get:24 http://archive.ubuntu.com/ubuntu jammy/main amd64 libsuitesparseconfig5 amd64 1:5.10.1+dfsg-4build1 [10.4 kB]
-97.2s 620 57% [24 libsuitesparseconfig5 10.4 kB/10.4 kB 100%]                                                   57% [Working]             Get:25 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libamd2 amd64 1:5.10.1+dfsg-4build1 [21.6 kB]
-97.2s 621 57% [25 libamd2 7,344 B/21.6 kB 34%]                                    58% [Working]             Get:26 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libcamd2 amd64 1:5.10.1+dfsg-4build1 [23.3 kB]
-97.2s 622 58% [26 libcamd2 23.3 kB/23.3 kB 100%]                                      58% [Working]             Get:27 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libccolamd2 amd64 1:5.10.1+dfsg-4build1 [25.2 kB]
-97.2s 623 59% [27 libccolamd2 25.2 kB/25.2 kB 100%]                                         59% [Working]             Get:28 http://archive.ubuntu.com/ubuntu jammy/main amd64 libcolamd2 amd64 1:5.10.1+dfsg-4build1 [18.0 kB]
-97.2s 624 59% [28 libcolamd2 18.0 kB/18.0 kB 100%]                                        60% [Working]             Get:29 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libmetis5 amd64 5.1.0.dfsg-7build2 [181 kB]
-97.2s 625 60% [29 libmetis5 28.7 kB/181 kB 16%]                                     61% [Waiting for headers]                         Get:30 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libcholmod3 amd64 1:5.10.1+dfsg-4build1 [346 kB]
-97.2s 626 61% [30 libcholmod3 15.4 kB/346 kB 4%]                                      63% [Waiting for headers]                         Get:31 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libcxsparse3 amd64 1:5.10.1+dfsg-4build1 [70.8 kB]
-97.3s 627 63% [31 libcxsparse3 15.6 kB/70.8 kB 22%]                                         64% [Waiting for headers]                         Get:32 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libgflags2.2 amd64 2.2.2-2 [78.1 kB]
-97.3s 628 64% [32 libgflags2.2 40.2 kB/78.1 kB 52%]                                         65% [Waiting for headers]                         Get:33 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libgoogle-glog0v5 amd64 0.5.0+really0.4.0-2 [60.3 kB]
-97.3s 629 65% [33 libgoogle-glog0v5 27.4 kB/60.3 kB 45%]                                              65% [Waiting for headers]                         Get:34 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libspqr2 amd64 1:5.10.1+dfsg-4build1 [71.6 kB]
-97.3s 630 66% [34 libspqr2 32.3 kB/71.6 kB 45%]                                     66% [Waiting for headers]                         Get:35 http://archive.ubuntu.com/ubuntu jammy/universe amd64 libceres2 amd64 2.0.0+dfsg1-5 [834 kB]
-97.3s 631 66% [35 libceres2 25.9 kB/834 kB 3%]                                    71% [Waiting for headers]                         Get:36 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 libraw20 amd64 0.20.2-2ubuntu2.22.04.2 [342 kB]
-97.3s 632 71% [36 libraw20 6,948 B/342 kB 2%]                                   73% [Waiting for headers]                         Get:37 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 libfreeimage3 amd64 3.18.0+ds2-6ubuntu5.1 [294 kB]
-97.4s 633 73% [37 libfreeimage3 28.9 kB/294 kB 10%]                                         74% [Working]             Get:38 http://archive.ubuntu.com/ubuntu jammy/universe amd64 colmap amd64 3.7-2 [2,998 kB]
-97.4s 634 75% [38 colmap 41.0 kB/2,998 kB 1%]                                   89% [Waiting for headers]                         Get:39 http://archive.ubuntu.com/ubuntu jammy/main amd64 libwacom-bin amd64 2.2.0-1 [13.6 kB]
-97.4s 635 89% [39 libwacom-bin 13.6 kB/13.6 kB 100%]                                          89% [Working]             Get:40 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 qt5-gtk-platformtheme amd64 5.15.3+dfsg-2ubuntu0.2 [130 kB]
-97.5s 636 90% [40 qt5-gtk-platformtheme 65.2 kB/130 kB 50%]                                                 90% [Working]             Get:41 http://archive.ubuntu.com/ubuntu jammy/universe amd64 qttranslations5-l10n all 5.15.3-1 [1,983 kB]
-97.5s 637 90% [41 qttranslations5-l10n 15.6 kB/1,983 kB 1%]                                                 100% [Working]              Fetched 17.4 MB in 2s (8,960 kB/s)
-105.1s 638 Extracting templates from packages: 73%Extracting templates from packages: 100%
-105.3s 639 Selecting previously unselected package libqt5core5a:amd64.
-105.9s 640 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 129073 files and directories currently installed.)
-105.9s 641 Preparing to unpack .../00-libqt5core5a_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-105.9s 642 Unpacking libqt5core5a:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-106.0s 643 Selecting previously unselected package libevdev2:amd64.
-106.0s 644 Preparing to unpack .../01-libevdev2_1.12.1+dfsg-1_amd64.deb ...
-106.0s 645 Unpacking libevdev2:amd64 (1.12.1+dfsg-1) ...
-106.1s 646 Selecting previously unselected package libmtdev1:amd64.
-106.1s 647 Preparing to unpack .../02-libmtdev1_1.1.6-1build4_amd64.deb ...
-106.1s 648 Unpacking libmtdev1:amd64 (1.1.6-1build4) ...
-106.2s 649 Selecting previously unselected package libgudev-1.0-0:amd64.
-106.2s 650 Preparing to unpack .../03-libgudev-1.0-0_1%3a237-2build1_amd64.deb ...
-106.2s 651 Unpacking libgudev-1.0-0:amd64 (1:237-2build1) ...
-106.3s 652 Selecting previously unselected package libwacom-common.
-106.3s 653 Preparing to unpack .../04-libwacom-common_2.2.0-1_all.deb ...
-106.3s 654 Unpacking libwacom-common (2.2.0-1) ...
-106.4s 655 Selecting previously unselected package libwacom9:amd64.
-106.4s 656 Preparing to unpack .../05-libwacom9_2.2.0-1_amd64.deb ...
-106.4s 657 Unpacking libwacom9:amd64 (2.2.0-1) ...
-106.5s 658 Selecting previously unselected package libinput-bin.
-106.5s 659 Preparing to unpack .../06-libinput-bin_1.20.0-1ubuntu0.3_amd64.deb ...
-106.5s 660 Unpacking libinput-bin (1.20.0-1ubuntu0.3) ...
-106.6s 661 Selecting previously unselected package libinput10:amd64.
-106.6s 662 Preparing to unpack .../07-libinput10_1.20.0-1ubuntu0.3_amd64.deb ...
-106.6s 663 Unpacking libinput10:amd64 (1.20.0-1ubuntu0.3) ...
-106.7s 664 Selecting previously unselected package libmd4c0:amd64.
-106.7s 665 Preparing to unpack .../08-libmd4c0_0.4.8-1_amd64.deb ...
-106.7s 666 Unpacking libmd4c0:amd64 (0.4.8-1) ...
-106.7s 667 Selecting previously unselected package libqt5dbus5:amd64.
-106.7s 668 Preparing to unpack .../09-libqt5dbus5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-106.8s 669 Unpacking libqt5dbus5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-106.8s 670 Selecting previously unselected package libqt5network5:amd64.
-106.8s 671 Preparing to unpack .../10-libqt5network5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-106.8s 672 Unpacking libqt5network5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-106.9s 673 Selecting previously unselected package libxcb-icccm4:amd64.
-106.9s 674 Preparing to unpack .../11-libxcb-icccm4_0.4.1-1.1build2_amd64.deb ...
-106.9s 675 Unpacking libxcb-icccm4:amd64 (0.4.1-1.1build2) ...
-107.0s 676 Selecting previously unselected package libxcb-util1:amd64.
-107.0s 677 Preparing to unpack .../12-libxcb-util1_0.4.0-1build2_amd64.deb ...
-107.0s 678 Unpacking libxcb-util1:amd64 (0.4.0-1build2) ...
-107.1s 679 Selecting previously unselected package libxcb-image0:amd64.
-107.1s 680 Preparing to unpack .../13-libxcb-image0_0.4.0-2_amd64.deb ...
-107.1s 681 Unpacking libxcb-image0:amd64 (0.4.0-2) ...
-107.2s 682 Selecting previously unselected package libxcb-keysyms1:amd64.
-107.2s 683 Preparing to unpack .../14-libxcb-keysyms1_0.4.0-1build3_amd64.deb ...
-107.2s 684 Unpacking libxcb-keysyms1:amd64 (0.4.0-1build3) ...
-107.2s 685 Selecting previously unselected package libxcb-render-util0:amd64.
-107.3s 686 Preparing to unpack .../15-libxcb-render-util0_0.3.9-1build3_amd64.deb ...
-107.3s 687 Unpacking libxcb-render-util0:amd64 (0.3.9-1build3) ...
-107.3s 688 Selecting previously unselected package libxcb-xinerama0:amd64.
-107.3s 689 Preparing to unpack .../16-libxcb-xinerama0_1.14-3ubuntu3_amd64.deb ...
-107.3s 690 Unpacking libxcb-xinerama0:amd64 (1.14-3ubuntu3) ...
-107.4s 691 Selecting previously unselected package libxcb-xinput0:amd64.
-107.4s 692 Preparing to unpack .../17-libxcb-xinput0_1.14-3ubuntu3_amd64.deb ...
-107.4s 693 Unpacking libxcb-xinput0:amd64 (1.14-3ubuntu3) ...
-107.5s 694 Selecting previously unselected package libxcb-xkb1:amd64.
-107.5s 695 Preparing to unpack .../18-libxcb-xkb1_1.14-3ubuntu3_amd64.deb ...
-107.5s 696 Unpacking libxcb-xkb1:amd64 (1.14-3ubuntu3) ...
-107.6s 697 Selecting previously unselected package libxkbcommon-x11-0:amd64.
-107.6s 698 Preparing to unpack .../19-libxkbcommon-x11-0_1.4.0-1_amd64.deb ...
-107.6s 699 Unpacking libxkbcommon-x11-0:amd64 (1.4.0-1) ...
-107.7s 700 Selecting previously unselected package libqt5gui5:amd64.
-107.7s 701 Preparing to unpack .../20-libqt5gui5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-107.7s 702 Unpacking libqt5gui5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-107.9s 703 Selecting previously unselected package libqt5widgets5:amd64.
-107.9s 704 Preparing to unpack .../21-libqt5widgets5_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-107.9s 705 Unpacking libqt5widgets5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-108.0s 706 Selecting previously unselected package libqt5svg5:amd64.
-108.0s 707 Preparing to unpack .../22-libqt5svg5_5.15.3-1_amd64.deb ...
-108.0s 708 Unpacking libqt5svg5:amd64 (5.15.3-1) ...
-108.1s 709 Selecting previously unselected package libsuitesparseconfig5:amd64.
-108.1s 710 Preparing to unpack .../23-libsuitesparseconfig5_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.1s 711 Unpacking libsuitesparseconfig5:amd64 (1:5.10.1+dfsg-4build1) ...
-108.2s 712 Selecting previously unselected package libamd2:amd64.
-108.2s 713 Preparing to unpack .../24-libamd2_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.2s 714 Unpacking libamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-108.2s 715 Selecting previously unselected package libcamd2:amd64.
-108.2s 716 Preparing to unpack .../25-libcamd2_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.3s 717 Unpacking libcamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-108.3s 718 Selecting previously unselected package libccolamd2:amd64.
-108.3s 719 Preparing to unpack .../26-libccolamd2_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.3s 720 Unpacking libccolamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-108.4s 721 Selecting previously unselected package libcolamd2:amd64.
-108.4s 722 Preparing to unpack .../27-libcolamd2_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.4s 723 Unpacking libcolamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-108.5s 724 Selecting previously unselected package libmetis5:amd64.
-108.5s 725 Preparing to unpack .../28-libmetis5_5.1.0.dfsg-7build2_amd64.deb ...
-108.5s 726 Unpacking libmetis5:amd64 (5.1.0.dfsg-7build2) ...
-108.6s 727 Selecting previously unselected package libcholmod3:amd64.
-108.6s 728 Preparing to unpack .../29-libcholmod3_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.6s 729 Unpacking libcholmod3:amd64 (1:5.10.1+dfsg-4build1) ...
-108.6s 730 Selecting previously unselected package libcxsparse3:amd64.
-108.7s 731 Preparing to unpack .../30-libcxsparse3_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.7s 732 Unpacking libcxsparse3:amd64 (1:5.10.1+dfsg-4build1) ...
-108.7s 733 Selecting previously unselected package libgflags2.2.
-108.7s 734 Preparing to unpack .../31-libgflags2.2_2.2.2-2_amd64.deb ...
-108.7s 735 Unpacking libgflags2.2 (2.2.2-2) ...
-108.8s 736 Selecting previously unselected package libgoogle-glog0v5.
-108.8s 737 Preparing to unpack .../32-libgoogle-glog0v5_0.5.0+really0.4.0-2_amd64.deb ...
-108.8s 738 Unpacking libgoogle-glog0v5 (0.5.0+really0.4.0-2) ...
-108.9s 739 Selecting previously unselected package libspqr2:amd64.
-108.9s 740 Preparing to unpack .../33-libspqr2_1%3a5.10.1+dfsg-4build1_amd64.deb ...
-108.9s 741 Unpacking libspqr2:amd64 (1:5.10.1+dfsg-4build1) ...
-109.0s 742 Selecting previously unselected package libceres2.
-109.0s 743 Preparing to unpack .../34-libceres2_2.0.0+dfsg1-5_amd64.deb ...
-109.0s 744 Unpacking libceres2 (2.0.0+dfsg1-5) ...
-109.1s 745 Selecting previously unselected package libraw20:amd64.
-109.1s 746 Preparing to unpack .../35-libraw20_0.20.2-2ubuntu2.22.04.2_amd64.deb ...
-109.1s 747 Unpacking libraw20:amd64 (0.20.2-2ubuntu2.22.04.2) ...
-109.2s 748 Selecting previously unselected package libfreeimage3:amd64.
-109.2s 749 Preparing to unpack .../36-libfreeimage3_3.18.0+ds2-6ubuntu5.1_amd64.deb ...
-109.2s 750 Unpacking libfreeimage3:amd64 (3.18.0+ds2-6ubuntu5.1) ...
-109.2s 751 Selecting previously unselected package colmap.
-109.3s 752 Preparing to unpack .../37-colmap_3.7-2_amd64.deb ...
-109.3s 753 Unpacking colmap (3.7-2) ...
-109.4s 754 Selecting previously unselected package libwacom-bin.
-109.4s 755 Preparing to unpack .../38-libwacom-bin_2.2.0-1_amd64.deb ...
-109.4s 756 Unpacking libwacom-bin (2.2.0-1) ...
-109.4s 757 Selecting previously unselected package qt5-gtk-platformtheme:amd64.
-109.5s 758 Preparing to unpack .../39-qt5-gtk-platformtheme_5.15.3+dfsg-2ubuntu0.2_amd64.deb ...
-109.5s 759 Unpacking qt5-gtk-platformtheme:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-109.5s 760 Selecting previously unselected package qttranslations5-l10n.
-109.5s 761 Preparing to unpack .../40-qttranslations5-l10n_5.15.3-1_all.deb ...
-109.5s 762 Unpacking qttranslations5-l10n (5.15.3-1) ...
-109.7s 763 Setting up libxcb-xinput0:amd64 (1.14-3ubuntu3) ...
-109.7s 764 Setting up libxcb-keysyms1:amd64 (0.4.0-1build3) ...
-109.8s 765 Setting up libxcb-render-util0:amd64 (0.3.9-1build3) ...
-109.8s 766 Setting up libmetis5:amd64 (5.1.0.dfsg-7build2) ...
-109.8s 767 Setting up libxcb-icccm4:amd64 (0.4.1-1.1build2) ...
-109.8s 768 Setting up libxcb-util1:amd64 (0.4.0-1build2) ...
-109.9s 769 Setting up libxcb-xkb1:amd64 (1.14-3ubuntu3) ...
-109.9s 770 Setting up libxcb-image0:amd64 (0.4.0-2) ...
-109.9s 771 Setting up libxcb-xinerama0:amd64 (1.14-3ubuntu3) ...
-109.9s 772 Setting up qttranslations5-l10n (5.15.3-1) ...
-109.9s 773 Setting up libxkbcommon-x11-0:amd64 (1.4.0-1) ...
-110.0s 774 Setting up libqt5core5a:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.0s 775 Setting up libraw20:amd64 (0.20.2-2ubuntu2.22.04.2) ...
-110.0s 776 Setting up libmtdev1:amd64 (1.1.6-1build4) ...
-110.0s 777 Setting up libqt5dbus5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.1s 778 Setting up libmd4c0:amd64 (0.4.8-1) ...
-110.1s 779 Setting up libcxsparse3:amd64 (1:5.10.1+dfsg-4build1) ...
-110.1s 780 Setting up libevdev2:amd64 (1.12.1+dfsg-1) ...
-110.1s 781 Setting up libsuitesparseconfig5:amd64 (1:5.10.1+dfsg-4build1) ...
-110.1s 782 Setting up libgudev-1.0-0:amd64 (1:237-2build1) ...
-110.2s 783 Setting up libgflags2.2 (2.2.2-2) ...
-110.2s 784 Setting up libwacom-common (2.2.0-1) ...
-110.2s 785 Setting up libamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-110.2s 786 Setting up libfreeimage3:amd64 (3.18.0+ds2-6ubuntu5.1) ...
-110.2s 787 Setting up libcolamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-110.3s 788 Setting up libwacom9:amd64 (2.2.0-1) ...
-110.3s 789 Setting up libqt5network5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.3s 790 Setting up libinput-bin (1.20.0-1ubuntu0.3) ...
-110.3s 791 Setting up libcamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-110.4s 792 Setting up libwacom-bin (2.2.0-1) ...
-110.4s 793 Setting up libccolamd2:amd64 (1:5.10.1+dfsg-4build1) ...
-110.4s 794 Setting up libgoogle-glog0v5 (0.5.0+really0.4.0-2) ...
-110.4s 795 Setting up libcholmod3:amd64 (1:5.10.1+dfsg-4build1) ...
-110.4s 796 Setting up libinput10:amd64 (1.20.0-1ubuntu0.3) ...
-110.5s 797 Setting up libspqr2:amd64 (1:5.10.1+dfsg-4build1) ...
-110.5s 798 Setting up libqt5gui5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.5s 799 Setting up libqt5widgets5:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.5s 800 Setting up qt5-gtk-platformtheme:amd64 (5.15.3+dfsg-2ubuntu0.2) ...
-110.5s 801 Setting up libceres2 (2.0.0+dfsg1-5) ...
-110.6s 802 Setting up colmap (3.7-2) ...
-110.6s 803 Setting up libqt5svg5:amd64 (5.15.3-1) ...
-110.6s 804 Processing triggers for mailcap (3.70+nmu1ubuntu1) ...
-110.6s 805 Processing triggers for libc-bin (2.35-0ubuntu3.8) ...
-111.1s 806 /sbin/ldconfig.real: /usr/local/lib/libtbbbind_2_5.so.3 is not a symbolic link
-111.1s 807 
-111.1s 808 /sbin/ldconfig.real: /usr/local/lib/libur_adapter_level_zero.so.0 is not a symbolic link
-111.1s 809 
-111.1s 810 /sbin/ldconfig.real: /usr/local/lib/libtbbbind.so.3 is not a symbolic link
-111.1s 811 
-111.1s 812 /sbin/ldconfig.real: /usr/local/lib/libur_adapter_level_zero_v2.so.0 is not a symbolic link
-111.1s 813 
-111.1s 814 /sbin/ldconfig.real: /usr/local/lib/libtbbbind_2_0.so.3 is not a symbolic link
-111.1s 815 
-111.1s 816 /sbin/ldconfig.real: /usr/local/lib/libur_loader.so.0 is not a symbolic link
-111.1s 817 
-111.1s 818 /sbin/ldconfig.real: /usr/local/lib/libtbb.so.12 is not a symbolic link
-111.1s 819 
-111.1s 820 /sbin/ldconfig.real: /usr/local/lib/libumf.so.0 is not a symbolic link
-111.1s 821 
-111.1s 822 /sbin/ldconfig.real: /usr/local/lib/libtcm_debug.so.1 is not a symbolic link
-111.1s 823 
-111.1s 824 /sbin/ldconfig.real: /usr/local/lib/libur_adapter_opencl.so.0 is not a symbolic link
-111.1s 825 
-111.1s 826 /sbin/ldconfig.real: /usr/local/lib/libtbbmalloc_proxy.so.2 is not a symbolic link
-111.1s 827 
-111.1s 828 /sbin/ldconfig.real: /usr/local/lib/libtcm.so.1 is not a symbolic link
-111.1s 829 
-111.1s 830 /sbin/ldconfig.real: /usr/local/lib/libtbbmalloc.so.2 is not a symbolic link
-111.1s 831 
-111.1s 832 /sbin/ldconfig.real: /usr/local/lib/libhwloc.so.15 is not a symbolic link
-111.1s 833 
-112.7s 834 Processing triggers for man-db (2.10.2-1) ...
-113.1s 835 🚀 Running: ffmpeg -version
-113.3s 836 ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
-113.3s 837 built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
-113.3s 838 configuration: --prefix=/usr --extra-version=0ubuntu0.22.04.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-pocketsphinx --enable-librsvg --enable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared
-113.3s 839 libavutil      56. 70.100 / 56. 70.100
-113.3s 840 libavcodec     58.134.100 / 58.134.100
-113.3s 841 libavformat    58. 76.100 / 58. 76.100
-113.3s 842 libavdevice    58. 13.100 / 58. 13.100
-113.3s 843 libavfilter     7.110.100 /  7.110.100
-113.3s 844 libswscale      5.  9.100 /  5.  9.100
-113.3s 845 libswresample   3.  9.100 /  3.  9.100
-113.3s 846 libpostproc    55.  9.100 / 55.  9.100
-113.4s 847 ffmpeg already installed.
-113.4s 848 🚀 Running: colmap help
-113.4s 849 COLMAP 3.7 -- Structure-from-Motion and Multi-View Stereo
-113.4s 850 (Commit Unknown on Unknown without CUDA)
-113.4s 851 
-113.4s 852 Usage:
-113.4s 853 colmap [command] [options]
-113.4s 854 
-113.4s 855 Documentation:
-113.4s 856 https://colmap.github.io/
-113.4s 857 
-113.4s 858 Example usage:
-113.4s 859 colmap help [ -h, --help ]
-113.4s 860 colmap gui
-113.4s 861 colmap gui -h [ --help ]
-113.4s 862 colmap automatic_reconstructor -h [ --help ]
-113.4s 863 colmap automatic_reconstructor --image_path IMAGES --workspace_path WORKSPACE
-113.4s 864 colmap feature_extractor --image_path IMAGES --database_path DATABASE
-113.4s 865 colmap exhaustive_matcher --database_path DATABASE
-113.4s 866 colmap mapper --image_path IMAGES --database_path DATABASE --output_path MODEL
-113.4s 867 ...
-113.4s 868 
-113.4s 869 Available commands:
-113.4s 870 help
-113.4s 871 gui
-113.4s 872 automatic_reconstructor
-113.4s 873 bundle_adjuster
-113.4s 874 color_extractor
-113.4s 875 database_cleaner
-113.4s 876 database_creator
-113.4s 877 database_merger
-113.4s 878 delaunay_mesher
-113.4s 879 exhaustive_matcher
-113.4s 880 feature_extractor
-113.4s 881 feature_importer
-113.4s 882 hierarchical_mapper
-113.4s 883 image_deleter
-113.4s 884 image_filterer
-113.4s 885 image_rectifier
-113.4s 886 image_registrator
-113.4s 887 image_undistorter
-113.4s 888 image_undistorter_standalone
-113.4s 889 mapper
-113.4s 890 matches_importer
-113.4s 891 model_aligner
-113.4s 892 model_analyzer
-113.4s 893 model_comparer
-113.4s 894 model_converter
-113.4s 895 model_cropper
-113.4s 896 model_merger
-113.4s 897 model_orientation_aligner
-113.4s 898 model_splitter
-113.4s 899 model_transformer
-113.4s 900 patch_match_stereo
-113.4s 901 point_filtering
-113.4s 902 point_triangulator
-113.4s 903 poisson_mesher
-113.4s 904 project_generator
-113.4s 905 rig_bundle_adjuster
-113.4s 906 sequential_matcher
-113.4s 907 spatial_matcher
-113.4s 908 stereo_fusion
-113.4s 909 transitive_matcher
-113.4s 910 vocab_tree_builder
-113.4s 911 vocab_tree_matcher
-113.4s 912 vocab_tree_retriever
-113.4s 913 
-113.4s 914 ✅ COLMAP installed successfully.
-113.4s 915 🔧 Patching nerfstudio for PyTorch 2.6+ compatibility...
-113.4s 916 Found file: /usr/local/lib/python3.12/dist-packages/nerfstudio/utils/eval_utils.py
-113.4s 917 ✅ Patch applied successfully!
-113.4s 918 --- 1. Clean & Setup ---
-113.4s 919 --- 2. Downscale Video ---
-113.4s 920 🚀 Running: ffmpeg -y -i "/kaggle/input/car-video/video_car.mp4" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy "/kaggle/working/car_scan_downscaled.mp4"
-113.5s 921 ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
-113.5s 922 built with gcc 11 (Ubuntu 11.2.0-19ubuntu1)
-113.5s 923 configuration: --prefix=/usr --extra-version=0ubuntu0.22.04.1 --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --arch=amd64 --enable-gpl --disable-stripping --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sdl2 --enable-pocketsphinx --enable-librsvg --enable-libmfx --enable-libdc1394 --enable-libdrm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-shared
-113.5s 924 libavutil      56. 70.100 / 56. 70.100
-113.5s 925 libavcodec     58.134.100 / 58.134.100
-113.5s 926 libavformat    58. 76.100 / 58. 76.100
-113.5s 927 libavdevice    58. 13.100 / 58. 13.100
-113.5s 928 libavfilter     7.110.100 /  7.110.100
-113.5s 929 libswscale      5.  9.100 /  5.  9.100
-113.5s 930 libswresample   3.  9.100 /  3.  9.100
-113.5s 931 libpostproc    55.  9.100 / 55.  9.100
-113.7s 932 Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/kaggle/input/car-video/video_car.mp4':
-113.7s 933 Metadata:
-113.7s 934 major_brand     : mp42
-113.7s 935 minor_version   : 0
-113.7s 936 compatible_brands: mp42isomavc1
-113.7s 937 creation_time   : 2023-04-23T21:50:40.000000Z
-113.7s 938 Duration: 00:00:14.42, start: 0.000000, bitrate: 25898 kb/s
-113.7s 939 Stream #0:0(und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709), 3840x2160, 25774 kb/s, 29.97 fps, 29.97 tbr, 30k tbn, 60k tbc (default)
-113.7s 940 Metadata:
-113.7s 941 creation_time   : 2023-04-23T21:50:40.000000Z
-113.7s 942 handler_name    : Vimeo Artax Video Handler
-113.7s 943 vendor_id       : [0][0][0][0]
-113.7s 944 encoder         : AVC Coding
-113.7s 945 Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 189 kb/s (default)
-113.7s 946 Metadata:
-113.7s 947 creation_time   : 2023-04-23T21:50:40.000000Z
-113.7s 948 handler_name    : Vimeo Artax Audio Handler
-113.7s 949 vendor_id       : [0][0][0][0]
-113.7s 950 Stream mapping:
-113.7s 951 Stream #0:0 -> #0:0 (h264 (native) -> h264 (libx264))
-113.7s 952 Stream #0:1 -> #0:1 (copy)
-113.7s 953 Press [q] to stop, [?] for help
-113.9s 954 [1;36m[libx264 @ 0x5b2b0e096c80] [0musing cpu capabilities: MMX2 SSE2Fast SSSE3 SSE4.2 AVX FMA3 BMI2 AVX2 AVX512
-113.9s 955 [1;36m[libx264 @ 0x5b2b0e096c80] [0mprofile High, level 4.0, 4:2:0, 8-bit
-113.9s 956 [1;36m[libx264 @ 0x5b2b0e096c80] [0m264 - core 163 r3060 5db6aa6 - H.264/MPEG-4 AVC codec - Copyleft 2003-2021 - http://www.videolan.org/x264.html - options: cabac=1 ref=1 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=2 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=6 lookahead_threads=2 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=1 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=10 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-113.9s 957 Output #0, mp4, to '/kaggle/working/car_scan_downscaled.mp4':
-113.9s 958 Metadata:
-113.9s 959 major_brand     : mp42
-113.9s 960 minor_version   : 0
-113.9s 961 compatible_brands: mp42isomavc1
-113.9s 962 encoder         : Lavf58.76.100
-113.9s 963 Stream #0:0(und): Video: h264 (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1920x1080, q=2-31, 29.97 fps, 30k tbn (default)
-113.9s 964 Metadata:
-113.9s 965 creation_time   : 2023-04-23T21:50:40.000000Z
-113.9s 966 handler_name    : Vimeo Artax Video Handler
-113.9s 967 vendor_id       : [0][0][0][0]
-113.9s 968 encoder         : Lavc58.134.100 libx264
-113.9s 969 Side data:
-113.9s 970 cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-113.9s 971 Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 189 kb/s (default)
-113.9s 972 Metadata:
-113.9s 973 creation_time   : 2023-04-23T21:50:40.000000Z
-113.9s 974 handler_name    : Vimeo Artax Audio Handler
-113.9s 975 vendor_id       : [0][0][0][0]
-132.6s 976 frame=    1 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x    frame=   17 fps=0.0 q=0.0 size=       0kB time=00:00:00.44 bitrate=   0.9kbits/s speed=0.671x    frame=   30 fps= 26 q=29.0 size=     256kB time=00:00:00.93 bitrate=2234.6kbits/s speed=0.799x    frame=   43 fps= 24 q=29.0 size=     768kB time=00:00:01.45 bitrate=4337.2kbits/s speed=0.811x    frame=   57 fps= 25 q=29.0 size=    1024kB time=00:00:01.94 bitrate=4321.3kbits/s speed=0.843x    frame=   68 fps= 24 q=29.0 size=    1536kB time=00:00:01.94 bitrate=6481.8kbits/s speed=0.69x    frame=   79 fps= 24 q=29.0 size=    1792kB time=00:00:02.45 bitrate=5983.9kbits/s speed=0.738x    frame=   92 fps= 24 q=29.0 size=    2304kB time=00:00:02.94 bitrate=6411.3kbits/s speed=0.767x    frame=  102 fps= 23 q=29.0 size=    2816kB time=00:00:03.45 bitrate=6675.1kbits/s speed=0.784x    frame=  114 fps= 23 q=29.0 size=    3328kB time=00:00:03.45 bitrate=7888.7kbits/s speed=0.701x    frame=  124 fps= 23 q=29.0 size=    3840kB time=00:00:03.94 bitrate=7970.7kbits/s speed=0.725x    frame=  137 fps= 23 q=29.0 size=    4352kB time=00:00:04.43 bitrate=8034.5kbits/s speed=0.742x    frame=  148 fps= 23 q=29.0 size=    4864kB time=00:00:04.94 bitrate=8050.8kbits/s speed=0.762x    frame=  159 fps= 23 q=29.0 size=    5376kB time=00:00:04.94 bitrate=8898.3kbits/s speed=0.706x    frame=  168 fps= 22 q=29.0 size=    5632kB time=00:00:05.44 bitrate=8481.2kbits/s speed=0.721x    frame=  179 fps= 22 q=29.0 size=    6144kB time=00:00:05.95 bitrate=8456.3kbits/s speed=0.738x    frame=  191 fps= 22 q=29.0 size=    6656kB time=00:00:06.44 bitrate=8463.3kbits/s speed=0.752x    frame=  202 fps= 22 q=29.0 size=    6912kB time=00:00:06.44 bitrate=8788.8kbits/s speed=0.705x    frame=  214 fps= 22 q=29.0 size=    7424kB time=00:00:06.95 bitrate=8744.9kbits/s speed=0.717x    frame=  228 fps= 22 q=29.0 size=    7936kB time=00:00:07.44 bitrate=8731.9kbits/s speed=0.727x    frame=  240 fps= 22 q=29.0 size=    8192kB time=00:00:07.93 bitrate=8456.3kbits/s speed=0.738x    frame=  251 fps= 22 q=29.0 size=    8448kB time=00:00:08.44 bitrate=8192.0kbits/s speed=0.75x    frame=  264 fps= 22 q=29.0 size=    8960kB time=00:00:08.44 bitrate=8688.5kbits/s speed=0.717x    frame=  276 fps= 22 q=29.0 size=    9728kB time=00:00:08.93 bitrate=8915.4kbits/s speed=0.726x    frame=  287 fps= 22 q=29.0 size=    9984kB time=00:00:09.45 bitrate=8654.3kbits/s speed=0.736x    frame=  300 fps= 22 q=29.0 size=   10496kB time=00:00:09.94 bitrate=8649.1kbits/s speed=0.742x    frame=  313 fps= 23 q=29.0 size=   10752kB time=00:00:10.45 bitrate=8426.1kbits/s speed=0.752x    frame=  324 fps= 22 q=29.0 size=   11264kB time=00:00:10.47 bitrate=8809.4kbits/s speed=0.727x    frame=  338 fps= 23 q=29.0 size=   11776kB time=00:00:10.94 bitrate=8814.8kbits/s speed=0.733x    frame=  352 fps= 23 q=29.0 size=   12032kB time=00:00:11.45 bitrate=8603.9kbits/s speed=0.741x    frame=  365 fps= 23 q=29.0 size=   12544kB time=00:00:11.94 bitrate=8601.6kbits/s speed=0.744x    frame=  379 fps= 23 q=29.0 size=   13056kB time=00:00:12.43 bitrate=8599.5kbits/s speed=0.747x    frame=  392 fps= 23 q=29.0 size=   13312kB time=00:00:12.94 bitrate=8421.5kbits/s speed=0.755x    frame=  404 fps= 23 q=29.0 size=   13568kB time=00:00:13.44 bitrate=8270.0kbits/s speed=0.761x    frame=  418 fps= 23 q=29.0 size=   14080kB time=00:00:13.95 bitrate=8267.2kbits/s speed=0.764x    frame=  431 fps= 23 q=-1.0 Lsize=   14925kB time=00:00:14.35 bitrate=8516.1kbits/s speed=0.76x
-132.6s 977 video:14575kB audio:334kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.112614%
-132.6s 978 [1;36m[libx264 @ 0x5b2b0e096c80] [0mframe I:2     Avg QP:24.06  size:266242
-132.6s 979 [1;36m[libx264 @ 0x5b2b0e096c80] [0mframe P:125   Avg QP:26.19  size: 83622
-132.6s 980 [1;36m[libx264 @ 0x5b2b0e096c80] [0mframe B:304   Avg QP:29.76  size: 12956
-132.6s 981 [1;36m[libx264 @ 0x5b2b0e096c80] [0mconsecutive B-frames:  1.6% 10.7%  7.0% 80.7%
-132.6s 982 [1;36m[libx264 @ 0x5b2b0e096c80] [0mmb I  I16..4: 10.5% 26.0% 63.5%
-132.6s 983 [1;36m[libx264 @ 0x5b2b0e096c80] [0mmb P  I16..4:  4.7%  5.8%  2.2%  P16..4: 32.5% 26.8% 16.6%  0.0%  0.0%    skip:11.3%
-132.6s 984 [1;36m[libx264 @ 0x5b2b0e096c80] [0mmb B  I16..4:  0.4%  0.1%  0.0%  B16..8: 20.5% 10.0%  1.7%  direct: 4.1%  skip:63.2%  L0:24.8% L1:37.9% BI:37.2%
-132.6s 985 [1;36m[libx264 @ 0x5b2b0e096c80] [0m8x8 transform intra:41.8% inter:36.2%
-132.6s 986 [1;36m[libx264 @ 0x5b2b0e096c80] [0mcoded y,uvDC,uvAC intra: 53.7% 42.0% 12.3% inter: 15.4% 4.8% 0.3%
-132.6s 987 [1;36m[libx264 @ 0x5b2b0e096c80] [0mi16 v,h,dc,p: 20% 58% 14%  8%
-132.6s 988 [1;36m[libx264 @ 0x5b2b0e096c80] [0mi8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 15% 43% 23%  2%  2%  2%  4%  2%  6%
-132.6s 989 [1;36m[libx264 @ 0x5b2b0e096c80] [0mi4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 31% 23% 11%  5%  6%  5%  7%  5%  7%
-132.6s 990 [1;36m[libx264 @ 0x5b2b0e096c80] [0mi8c dc,h,v,p: 49% 35% 13%  3%
-132.6s 991 [1;36m[libx264 @ 0x5b2b0e096c80] [0mWeighted P-Frames: Y:0.0% UV:0.0%
-132.6s 992 [1;36m[libx264 @ 0x5b2b0e096c80] [0mkb/s:8301.99
-132.7s 993 --- 3. Extract Frames (2 FPS) ---
-132.7s 994 🚀 Running: ffmpeg -y -i "/kaggle/working/car_scan_downscaled.mp4" -vf "fps=2" "/kaggle/working/car_scan/images/frame_%05d.png" -hide_banner -loglevel error
-137.5s 995 ✅ Extracted 29 images.
-137.5s 996 --- 4. Feature Extraction ---
-137.5s 997 🚀 Running: colmap feature_extractor --database_path /kaggle/working/car_scan/database.db --image_path /kaggle/working/car_scan/images --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 1 --SiftExtraction.num_threads 16 --SiftExtraction.peak_threshold 0.004
-137.5s 998 qt.qpa.xcb: could not connect to display
-137.5s 999 qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
-137.5s 1000 This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
-137.5s 1001 
-137.5s 1002 Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, xcb.
-137.5s 1003 
-137.5s 1004 *** Aborted at 1769062439 (unix time) try "date -d @1769062439" if you are using GNU date ***
-137.5s 1005 PC: @                0x0 (unknown)
-137.5s 1006 *** SIGABRT (@0x5be) received by PID 1470 (TID 0x78be27225080) from PID 1470; stack trace: ***
-137.5s 1007 @     0x78be2f7db046 (unknown)
-137.5s 1008 @     0x78be2d808520 (unknown)
-137.5s 1009 @     0x78be2d85c9fc pthread_kill
-137.5s 1010 @     0x78be2d808476 raise
-137.5s 1011 @     0x78be2d7ee7f3 abort
-137.5s 1012 @     0x78be2dd92ba3 QMessageLogger::fatal()
-137.5s 1013 @     0x78be2e399713 QGuiApplicationPrivate::createPlatformIntegration()
-137.5s 1014 @     0x78be2e399c08 QGuiApplicationPrivate::createEventDispatcher()
-137.5s 1015 @     0x78be2dfc2b17 QCoreApplicationPrivate::init()
-137.5s 1016 @     0x78be2e39cb70 QGuiApplicationPrivate::init()
-137.5s 1017 @     0x78be2eab0ced QApplicationPrivate::init()
-137.5s 1018 @     0x5a0fd928d3dd colmap::RunFeatureExtractor()
-137.5s 1019 @     0x5a0fd927f499 main
-137.5s 1020 @     0x78be2d7efd90 (unknown)
-137.5s 1021 @     0x78be2d7efe40 __libc_start_main
-137.5s 1022 @     0x5a0fd92823e5 _start
-137.5s 1023 Aborted (core dumped)
-137.5s 1024 ❌ Command failed: colmap feature_extractor --database_path /kaggle/working/car_scan/database.db --image_path /kaggle/working/car_scan/images --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 1 --SiftExtraction.num_threads 16 --SiftExtraction.peak_threshold 0.004
-137.5s 1025 Traceback (most recent call last):
-137.5s 1026 File "/kaggle/working/3DSCAN/3d-scan.py", line 275, in <module>
-137.6s 1027 if process_data():
-137.6s 1028 ^^^^^^^^^^^^^^
-137.6s 1029 File "/kaggle/working/3DSCAN/3d-scan.py", line 171, in process_data
-137.6s 1030 run_command(" ".join(cmd_extract), shell=True)
-137.6s 1031 File "/kaggle/working/3DSCAN/3d-scan.py", line 38, in run_command
-137.6s 1032 raise e
-137.6s 1033 File "/kaggle/working/3DSCAN/3d-scan.py", line 31, in run_command
-137.6s 1034 subprocess.run(cmd, shell=True, check=True)
-137.6s 1035 File "/usr/lib/python3.12/subprocess.py", line 571, in run
-137.6s 1036 raise CalledProcessError(retcode, process.args,
-137.6s 1037 subprocess.CalledProcessError: Command 'colmap feature_extractor --database_path /kaggle/working/car_scan/database.db --image_path /kaggle/working/car_scan/images --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 1 --SiftExtraction.num_threads 16 --SiftExtraction.peak_threshold 0.004' returned non-zero exit status 134.
-141.2s 1038 /usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
-141.2s 1039 cells[i][c] = re.sub('\\\\\|', '|', cell)
-141.4s 1040 /usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
-141.4s 1041 text = re.sub(r'_', '\_', text) # Escape underscores in display text
-142.0s 1042 /usr/local/lib/python3.12/dist-packages/traitlets/traitlets.py:2915: FutureWarning: --Exporter.preprocessors=["remove_papermill_header.RemovePapermillHeader"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.
-142.0s 1043 warn(
-142.3s 1044 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
-142.7s 1045 [NbConvertApp] Writing 105565 bytes to __notebook__.ipynb
-145.1s 1046 /usr/local/lib/python3.12/dist-packages/traitlets/traitlets.py:2915: FutureWarning: --Exporter.preprocessors=["nbconvert.preprocessors.ExtractOutputPreprocessor"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.
-145.1s 1047 warn(
-145.1s 1048 [NbConvertApp] Converting notebook __notebook__.ipynb to html
-145.9s 1049 [NbConvertApp] Writing 369415 bytes to __results__.html
