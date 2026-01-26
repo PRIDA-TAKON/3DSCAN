@@ -41,30 +41,30 @@
         // Let's use the widely compatible "GaussianSplats3D" by mkkellogg via modules.
     </script>
     
-    <!-- Switching to mkkellogg/GaussianSplats3D for easier standalone HTML usage -->
+    <!-- Switched to jsDelivr for better stability -->
     <script type="module">
-        import * as GaussianSplats3D from 'https://unpkg.com/@mkkellogg/gaussian-splats-3d/build/gaussian-splats-3d.module.js';
+        import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@latest/build/gaussian-splats-3d.module.js';
 
         // ⚠️ REPLACE THIS LINK WITH YOUR GITHUB RELEASE LINK
-        // วิธีใส่ลิงค์:
-        // 1. ไปที่ GitHub Repo -> Releases -> สร้าง Release ใหม่
-        // 2. อัปโหลดไฟล์ .ply หรือ .splat
-        // 3. คลิกขวาที่ไฟล์ที่อัปโหลดเสร็จแล้ว -> Copy link address
-        // 4. เอามาแปะแทนที่บรรทัดด้านล่างนี้
         const defaultModel = 'https://github.com/PRIDA-TAKON/3DSCAN/releases/download/splat/splat.ply'; 
 
         // Check if url param exists
         const params = new URLSearchParams(window.location.search);
         const url = params.get('url') || defaultModel;
 
+        const infoEl = document.getElementById('info');
         document.getElementById('model-name').textContent = url.split('/').pop();
 
+        // Pre-check URL
+        infoEl.innerHTML += `<br><small style="color:yellow">Connecting to file...</small>`;
+        
+        // Initialize Viewer
         const viewer = new GaussianSplats3D.Viewer({
             'cameraUp': [0, -1, -0.6],
             'initialCameraPosition': [-1, -4, 6],
             'initialCameraLookAt': [0, 0, 0]
         });
-        
+
         viewer.addSplatScene(url, {
             'splatAlphaRemovalThreshold': 5,
             'showLoadingUI': true,
@@ -74,10 +74,14 @@
         })
         .then(() => {
             viewer.start();
+            infoEl.innerHTML += `<br><small style="color:#4f4">Rendering...</small>`;
         })
         .catch(err => {
             console.error("Failed to load:", err);
-            document.getElementById('info').innerHTML += `<br><span style="color:red">❌ Load Failed: ${err}</span><br><small>Did you upload the file to GitHub Releases?</small>`;
+            infoEl.innerHTML += `<br><br><strong style="color:red">❌ Error: ${err.message || err}</strong>`;
+            infoEl.innerHTML += `<br><small>1. Check if the link works in a new tab.</small>`;
+            infoEl.innerHTML += `<br><small>2. Check if the file is truly Public.</small>`;
+            infoEl.innerHTML += `<br><small>3. Open Console (F12) for details.</small>`;
         });
     </script>
 </body>
