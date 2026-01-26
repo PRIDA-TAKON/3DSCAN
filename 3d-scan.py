@@ -317,7 +317,7 @@ def export_model():
     run_command(cmd_export, shell=True)
 
     # Verify result
-    generated_splats = list(latest_run.glob("*.splat"))
+    generated_splats = list(latest_run.glob("*.splat")) + list(latest_run.glob("*.ply"))
     if generated_splats:
         print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
     else:
