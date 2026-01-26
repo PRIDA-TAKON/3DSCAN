@@ -40,18 +40,9 @@
                     target="_blank">antimatter15/splat</a></small></p>
     </div>
 
-    <!-- Import Map to resolve 'three' -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.157.0/build/three.module.js",
-            "gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.3.0/build/gaussian-splats-3d.module.js"
-        }
-    }
-    </script>
-
     <script type="module">
-        import * as GaussianSplats3D from 'gaussian-splats-3d';
+        import * as THREE from 'https://esm.sh/three@0.157.0';
+        import { Viewer } from 'https://esm.sh/@mkkellogg/gaussian-splats-3d@0.3.0';
 
         // ⚠️ REPLACE THIS LINK WITH YOUR GITHUB RELEASE LINK
         const defaultModel = 'https://github.com/PRIDA-TAKON/3DSCAN/releases/download/splat/splat.ply';
@@ -67,10 +58,18 @@
         infoEl.innerHTML += `<br><small style="color:yellow">Connecting to file...</small>`;
 
         // Initialize Viewer
-        const viewer = new GaussianSplats3D.Viewer({
+        const viewer = new Viewer({
             'cameraUp': [0, -1, -0.6],
             'initialCameraPosition': [-1, -4, 6],
-            'initialCameraLookAt': [0, 0, 0]
+            'initialCameraLookAt': [0, 0, 0],
+            'threeScene': null,
+            'renderer': null,
+            'camera': null,
+            'useBuiltInControls': true,
+            'rootElement': null,
+            'ignoreDevicePixelRatio': false,
+            'sharedMemoryForWorkers': false,
+            'maxSplatCount': 0
         });
 
         viewer.addSplatScene(url, {
