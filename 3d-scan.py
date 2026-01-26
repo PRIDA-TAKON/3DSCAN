@@ -321,7 +321,10 @@ def export_model():
     if generated_splats:
         print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
     else:
-        print("❌ Export command finished but no .splat file was found.")
+        print(f"❌ Export command finished but no .splat file was found in {latest_run}")
+        print("📂 Directory content:")
+        for f in latest_run.iterdir():
+            print(f" - {f.name}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run 3D Scan Pipeline")
