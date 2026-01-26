@@ -153,7 +153,7 @@ def process_data(resume_path=None):
         PROJECT_DIR.mkdir(parents=True, exist_ok=True)
 
         # List of critical items to copy
-        items_to_copy = ["transforms.json", "images", "sparse", "database.db"]
+        items_to_copy = ["transforms.json", "images", "sparse", "database.db", "sparse_pc.ply"]
         
         for item in items_to_copy:
             src = resume_source / item
