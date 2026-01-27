@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My 3D Car Scan</title>
+    <title>Demo 3D Car Scan</title>
     <!-- Fix 404 Favicon -->
     <link rel="icon" href="data:,">
 
@@ -54,7 +54,7 @@
     <div class="loading">Loading 3D Model...</div>
 
     <!-- Custom element wrapper -->
-    <splat-viewer url="./car_demo.splat"></splat-viewer>
+    <splat-viewer url="car_demo.splat"></splat-viewer>
 
     <script type="module">
         import * as THREE from 'three';
@@ -67,9 +67,16 @@
             }
 
             connectedCallback() {
-                const url = this.getAttribute('url');
-                if (!url) return;
+                this.initViewer();
 
+                // Try auto-load
+                const url = this.getAttribute('url');
+                if (url) {
+                    this.loadScene(url);
+                }
+            }
+
+            initViewer() {
                 // Create a container div
                 const container = document.createElement('div');
                 container.style.width = '100%';
@@ -79,34 +86,41 @@
                 container.style.left = '0';
                 this.appendChild(container);
 
-                // Initialize the viewer
-                // Note: rootElement is supported in recent versions of this library
                 this.viewer = new Viewer({
                     'rootElement': container,
                     'cameraUp': [0, 1, 0],
                     'initialCameraPosition': [0, 1, 5],
                     'initialCameraLookAt': [0, 0, 0]
                 });
+            }
 
-                this.viewer.addSplatScene(url, {
+            loadScene(fileSource) {
+                const loading = document.querySelector('.loading');
+                if (loading) {
+                    loading.style.display = 'block';
+                    loading.textContent = 'Loading 3D Model...';
+                }
+
+                this.viewer.addSplatScene(fileSource, {
                     'streamView': true
                 })
                     .then(() => {
                         this.viewer.start();
-                        // Notify that loading is complete
                         this.dispatchEvent(new Event('load'));
                     })
                     .catch(err => {
                         console.error('Error loading splat scene:', err);
-                        const loading = document.querySelector('.loading');
-                        if (loading) loading.textContent = 'Error: ' + err.message;
+                        if (loading) {
+                            loading.textContent = 'Error: ' + err.message;
+                            loading.style.background = 'rgba(255, 0, 0, 0.7)';
+                        }
                     });
             }
         }
 
         customElements.define('splat-viewer', SplatViewer);
 
-        // Handle loading UI
+        // Handle loading UI Success
         const viewerEl = document.querySelector('splat-viewer');
         viewerEl.addEventListener('load', () => {
             const loading = document.querySelector('.loading');
