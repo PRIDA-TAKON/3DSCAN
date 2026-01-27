@@ -4,95 +4,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3DSCAN Viewer</title>
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧊</text></svg>">
+    <title>My 3D Car Scan</title>
+    <script type="module" src="https://unpkg.com/@splat/viewer"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
-            font-family: sans-serif;
+            background-color: #1a1a1a;
         }
 
-        #info {
+        splat-viewer {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .loading {
             position: absolute;
-            top: 20px;
-            left: 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 8px;
+            font-family: sans-serif;
             pointer-events: none;
-        }
-
-        a {
-            color: #4af;
-            text-decoration: none;
-            pointer-events: auto;
         }
     </style>
 </head>
 
 <body>
-    <div id="info">
-        <h3>🧊 3DSCAN Viewer</h3>
-        <p>Model: <span id="model-name">Loading...</span></p>
-        <p><small>Powered by <a href="https://github.com/antimatter15/splat"
-                    target="_blank">antimatter15/splat</a></small></p>
-    </div>
 
-    <script type="module">
-        import * as THREE from 'https://esm.sh/three@0.157.0';
-        import { Viewer } from 'https://esm.sh/@mkkellogg/gaussian-splats-3d@0.3.0';
+    <div class="loading">Loading 3D Model...</div>
 
-        // ⚠️ REPLACE THIS LINK WITH YOUR GITHUB RELEASE LINK
-        const defaultModel = './splat_car_demo.ply';
+    <splat-viewer url="./car_demo.splat"></splat-viewer>
 
-        // Check if url param exists
-        const params = new URLSearchParams(window.location.search);
-        const url = params.get('url') || defaultModel;
-
-        const infoEl = document.getElementById('info');
-        document.getElementById('model-name').textContent = url.split('/').pop();
-
-        // Pre-check URL
-        infoEl.innerHTML += `<br><small style="color:yellow">Connecting to file...</small>`;
-
-        // Initialize Viewer
-        const viewer = new Viewer({
-            'cameraUp': [0, -1, -0.6],
-            'initialCameraPosition': [-1, -4, 6],
-            'initialCameraLookAt': [0, 0, 0],
-            'threeScene': null,
-            'renderer': null,
-            'camera': null,
-            'useBuiltInControls': true,
-            'rootElement': null,
-            'ignoreDevicePixelRatio': false,
-            'sharedMemoryForWorkers': false,
-            'maxSplatCount': 0
+    <script>
+        // ซ่อนข้อความ Loading เมื่อโหลดเสร็จ
+        document.querySelector('splat-viewer').addEventListener('load', () => {
+            document.querySelector('.loading').style.display = 'none';
         });
-
-        viewer.addSplatScene(url, {
-            'splatAlphaRemovalThreshold': 5,
-            'showLoadingUI': true,
-            'position': [0, 1, 0],
-            'rotation': [0, 0, 0, 1],
-            'scale': [1.5, 1.5, 1.5]
-        })
-            .then(() => {
-                viewer.start();
-                infoEl.innerHTML += `<br><small style="color:#4f4">Rendering...</small>`;
-            })
-            .catch(err => {
-                console.error("Failed to load:", err);
-                infoEl.innerHTML += `<br><br><strong style="color:red">❌ Error: ${err.message || err}</strong>`;
-                infoEl.innerHTML += `<br><small>1. Check if the link works in a new tab.</small>`;
-                infoEl.innerHTML += `<br><small>2. Check if the file is truly Public.</small>`;
-                infoEl.innerHTML += `<br><small>3. Open Console (F12) for details.</small>`;
-            });
     </script>
+
 </body>
 
 </html>
