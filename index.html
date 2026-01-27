@@ -60,6 +60,22 @@
         import * as THREE from 'three';
         import { Viewer } from '@mkkellogg/gaussian-splats-3d';
 
+        // Direct connectivity check
+        fetch('car_demo.splat')
+            .then(res => {
+                if (res.ok) {
+                    console.log("✅ connectivity check: car_demo.splat FOUND (200 OK)");
+                    const size = res.headers.get('content-length');
+                    console.log("File size:", size);
+                    if (size && size < 2000) {
+                        console.warn("⚠️ File size is very small. It might be a Git LFS pointer file, not the actual model.");
+                    }
+                } else {
+                    console.error(`❌ connectivity check: car_demo.splat FAILED (${res.status} ${res.statusText})`);
+                }
+            })
+            .catch(err => console.error("❌ connectivity check: Network Error", err));
+
         class SplatViewer extends HTMLElement {
             constructor() {
                 super();
@@ -101,8 +117,11 @@
                     loading.textContent = 'Loading 3D Model...';
                 }
 
+                // Remove incorrect streamView option, use progressiveLoad if desired
                 this.viewer.addSplatScene(fileSource, {
-                    'streamView': true
+                    'showLoadingUI': true,
+                    'progressiveLoad': false, // Disable progressive load for stability
+                    'splatAlphaRemovalThreshold': 5,
                 })
                     .then(() => {
                         this.viewer.start();
