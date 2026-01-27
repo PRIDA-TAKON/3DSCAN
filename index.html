@@ -5,165 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demo 3D Car Scan</title>
-    <!-- Fix 404 Favicon -->
-    <link rel="icon" href="data:,">
-
-    <!-- Import map for dependencies -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-            "@mkkellogg/gaussian-splats-3d": "https://unpkg.com/@mkkellogg/gaussian-splats-3d@0.4.7/build/gaussian-splats-3d.module.js"
-        }
-    }
-    </script>
-
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #1a1a1a;
-            font-family: sans-serif;
+            background-color: #000;
         }
 
-        splat-viewer {
-            display: block;
+        iframe {
             width: 100vw;
             height: 100vh;
-            position: relative;
-        }
-
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 1.2rem;
-            pointer-events: none;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
-            border-radius: 8px;
+            border: none;
+            display: block;
         }
     </style>
 </head>
 
 <body>
-
-    <div class="loading">Loading 3D Model...</div>
-
-    <!-- Custom element wrapper -->
-    <splat-viewer url="car_demo.splat"></splat-viewer>
-
-    <script type="module">
-        import * as THREE from 'three';
-        import { Viewer } from '@mkkellogg/gaussian-splats-3d';
-
-        // Direct connectivity check
-        fetch('car_demo.splat')
-            .then(res => {
-                if (res.ok) {
-                    console.log("✅ connectivity check: car_demo.splat FOUND (200 OK)");
-                    const size = res.headers.get('content-length');
-                    console.log("File size:", size);
-                    if (size && size < 2000) {
-                        console.warn("⚠️ File size is very small. It might be a Git LFS pointer file, not the actual model.");
-                    }
-                } else {
-                    console.error(`❌ connectivity check: car_demo.splat FAILED (${res.status} ${res.statusText})`);
-                }
-            })
-            .catch(err => console.error("❌ connectivity check: Network Error", err));
-
-        class SplatViewer extends HTMLElement {
-            constructor() {
-                super();
-                this.viewer = null;
-            }
-
-            connectedCallback() {
-                this.initViewer();
-
-                // Try auto-load
-                const url = this.getAttribute('url');
-                if (url) {
-                    this.loadScene(url);
-                }
-            }
-
-            initViewer() {
-                // Create a container div
-                const container = document.createElement('div');
-                container.style.width = '100%';
-                container.style.height = '100%';
-                container.style.position = 'absolute';
-                container.style.top = '0';
-                container.style.left = '0';
-                this.appendChild(container);
-
-                this.viewer = new Viewer({
-                    'rootElement': container,
-                    'cameraUp': [0, 1, 0],
-                    'initialCameraPosition': [0, 1, 5],
-                    'initialCameraLookAt': [0, 0, 0]
-                });
-            }
-
-            loadScene(fileSource) {
-                const loading = document.querySelector('.loading');
-                if (loading) {
-                    loading.style.display = 'block';
-                    loading.textContent = 'Loading 3D Model...';
-                }
-
-                // Remove incorrect streamView option, use progressiveLoad if desired
-                this.viewer.addSplatScene(fileSource, {
-                    'showLoadingUI': true,
-                    'progressiveLoad': false, // Disable progressive load for stability
-                    'splatAlphaRemovalThreshold': 5,
-                })
-                    .then(() => {
-                        this.viewer.start();
-                        this.dispatchEvent(new Event('load'));
-                    })
-                    .catch(err => {
-                        console.error('Error loading splat scene:', err);
-                        if (loading) {
-                            // Diagnostic fetch to get more details
-                            fetch(fileSource, { method: 'HEAD' })
-                                .then(res => {
-                                    if (!res.ok) {
-                                        loading.innerHTML = `Error: ${err.message}<br>
-                                        Server Response: <strong>${res.status} ${res.statusText}</strong><br>
-                                        URL: ${res.url}`;
-                                    } else {
-                                        loading.innerHTML = `Error: ${err.message}<br>
-                                        File exists (${res.status}) but viewer failed to load it.`;
-                                    }
-                                    loading.style.background = 'rgba(255, 0, 0, 0.8)';
-                                })
-                                .catch(fetchErr => {
-                                    loading.innerHTML = `Error: ${err.message}<br>
-                                    Network Check Failed: ${fetchErr.message}`;
-                                    loading.style.background = 'rgba(255, 0, 0, 0.8)';
-                                });
-                        }
-                    });
-            }
-        }
-
-        customElements.define('splat-viewer', SplatViewer);
-
-        // Handle loading UI Success
-        const viewerEl = document.querySelector('splat-viewer');
-        viewerEl.addEventListener('load', () => {
-            const loading = document.querySelector('.loading');
-            if (loading) loading.style.display = 'none';
-        });
-
-    </script>
-
+    <iframe id="viewer" src="https://superspl.at/s?id=22404a57" allow="fullscreen; xr-spatial-tracking"></iframe>
 </body>
 
 </html>
