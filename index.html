@@ -111,8 +111,24 @@
                     .catch(err => {
                         console.error('Error loading splat scene:', err);
                         if (loading) {
-                            loading.textContent = 'Error: ' + err.message;
-                            loading.style.background = 'rgba(255, 0, 0, 0.7)';
+                            // Diagnostic fetch to get more details
+                            fetch(fileSource, { method: 'HEAD' })
+                                .then(res => {
+                                    if (!res.ok) {
+                                        loading.innerHTML = `Error: ${err.message}<br>
+                                        Server Response: <strong>${res.status} ${res.statusText}</strong><br>
+                                        URL: ${res.url}`;
+                                    } else {
+                                        loading.innerHTML = `Error: ${err.message}<br>
+                                        File exists (${res.status}) but viewer failed to load it.`;
+                                    }
+                                    loading.style.background = 'rgba(255, 0, 0, 0.8)';
+                                })
+                                .catch(fetchErr => {
+                                    loading.innerHTML = `Error: ${err.message}<br>
+                                    Network Check Failed: ${fetchErr.message}`;
+                                    loading.style.background = 'rgba(255, 0, 0, 0.8)';
+                                });
                         }
                     });
             }
