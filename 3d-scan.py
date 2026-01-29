@@ -234,11 +234,11 @@ def process_data(resume_path=None):
     run_command(" ".join(cmd_extract), shell=True)
 
     print("--- 5. Matching (Sequential) ---")
-    # --- FIX 2: Disable loop_detection to avoid crash due to missing vocab tree ---
+    # Disable loop_detection to avoid crash due to missing vocab tree
     cmd_match = [
         colmap_binary, "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
-        "--SiftMatching.use_gpu", "0",
+        "--SiftMatching.use_gpu", "0", # Disable GPU to avoid OpenGL crashes
         "--SequentialMatching.loop_detection", "0",
         "--SequentialMatching.overlap", "10"
     ]
