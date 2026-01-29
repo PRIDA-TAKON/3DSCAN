@@ -7,6 +7,7 @@ import argparse
 from pathlib import Path
 import json
 import importlib.util
+import concurrent.futures
 
 print("✅ Imports complete")
 
@@ -155,7 +156,7 @@ def process_data(resume_path=None):
         # List of critical items to copy
         items_to_copy = ["transforms.json", "images", "sparse", "database.db", "sparse_pc.ply"]
         
-        for item in items_to_copy:
+        def copy_item(item):
             src = resume_source / item
             dst = PROJECT_DIR / item
             
@@ -174,6 +175,11 @@ def process_data(resume_path=None):
                     shutil.copy2(src, dst)
             else:
                  print(f"⚠️ Warning: '{item}' not found in resume source. Proceeding cautiously.")
+
+        # Parallelize copying to speed up data transfer
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # We convert to list to ensure any exceptions are raised during execution
+            list(executor.map(copy_item, items_to_copy))
 
         if (PROJECT_DIR / "transforms.json").exists():
             print("✅ Data restored successfully via Resume.")
