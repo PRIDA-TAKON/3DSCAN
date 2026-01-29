@@ -137,6 +137,41 @@ def patch_nerfstudio():
     except Exception as e:
         print(f"❌ Failed to patch nerfstudio: {e}")
 
+def has_nvidia_encoder():
+    """Checks if h264_nvenc encoder is available in ffmpeg."""
+    try:
+        # Run ffmpeg -encoders and capture output
+        # Using subprocess directly to capture output, run_command prints it
+        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True, check=False)
+        return "h264_nvenc" in result.stdout
+    except Exception as e:
+        print(f"⚠️ Could not check for NVIDIA encoder: {e}")
+        return False
+
+def downscale_video(input_path, output_path):
+    """Downscales video using hardware acceleration if available."""
+    print("--- 2. Downscale Video ---")
+
+    # Base command with video filter for scaling
+    cmd_base = f"ffmpeg -y -i \"{input_path}\" -vf scale='iw/2:ih/2'"
+
+    if has_nvidia_encoder():
+        print("🚀 NVENC detected! Using hardware acceleration.")
+        # NVENC settings:
+        # -c:v h264_nvenc : Use NVIDIA Hardware Encoder
+        # -preset fast    : Good balance for resizing
+        # -cq 23          : Constant Quality (roughly equivalent to CRF 23)
+        cmd = f"{cmd_base} -c:v h264_nvenc -preset fast -cq 23 -c:a copy \"{output_path}\""
+    else:
+        print("⚠️ NVENC not detected. Using CPU encoding (libx264).")
+        # CPU settings (Original):
+        # -c:v libx264    : Software Encoder
+        # -preset veryfast: High speed
+        # -crf 23         : Constant Rate Factor
+        cmd = f"{cmd_base} -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{output_path}\""
+
+    run_command(cmd, shell=True)
+
 def process_data(resume_path=None):
     """
     Processes video into images and run COLMAP, OR resumes from existing data.
@@ -203,10 +238,8 @@ def process_data(resume_path=None):
     except:
         print("⚠️ xvfb-run not found. Using raw colmap command.")
 
-    print("--- 2. Downscale Video ---")
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
-    # Added -pix_fmt yuv420p for better compatibility
-    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{downscaled_video}\"", shell=True)
+    downscale_video(VIDEO_INPUT_PATH, downscaled_video)
 
     print("--- 3. Extract Frames (2 FPS) ---")
     run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner -loglevel error", shell=True)
