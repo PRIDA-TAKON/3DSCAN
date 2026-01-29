@@ -26,12 +26,16 @@ os.environ['MAX_JOBS'] = '1' # Prevent freezing on Kaggle
 
 def run_command(cmd, shell=False):
     """Runs a shell command and raises an exception if it fails."""
-    print(f"🚀 Running: {cmd}")
+    if isinstance(cmd, list):
+        print(f"🚀 Running: {' '.join(str(x) for x in cmd)}")
+    else:
+        print(f"🚀 Running: {cmd}")
+
     try:
         if shell:
             subprocess.run(cmd, shell=True, check=True)
         else:
-            if isinstance(cmd, str) and not shell:
+            if isinstance(cmd, str):
                 cmd = cmd.split()
             subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
@@ -60,43 +64,43 @@ def install_dependencies():
 
     # Check if nerfstudio is installed
     if importlib.util.find_spec("nerfstudio") is None:
-        run_command("pip install --upgrade pip", shell=True)
+        run_command(["pip", "install", "--upgrade", "pip"])
         # Force numpy < 2.0 to avoid compatibility issues with recent library updates
         # "Factory Reset" numpy: force reinstall to fix potential file corruption from previous patching attempts
-        run_command("pip install \"numpy<2.0\" --force-reinstall", shell=True)
-        run_command("pip install torch torchvision", shell=True)
-        run_command("pip install nerfstudio", shell=True)
+        run_command(["pip", "install", "numpy<2.0", "--force-reinstall"])
+        run_command(["pip", "install", "torch", "torchvision"])
+        run_command(["pip", "install", "nerfstudio"])
     else:
         print("   nerfstudio already installed.")
 
     print("⏳ Installing COLMAP & ffmpeg...")
-    run_command("apt-get update", shell=True)
+    run_command(["apt-get", "update"])
 
     # Check if colmap is installed
     try:
-        run_command("colmap help", shell=True)
+        run_command(["colmap", "help"])
         print("   COLMAP already installed.")
     except:
         print("⏳ Installing COLMAP via apt-get...")
-        run_command("apt-get install -y colmap", shell=True)
+        run_command(["apt-get", "install", "-y", "colmap"])
 
     # Check if ffmpeg is installed
     try:
-        run_command("ffmpeg -version", shell=True)
+        run_command(["ffmpeg", "-version"])
         print("   ffmpeg already installed.")
     except:
-        run_command("apt-get install -y ffmpeg", shell=True)
+        run_command(["apt-get", "install", "-y", "ffmpeg"])
 
     # Check if xvfb is installed (required for COLMAP with GPU)
     try:
-        run_command("which xvfb-run", shell=True)
+        run_command(["which", "xvfb-run"])
         print("   xvfb already installed.")
     except:
         print("⏳ Installing xvfb...")
-        run_command("apt-get install -y xvfb", shell=True)
+        run_command(["apt-get", "install", "-y", "xvfb"])
 
     try:
-        run_command("colmap help", shell=True)
+        run_command(["colmap", "help"])
         print("✅ COLMAP installed successfully.")
     except:
         print("❌ COLMAP installation failed.")
@@ -195,21 +199,31 @@ def process_data(resume_path=None):
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
     # Determine COLMAP binary command (use xvfb-run if available)
-    colmap_binary = "colmap"
+    colmap_binary = ["colmap"]
     try:
-        run_command("which xvfb-run", shell=True)
-        colmap_binary = "xvfb-run -a colmap"
-        print(f"✅ xvfb-run detected. Using: {colmap_binary}")
+        run_command(["which", "xvfb-run"])
+        colmap_binary = ["xvfb-run", "-a", "colmap"]
+        print(f"✅ xvfb-run detected. Using: {' '.join(colmap_binary)}")
     except:
         print("⚠️ xvfb-run not found. Using raw colmap command.")
 
     print("--- 2. Downscale Video ---")
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
     # Added -pix_fmt yuv420p for better compatibility
-    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{downscaled_video}\"", shell=True)
+    run_command([
+        "ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH),
+        "-vf", "scale=iw/2:ih/2",
+        "-c:v", "libx264", "-preset", "veryfast", "-crf", "23",
+        "-c:a", "copy", str(downscaled_video)
+    ])
 
     print("--- 3. Extract Frames (2 FPS) ---")
-    run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner -loglevel error", shell=True)
+    run_command([
+        "ffmpeg", "-y", "-i", str(downscaled_video),
+        "-vf", "fps=2",
+        f"{IMAGES_DIR}/frame_%05d.png",
+        "-hide_banner", "-loglevel", "error"
+    ])
 
     num_images = sum(1 for _ in os.scandir(IMAGES_DIR))
     print(f"✅ Extracted {num_images} images.")
@@ -222,8 +236,8 @@ def process_data(resume_path=None):
     # Memory says: "COLMAP SIFT matching and extraction commands in the project should have GPU acceleration enabled (`use_gpu 1`) to maximize processing speed."
     # So I should enable GPU for extraction too.
 
-    cmd_extract = [
-        colmap_binary, "feature_extractor",
+    cmd_extract = colmap_binary + [
+        "feature_extractor",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--ImageReader.camera_model", "OPENCV",
@@ -231,23 +245,23 @@ def process_data(resume_path=None):
         "--SiftExtraction.num_threads", "16",
         "--SiftExtraction.peak_threshold", "0.004",
     ]
-    run_command(" ".join(cmd_extract), shell=True)
+    run_command(cmd_extract)
 
     print("--- 5. Matching (Sequential) ---")
     # --- FIX 2: Disable loop_detection to avoid crash due to missing vocab tree ---
-    cmd_match = [
-        colmap_binary, "sequential_matcher",
+    cmd_match = colmap_binary + [
+        "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
         "--SiftMatching.use_gpu", "0",
         "--SequentialMatching.loop_detection", "0",
         "--SequentialMatching.overlap", "10"
     ]
-    run_command(" ".join(cmd_match), shell=True)
+    run_command(cmd_match)
 
     print("--- 6. Mapper (Relaxed) ---")
     SPARSE_PATH.mkdir(parents=True, exist_ok=True)
-    cmd_mapper = [
-        colmap_binary, "mapper",
+    cmd_mapper = colmap_binary + [
+        "mapper",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--output_path", str(SPARSE_PATH),
@@ -255,7 +269,7 @@ def process_data(resume_path=None):
         "--Mapper.init_min_tri_angle", "2",
         "--Mapper.multiple_models", "0"
     ]
-    run_command(" ".join(cmd_mapper), shell=True)
+    run_command(cmd_mapper)
 
     print("--- 7. Converting to transforms.json ---")
     recon_dir = SPARSE_PATH / "0"
@@ -279,8 +293,12 @@ def process_data(resume_path=None):
 def train_model():
     print("--- Training Splatfacto Model ---")
     # ns-train splatfacto --data {PROJECT_DIR} --viewer.quit-on-train-completion True
-    cmd_train = f"ns-train splatfacto --data \"{PROJECT_DIR}\" --viewer.quit-on-train-completion True"
-    run_command(cmd_train, shell=True)
+    cmd_train = [
+        "ns-train", "splatfacto",
+        "--data", str(PROJECT_DIR),
+        "--viewer.quit-on-train-completion", "True"
+    ]
+    run_command(cmd_train)
 
 def export_model():
     print("--- Exporting .splat ---")
@@ -313,8 +331,12 @@ def export_model():
     print(f"✅ Found latest config: {config_path}")
 
     # Run export
-    cmd_export = f"ns-export gaussian-splat --load-config \"{config_path}\" --output-dir \"{latest_run}\""
-    run_command(cmd_export, shell=True)
+    cmd_export = [
+        "ns-export", "gaussian-splat",
+        "--load-config", str(config_path),
+        "--output-dir", str(latest_run)
+    ]
+    run_command(cmd_export)
 
     # Verify result
     generated_splats = list(latest_run.glob("*.splat")) + list(latest_run.glob("*.ply"))
