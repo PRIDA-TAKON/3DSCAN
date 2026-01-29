@@ -102,6 +102,23 @@ def install_dependencies():
         print("❌ COLMAP installation failed.")
 
 
+def patch_numpy_compatibility():
+    """
+    Patches numpy to ensure compatibility with legacy code (e.g. np.round_ removed in Numpy 2.0).
+    """
+    print("🔧 Checking Numpy compatibility...")
+    try:
+        import numpy
+        if not hasattr(numpy, "round_"):
+            numpy.round_ = numpy.round
+            print("   🩹 Patched numpy.round_ -> numpy.round (Legacy Support Enabled)")
+        else:
+            print("   ✅ numpy.round_ exists. No patch needed.")
+    except ImportError:
+        print("   ⚠️ Numpy not installed. Skipping patch.")
+    except Exception as e:
+        print(f"   ⚠️ Numpy patch failed: {e}")
+
 
 def patch_nerfstudio():
     """
@@ -337,6 +354,9 @@ if __name__ == "__main__":
 
     # 2. Install Deps
     install_dependencies()
+
+    # 2.1 Apply Numpy Compatibility Patch
+    patch_numpy_compatibility()
 
     # 3. Apply Patch (Critical Fix)
     patch_nerfstudio()
