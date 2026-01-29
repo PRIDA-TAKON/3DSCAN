@@ -227,7 +227,7 @@ def process_data(resume_path=None):
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--ImageReader.camera_model", "OPENCV",
-        "--SiftExtraction.use_gpu", "0", # Disable GPU for extraction to avoid OpenGL crashes in headless mode
+        "--SiftExtraction.use_gpu", "1",
         "--SiftExtraction.num_threads", "16",
         "--SiftExtraction.peak_threshold", "0.004",
     ]
@@ -238,7 +238,7 @@ def process_data(resume_path=None):
     cmd_match = [
         colmap_binary, "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
-        "--SiftMatching.use_gpu", "0",
+        "--SiftMatching.use_gpu", "1",
         "--SequentialMatching.loop_detection", "0",
         "--SequentialMatching.overlap", "10"
     ]
