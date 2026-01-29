@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import sys
 import glob
@@ -120,11 +121,11 @@ def patch_nerfstudio():
             with open(target_file, "r") as f:
                 content = f.read()
 
-            old_code = 'loaded_state = torch.load(load_path, map_location="cpu")'
-            new_code = 'loaded_state = torch.load(load_path, map_location="cpu", weights_only=False)'
+            # Robust regex search for the target line
+            pattern = r'(loaded_state\s*=\s*torch\.load\s*\(\s*load_path\s*,\s*map_location\s*=\s*["\']cpu["\'])\s*\)'
 
-            if old_code in content:
-                new_content = content.replace(old_code, new_code)
+            if re.search(pattern, content):
+                new_content = re.sub(pattern, r'\1, weights_only=False)', content)
                 with open(target_file, "w") as f:
                     f.write(new_content)
                 print("✅ Patch applied successfully!")
