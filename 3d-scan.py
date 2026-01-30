@@ -14,6 +14,17 @@ print("✅ Imports complete")
 PROJECT_NAME = "car_scan"
 # IMPORTANT: Update this path to match your uploaded video in Kaggle
 VIDEO_INPUT_PATH = Path('/kaggle/input/car-video/video_car.mp4')
+
+# Allow overriding via command line
+import argparse
+# We need to parse args early to set the constant, or move this logic inside main. 
+# But this script uses global constants. Let's look for args.
+parser_pre = argparse.ArgumentParser(add_help=False)
+parser_pre.add_argument("--input_video", type=str, default=None)
+args_pre, _ = parser_pre.parse_known_args()
+if args_pre.input_video:
+    VIDEO_INPUT_PATH = Path(args_pre.input_video)
+
 WORKING_DIR = Path("/kaggle/working")
 PROJECT_DIR = WORKING_DIR / PROJECT_NAME
 DATABASE_PATH = PROJECT_DIR / "database.db"
