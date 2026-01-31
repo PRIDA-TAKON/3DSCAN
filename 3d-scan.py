@@ -11,6 +11,9 @@ import importlib.util
 print("✅ Imports complete")
 
 # ================= CONFIGURATION =================
+print("✅ Imports complete")
+
+# ================= CONFIGURATION =================
 PROJECT_NAME = "3d_scan"
 # Function to find input video dynamically
 def find_input_video():
@@ -29,7 +32,7 @@ def find_input_video():
     return None
 
 # Initial placeholder, allows override
-VIDEO_INPUT_PATH = None
+VIDEO_INPUT_PATH = find_input_video()
 WORKING_DIR = Path("/kaggle/working")
 PROJECT_DIR = WORKING_DIR / PROJECT_NAME
 DATABASE_PATH = PROJECT_DIR / "database.db"
@@ -345,31 +348,14 @@ def export_model():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run 3D Scan Pipeline")
     parser.add_argument("--resume_path", type=str, help="Path to existing project folder (containing transforms.json) to resume from", default=None)
-    parser.add_argument("--input_video", type=str, default=None, help="Override input video path")
     args = parser.parse_args()
 
-    # Initialize Video Path
-    if args.input_video:
-        VIDEO_INPUT_PATH = Path(args.input_video)
-    else:
-        detected_video = find_input_video()
-        if detected_video:
-            VIDEO_INPUT_PATH = detected_video
-        else:
-             print("⚠️ No video found dynamically, using default fallback path.")
-             VIDEO_INPUT_PATH = Path('/kaggle/input/car-video/video_car.mp4')
-             
-    if not VIDEO_INPUT_PATH or not VIDEO_INPUT_PATH.exists():
-         print(f"❌ Error: Video file not found at {VIDEO_INPUT_PATH}")
-         print("Please upload your video to Kaggle input or specify --input_video")
-         # We continue to allow checking GPU etc, but process_data will fail.
-
-    # 1. Install Deps (Prioritize to ensure correct numpy version is loaded)
-    install_dependencies()
-
-    # 2. GPU Check
+    # 1. GPU Check
     if not check_gpu():
         print("WARNING: Proceeding without GPU might fail or be extremely slow.")
+
+    # 2. Install Deps
+    install_dependencies()
 
     # 3. Apply Patch (Critical Fix)
     patch_nerfstudio()
