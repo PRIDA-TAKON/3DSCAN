@@ -222,7 +222,7 @@ def process_data(resume_path=None):
     print("--- 2. Downscale Video ---")
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
     # Added -pix_fmt yuv420p for better compatibility
-    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{downscaled_video}\"", shell=True)
+    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -an \"{downscaled_video}\"", shell=True)
 
     print("--- 3. Extract Frames (2 FPS) ---")
     run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner -loglevel error", shell=True)
