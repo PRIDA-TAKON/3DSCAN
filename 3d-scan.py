@@ -11,21 +11,35 @@ import importlib.util
 print("✅ Imports complete")
 
 # ================= CONFIGURATION =================
-PROJECT_NAME = "car_scan"
+PROJECT_NAME = "site_scan"
 # IMPORTANT: Update this path to match your uploaded video in Kaggle
-VIDEO_INPUT_PATH = Path('/kaggle/input/car-video/video_car.mp4')
-if not VIDEO_INPUT_PATH.exists() and Path("input/video_car.mp4").exists():
-    VIDEO_INPUT_PATH = Path("input/video_car.mp4")
+# Function to find input video dynamically
+def find_input_video():
+    print("🔍 Searching for input video...")
+    search_paths = [Path("/kaggle/input"), Path("input")]
+    
+    for search_path in search_paths:
+        if search_path.exists():
+            # Find all mp4 files recursively
+            videos = list(search_path.rglob("*.mp4"))
+            if videos:
+                # Prefer files that are NOT in an "output" or "working" directory if possible
+                # But typically /kaggle/input is read-only source
+                print(f"✅ Found video: {videos[0]}")
+                return videos[0]
+    
+    print("❌ No .mp4 video found in /kaggle/input or local input/")
+    return None
+
+# Global placeholder, computed in main() or via function if imported
+VIDEO_INPUT_PATH = None
 
 # Allow overriding via command line
 import argparse
 # We need to parse args early to set the constant, or move this logic inside main. 
 # But this script uses global constants. Let's look for args.
-parser_pre = argparse.ArgumentParser(add_help=False)
-parser_pre.add_argument("--input_video", type=str, default=None)
-args_pre, _ = parser_pre.parse_known_args()
-if args_pre.input_video:
-    VIDEO_INPUT_PATH = Path(args_pre.input_video)
+# Allow overriding via command line
+# Moved to main block
 
 WORKING_DIR = Path("/kaggle/working")
 if not WORKING_DIR.exists():
@@ -300,6 +314,74 @@ def train_model():
     cmd_train = f"ns-train splatfacto --data \"{PROJECT_DIR}\" --viewer.quit-on-train-completion True"
     run_command(cmd_train, shell=True)
 
+def convert_ply_to_splat(ply_file: Path, output_file: Path):
+    """
+    Converts a PLY file to a .splat file.
+    """
+    print(f"⏳ Converting {ply_file.name} to .splat format...")
+    from plyfile import PlyData
+    import numpy as np
+    
+    try:
+        plydata = PlyData.read(str(ply_file))
+        vert = plydata["vertex"]
+        
+        # Use sorting to improve rendering order (closest first is usually handled by viewer sorting, 
+        # but splat files are often sorted by morton code or similar. Here we just pack data).
+        # Some viewers expect sorting. For simple purposes, we just pack.
+        
+        sorted_indices = np.argsort(
+            -np.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
+            / (1 / (1 + np.exp(-vert["opacity"])))
+        )
+        
+        buffer = bytearray()
+        for idx in sorted_indices:
+            position = np.array([vert["x"][idx], vert["y"][idx], vert["z"][idx]], dtype=np.float32)
+            scales = np.array([vert["scale_0"][idx], vert["scale_1"][idx], vert["scale_2"][idx]], dtype=np.float32)
+            rot = np.array([vert["rot_0"][idx], vert["rot_1"][idx], vert["rot_2"][idx], vert["rot_3"][idx]], dtype=np.float32)
+            
+            # Color (Spherical Harmonics DC term)
+            # SH_0(0), SH_0(1), SH_0(2) corresponds to R, G, B DC components
+            # Usually in Ply from Nerfstudio it's f_dc_0, f_dc_1, f_dc_2
+            SH_C0 = 0.28209479177387814
+            r = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_0"][idx]) * 255)))
+            g = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_1"][idx]) * 255)))
+            b = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_2"][idx]) * 255)))
+            color = np.array([r, g, b, 255], dtype=np.uint8)
+
+            # Normalize Rotation
+            length = np.sqrt(np.sum(rot ** 2))
+            rot /= length
+            
+            # Exp scales to get linear scale
+            scales = np.exp(scales)
+            
+            # Pack into buffer
+            # Format: position(3f), scale(3f), color(4b), rotation(4b)
+            # Note: .splat format spec varies, standard is usually pos, scale, color, rot_q
+            buffer.extend(position.tobytes())
+            buffer.extend(scales.tobytes())
+            buffer.extend(color.tobytes())
+            
+            # Quantize Rotation to 8-bit
+            # rot_int = (rot * 127.5 + 127.5).astype(np.uint8)
+            # buffer.extend(rot_int.tobytes())
+            
+            # Wait, the Standard Gaussian Splatting .splat file format (Antimatter15) is:
+            # Position (3 floats), Scale (3 floats), Color (4 uint8: R,G,B,A), Rotation (4 uint8: quaternion)
+            
+            rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
+            buffer.extend(rot_int.tobytes())
+            
+        with open(output_file, "wb") as f:
+            f.write(buffer)
+            
+        print(f"✅ Successfully converted to {output_file}")
+        
+    except Exception as e:
+        print(f"❌ Conversion failed: {e}")
+
 def export_model():
     print("--- Exporting .splat ---")
     training_output_path = OUTPUTS_DIR
@@ -335,9 +417,14 @@ def export_model():
     run_command(cmd_export, shell=True)
 
     # Verify result
-    generated_splats = list(latest_run.glob("*.splat")) + list(latest_run.glob("*.ply"))
-    if generated_splats:
-        print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
+    generated_plys = list(latest_run.glob("*.ply"))
+    if generated_plys:
+        ply_file = generated_plys[0]
+        print(f"🎉 Created PLY file: {ply_file}")
+        
+        # Convert to .splat
+        splat_file = latest_run / "model.splat"
+        convert_ply_to_splat(ply_file, splat_file)
     else:
         print(f"❌ Export command finished but no .splat file was found in {latest_run}")
         print("📂 Directory content:")
@@ -347,7 +434,18 @@ def export_model():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run 3D Scan Pipeline")
     parser.add_argument("--resume_path", type=str, help="Path to existing project folder (containing transforms.json) to resume from", default=None)
+    parser.add_argument("--input_video", type=str, default=None, help="Override input video path")
     args = parser.parse_args()
+
+    # Initialize Video Path
+    if args.input_video:
+        VIDEO_INPUT_PATH = Path(args.input_video)
+    else:
+        detected_video = find_input_video()
+        if detected_video:
+            VIDEO_INPUT_PATH = detected_video
+        else:
+             VIDEO_INPUT_PATH = Path('/kaggle/input/video-site-constuction/site_demo.mp4')
 
     # 1. GPU Check
     if not check_gpu():
