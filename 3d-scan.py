@@ -11,7 +11,7 @@ import importlib.util
 print("✅ Imports complete")
 
 # ================= CONFIGURATION =================
-PROJECT_NAME = "car_scan"
+PROJECT_NAME = "3d_scan"
 # Function to find input video dynamically
 def find_input_video():
     print("🔍 Searching for input video...")
