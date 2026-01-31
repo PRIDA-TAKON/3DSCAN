@@ -6,7 +6,8 @@
 
 | ไฟล์ (File) | หน้าที่ (Description) |
 | :--- | :--- |
-| **`3d-scan.ipynb`** | **ตัวรันหลัก (Launcher):** เป็นไฟล์ Jupyter Notebook ที่ใช้สำหรับรันบน Kaggle หน้าที่หลักคือเตรียม Environment, ติดตั้ง dependencies ที่จำเป็น, ทำการ Patch แก้ไข Library ที่มีปัญหา และสั่งรันไฟล์ `3d-scan.py` |
+| **`3d-scan-fixed.ipynb`** | **ตัวรันหลัก (Recommended Launcher):** เวอร์ชันแก้ไขที่ฝังโค้ด `3d-scan.py` ฉบับล่าสุดไว้ภายใน (Fixed Script Embedded) แก้ปัญหา Path และการตัดเสียงวิดีโอ เหมาะสำหรับรันบน Kaggle โดยไม่ต้องรอ git update |
+| **`3d-scan.ipynb`** | **ตัวสำรอง (Legislated Launcher):** ไฟล์ต้นฉบับที่ดึงโค้ดจาก GitHub (อาจไม่อัปเดตเท่า fixed version) |
 | **`3d-scan.py`** | **โค้ดหลัก (Core Script):** สคริปต์ Python ที่ควบคุม Process การทำงานทั้งหมด ตั้งแต่แปลงวิดีโอ, รัน COLMAP, เทรนโมเดล Splatfacto, และส่งออกไฟล์ .splat |
 | `LICENSE` | ไลเซนส์ของโปรเจค (MIT License) |
 | `*.txt` | ไฟล์ Log บันทึกผลการทำงาน (เช่น `3d-scan.log.txt`) |

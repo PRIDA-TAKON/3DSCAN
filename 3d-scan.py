@@ -14,6 +14,8 @@ print("✅ Imports complete")
 PROJECT_NAME = "car_scan"
 # IMPORTANT: Update this path to match your uploaded video in Kaggle
 VIDEO_INPUT_PATH = Path('/kaggle/input/car-video/video_car.mp4')
+if not VIDEO_INPUT_PATH.exists() and Path("input/video_car.mp4").exists():
+    VIDEO_INPUT_PATH = Path("input/video_car.mp4")
 
 # Allow overriding via command line
 import argparse
@@ -26,6 +28,9 @@ if args_pre.input_video:
     VIDEO_INPUT_PATH = Path(args_pre.input_video)
 
 WORKING_DIR = Path("/kaggle/working")
+if not WORKING_DIR.exists():
+    WORKING_DIR = Path.cwd() / "working_data"
+    WORKING_DIR.mkdir(parents=True, exist_ok=True)
 PROJECT_DIR = WORKING_DIR / PROJECT_NAME
 DATABASE_PATH = PROJECT_DIR / "database.db"
 IMAGES_DIR = PROJECT_DIR / "images"
@@ -216,11 +221,13 @@ def process_data(resume_path=None):
 
     print("--- 2. Downscale Video ---")
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
-    # Added -pix_fmt yuv420p for better compatibility
-    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -c:a copy \"{downscaled_video}\"", shell=True)
+    # Remove audio (-an) to prevent sync issues causing truncation
+    # Use -vf scale=iw/2:ih/2 (no quotes) which works on both Linux/Windows usually if no spaces
+    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale=iw/2:ih/2 -c:v libx264 -preset veryfast -crf 23 -an \"{downscaled_video}\"", shell=True)
 
     print("--- 3. Extract Frames (2 FPS) ---")
-    run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner -loglevel error", shell=True)
+    # Remove -loglevel error to see progress/errors
+    run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner", shell=True)
 
     num_images = sum(1 for _ in os.scandir(IMAGES_DIR))
     print(f"✅ Extracted {num_images} images.")
