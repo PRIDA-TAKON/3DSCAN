@@ -364,12 +364,12 @@ if __name__ == "__main__":
          print("Please upload your video to Kaggle input or specify --input_video")
          # We continue to allow checking GPU etc, but process_data will fail.
 
-    # 1. GPU Check
+    # 1. Install Deps (Prioritize to ensure correct numpy version is loaded)
+    install_dependencies()
+
+    # 2. GPU Check
     if not check_gpu():
         print("WARNING: Proceeding without GPU might fail or be extremely slow.")
-
-    # 2. Install Deps
-    install_dependencies()
 
     # 3. Apply Patch (Critical Fix)
     patch_nerfstudio()
