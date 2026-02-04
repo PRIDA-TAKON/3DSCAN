@@ -82,13 +82,17 @@ def install_dependencies():
     # Check if nerfstudio is installed
     if importlib.util.find_spec("nerfstudio") is None:
         run_command("pip install --upgrade pip", shell=True)
-        # Force numpy < 2.0 to avoid compatibility issues with recent library updates
-        # "Factory Reset" numpy: force reinstall to fix potential file corruption from previous patching attempts
-        run_command("pip install \"numpy<2.0\" --force-reinstall", shell=True)
         run_command("pip install torch torchvision", shell=True)
         run_command("pip install nerfstudio", shell=True)
     else:
         print("   nerfstudio already installed.")
+
+    # Verify Numpy Integrity (Fix for broken imports like broadcast_to)
+    try:
+        from numpy.lib.stride_tricks import broadcast_to
+    except ImportError:
+        print("⚠️ Numpy seems corrupted. Reinstalling...")
+        run_command("pip install numpy --force-reinstall", shell=True)
 
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
