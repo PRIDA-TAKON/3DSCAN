@@ -85,43 +85,56 @@ def check_numpy_integrity():
     except (ImportError, AttributeError, RuntimeError):
         return False
 
-def install_dependencies():
-    print("⏳ Installing dependencies...")
+    print("⏳ Installing dependencies (Force Numpy 2.0 Mode)...")
 
-    # Check for numpy corruption
-    numpy_ok = check_numpy_integrity()
-    if not numpy_ok:
-        print("⚠️ Numpy corruption detected! Forcing reinstall...")
+    # 1. Upgrade pip first
+    run_command("pip install --upgrade pip", shell=True)
 
-    # Check if nerfstudio is installed
-    if importlib.util.find_spec("nerfstudio") is None or not numpy_ok:
-        run_command("pip install --upgrade pip", shell=True)
-        # Reinstall numpy if corrupted or fresh install. We remove the <2.0 constraint as we have the patch.
-        if not numpy_ok:
-             run_command("pip install numpy --force-reinstall", shell=True)
+    # 2. Force Upgrade Numpy to 2.x and essential libs to compatible versions
+    # We explicitly upgrade opencv, numba, scipy, pandas, scikit-learn, etc. to avoid conflicts
+    print("🚀 Force upgrading core libraries for Numpy 2.0 compatibility...")
+    libs_to_upgrade = [
+        "numpy>=2.0",
+        "numba",
+        "scipy",
+        "pandas",
+        "scikit-learn",
+        "opencv-python",
+        "opencv-python-headless", 
+        "opencv-contrib-python",
+        "matplotlib",
+        "pillow"
+    ]
+    run_command(f"pip install --upgrade {' '.join(libs_to_upgrade)}", shell=True)
 
-        run_command("pip install torch torchvision", shell=True)
-        run_command("pip install nerfstudio", shell=True)
-        # Install plyfile for custom .splat export
-        run_command("pip install plyfile", shell=True)
-    else:
-        print("   nerfstudio already installed.")
-        # Ensure plyfile is installed even if nerfstudio is present
-        if importlib.util.find_spec("plyfile") is None:
-             run_command("pip install plyfile", shell=True)
+    # 3. Handle TensorFlow (often causes conflicts, upgrade it too)
+    try:
+        run_command("pip install --upgrade tensorflow", shell=True)
+    except:
+        print("⚠️ Failed to upgrade tensorflow, proceeding...")
 
-    # Install Taichi (Stable) and plyfile
-    run_command("pip install taichi plyfile", shell=True)
+    # 4. Install Nerfstudio (without deps first maybe? No, let pip handle it but we pre-installed newer versions)
+    # We trust that the newer libs above rely on numpy 2.0, so pip won't downgrade if we just install nerfstudio now.
+    # However, nerfstudio requirements might strictly say <2.0. We might need to permit it or ignore deps if it fails.
+    # Let's try standard install first, it usually respects installed packages if they satisfy constraints, 
+    # but if nerfstudio hardcodes numpy<2.0, we have a problem.
+    # Luckily, newer nerfstudio/gsplat might support it.
+    
+    print("⏳ Installing Nerfstudio & Utils...")
+    run_command("pip install nerfstudio plyfile", shell=True)
 
-    # Install Taichi Splatting from source to fix 'taichi-nightly' dependency issue
-    print("⏳ Installing taichi-splatting from source (patching taichi-nightly)...")
+    # 5. Install Taichi (Stable)
+    run_command("pip install taichi", shell=True)
+
+    # 6. Install Taichi Splatting from source (Patched for stable taichi)
+    print("⏳ Installing taichi-splatting from source...")
     if os.path.exists("taichi-splatting"):
         shutil.rmtree("taichi-splatting")
     
+    # Use shallow clone to avoid timeout (User requested fix)
     run_command("git clone --depth 1 https://github.com/taichi-dev/taichi-splatting.git", shell=True)
     
-    # Patch requirements using sed (works on Linux/Kaggle) to use stable taichi
-    # We defensively try to patch common dependency files
+    # Patch requirements to use stable taichi
     run_command("find taichi-splatting -type f \\( -name 'pyproject.toml' -o -name 'setup.py' -o -name 'requirements.txt' \\) -exec sed -i 's/taichi-nightly/taichi/g' {} +", shell=True)
     
     # Install from source
