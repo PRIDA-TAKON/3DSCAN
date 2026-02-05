@@ -76,19 +76,42 @@ def check_gpu():
         print("⚠️ torch module not found. Cannot check GPU availability.")
         return False
 
+def check_numpy_integrity():
+    """
+    Checks if numpy is corrupted (e.g. from mixed environment files) by importing specific attributes.
+    Returns True if healthy, False if corrupted.
+    """
+    try:
+        # This specific import often fails if numpy is corrupted/mixed
+        from numpy.lib.stride_tricks import broadcast_to
+        return True
+    except (ImportError, AttributeError, RuntimeError):
+        return False
+
 def install_dependencies():
     print("⏳ Installing dependencies...")
 
+    # Check for numpy corruption
+    numpy_ok = check_numpy_integrity()
+    if not numpy_ok:
+        print("⚠️ Numpy corruption detected! Forcing reinstall...")
+
     # Check if nerfstudio is installed
-    if importlib.util.find_spec("nerfstudio") is None:
+    if importlib.util.find_spec("nerfstudio") is None or not numpy_ok:
         run_command("pip install --upgrade pip", shell=True)
-        # Force numpy < 2.0 to avoid compatibility issues with recent library updates
-        # "Factory Reset" numpy: force reinstall to fix potential file corruption from previous patching attempts
-        run_command("pip install \"numpy<2.0\" --force-reinstall", shell=True)
+        # Reinstall numpy if corrupted or fresh install. We remove the <2.0 constraint as we have the patch.
+        if not numpy_ok:
+             run_command("pip install numpy --force-reinstall", shell=True)
+
         run_command("pip install torch torchvision", shell=True)
         run_command("pip install nerfstudio", shell=True)
+        # Install plyfile for custom .splat export
+        run_command("pip install plyfile", shell=True)
     else:
         print("   nerfstudio already installed.")
+        # Ensure plyfile is installed even if nerfstudio is present
+        if importlib.util.find_spec("plyfile") is None:
+             run_command("pip install plyfile", shell=True)
 
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
@@ -238,59 +261,74 @@ def process_data(resume_path=None):
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
     # Determine COLMAP binary command (use xvfb-run if available)
-    colmap_binary = "colmap"
+    colmap_cmd = ["colmap"]
     try:
-        run_command("which xvfb-run", shell=True)
-        colmap_binary = "xvfb-run -a colmap"
-        print(f"✅ xvfb-run detected. Using: {colmap_binary}")
+        subprocess.run(["which", "xvfb-run"], check=True, stdout=subprocess.DEVNULL)
+        colmap_cmd = ["xvfb-run", "-a", "colmap"]
+        print(f"✅ xvfb-run detected. Using: {colmap_cmd}")
     except:
         print("⚠️ xvfb-run not found. Using raw colmap command.")
 
     print("--- 2. Downscale Video ---")
+    # Check for h264_nvenc
+    use_nvenc = False
+    try:
+        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
+        if "h264_nvenc" in result.stdout:
+            use_nvenc = True
+            print("✅ h264_nvenc detected. Using GPU acceleration for video processing.")
+        else:
+            print("⚠️ h264_nvenc not found. Using CPU encoding.")
+    except Exception:
+         print("⚠️ Failed to check ffmpeg encoders. Defaulting to CPU.")
+
     downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
-    # Added -pix_fmt yuv420p for better compatibility
-    run_command(f"ffmpeg -y -i \"{VIDEO_INPUT_PATH}\" -vf scale='iw/2:ih/2' -c:v libx264 -preset veryfast -crf 23 -an \"{downscaled_video}\"", shell=True)
+
+    if use_nvenc:
+         # -preset fast -cq 23
+         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=iw/2:ih/2", "-c:v", "h264_nvenc", "-preset", "fast", "-cq", "23", "-an", str(downscaled_video)]
+    else:
+         # -preset veryfast -crf 23
+         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=iw/2:ih/2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-an", str(downscaled_video)]
+
+    run_command(cmd_downscale, shell=False)
 
     print("--- 3. Extract Frames (2 FPS) ---")
-    run_command(f"ffmpeg -y -i \"{downscaled_video}\" -vf \"fps=2\" \"{IMAGES_DIR}/frame_%05d.png\" -hide_banner -loglevel error", shell=True)
+    cmd_frames = ["ffmpeg", "-y", "-i", str(downscaled_video), "-vf", "fps=2", str(IMAGES_DIR / "frame_%05d.png"), "-hide_banner"]
+    run_command(cmd_frames, shell=False)
 
     num_images = sum(1 for _ in os.scandir(IMAGES_DIR))
     print(f"✅ Extracted {num_images} images.")
 
     print("--- 4. Feature Extraction ---")
-    # Using CPU for feature extraction as per original notebook config, but memory says SiftMatching should use GPU.
-    # Feature extraction is separate from Matching. Memory specifically says SiftMatching.
-    # However, usually if one uses GPU, the other can too.
-    # The notebook says: --SiftExtraction.use_gpu 0
-    # Memory says: "COLMAP SIFT matching and extraction commands in the project should have GPU acceleration enabled (`use_gpu 1`) to maximize processing speed."
-    # So I should enable GPU for extraction too.
+    # Using CPU (use_gpu 0) for feature extraction/matching to avoid OpenGL crashes in headless environments
 
-    cmd_extract = [
-        colmap_binary, "feature_extractor",
+    cmd_extract = colmap_cmd + [
+        "feature_extractor",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--ImageReader.camera_model", "OPENCV",
-        "--SiftExtraction.use_gpu", "1",
+        "--SiftExtraction.use_gpu", "0",
         "--SiftExtraction.num_threads", "16",
         "--SiftExtraction.peak_threshold", "0.004",
     ]
-    run_command(" ".join(cmd_extract), shell=True)
+    run_command(cmd_extract, shell=False)
 
     print("--- 5. Matching (Sequential) ---")
-    # --- FIX 2: Disable loop_detection to avoid crash due to missing vocab tree ---
-    cmd_match = [
-        colmap_binary, "sequential_matcher",
+    # Loop detection disabled to prevent crashes
+    cmd_match = colmap_cmd + [
+        "sequential_matcher",
         "--database_path", str(DATABASE_PATH),
-        "--SiftMatching.use_gpu", "1",
+        "--SiftMatching.use_gpu", "0",
         "--SequentialMatching.loop_detection", "0",
         "--SequentialMatching.overlap", "10"
     ]
-    run_command(" ".join(cmd_match), shell=True)
+    run_command(cmd_match, shell=False)
 
     print("--- 6. Mapper (Relaxed) ---")
     SPARSE_PATH.mkdir(parents=True, exist_ok=True)
-    cmd_mapper = [
-        colmap_binary, "mapper",
+    cmd_mapper = colmap_cmd + [
+        "mapper",
         "--database_path", str(DATABASE_PATH),
         "--image_path", str(IMAGES_DIR),
         "--output_path", str(SPARSE_PATH),
@@ -298,7 +336,7 @@ def process_data(resume_path=None):
         "--Mapper.init_min_tri_angle", "2",
         "--Mapper.multiple_models", "0"
     ]
-    run_command(" ".join(cmd_mapper), shell=True)
+    run_command(cmd_mapper, shell=False)
 
     print("--- 7. Converting to transforms.json ---")
     recon_dir = SPARSE_PATH / "0"
@@ -324,6 +362,67 @@ def train_model():
     # ns-train splatfacto --data {PROJECT_DIR} --viewer.quit-on-train-completion True
     cmd_train = f"ns-train splatfacto --data \"{PROJECT_DIR}\" --viewer.quit-on-train-completion True"
     run_command(cmd_train, shell=True)
+
+def convert_ply_to_splat(ply_file: Path, output_file: Path):
+    """
+    Converts a PLY file to a .splat file.
+    """
+    print(f"⏳ Converting {ply_file.name} to .splat format...")
+    # Import plyfile locally to ensure it is available (installed in deps)
+    try:
+        from plyfile import PlyData
+        import numpy as np
+    except ImportError:
+        print("❌ Error: plyfile or numpy not found. Cannot convert.")
+        return
+
+    try:
+        plydata = PlyData.read(str(ply_file))
+        vert = plydata["vertex"]
+
+        # Sort by scale/opacity importance approximation
+        sorted_indices = np.argsort(
+            -np.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
+            / (1 / (1 + np.exp(-vert["opacity"])))
+        )
+
+        buffer = bytearray()
+        for idx in sorted_indices:
+            position = np.array([vert["x"][idx], vert["y"][idx], vert["z"][idx]], dtype=np.float32)
+            scales = np.array([vert["scale_0"][idx], vert["scale_1"][idx], vert["scale_2"][idx]], dtype=np.float32)
+            rot = np.array([vert["rot_0"][idx], vert["rot_1"][idx], vert["rot_2"][idx], vert["rot_3"][idx]], dtype=np.float32)
+
+            # Color (Spherical Harmonics DC term)
+            SH_C0 = 0.28209479177387814
+            r = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_0"][idx]) * 255)))
+            g = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_1"][idx]) * 255)))
+            b = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_2"][idx]) * 255)))
+            color = np.array([r, g, b, 255], dtype=np.uint8)
+
+            # Normalize Rotation
+            length = np.sqrt(np.sum(rot ** 2))
+            rot /= length
+
+            # Exp scales to get linear scale
+            scales = np.exp(scales)
+
+            # Pack into buffer
+            # Format: position(3f), scale(3f), color(4b), rotation(4b)
+            buffer.extend(position.tobytes())
+            buffer.extend(scales.tobytes())
+            buffer.extend(color.tobytes())
+
+            # Quantize Rotation to 8-bit
+            rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
+            buffer.extend(rot_int.tobytes())
+
+        with open(output_file, "wb") as f:
+            f.write(buffer)
+
+        print(f"✅ Successfully converted to {output_file}")
+
+    except Exception as e:
+        print(f"❌ Conversion failed: {e}")
 
 def export_model():
     print("--- Exporting .splat ---")
@@ -360,14 +459,21 @@ def export_model():
     run_command(cmd_export, shell=True)
 
     # Verify result
-    generated_splats = list(latest_run.glob("*.splat")) + list(latest_run.glob("*.ply"))
+    generated_splats = list(latest_run.glob("*.splat"))
     if generated_splats:
         print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
     else:
-        print(f"❌ Export command finished but no .splat file was found in {latest_run}")
-        print("📂 Directory content:")
-        for f in latest_run.iterdir():
-            print(f" - {f.name}")
+        # Check for PLY if SPLAT not found
+        generated_plys = list(latest_run.glob("*.ply"))
+        if generated_plys:
+             print(f"⚠️ .splat not found, but found .ply: {generated_plys[0]}")
+             splat_file = latest_run / "model.splat"
+             convert_ply_to_splat(generated_plys[0], splat_file)
+        else:
+            print(f"❌ Export command finished but no .splat or .ply file was found in {latest_run}")
+            print("📂 Directory content:")
+            for f in latest_run.iterdir():
+                print(f" - {f.name}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run 3D Scan Pipeline")
