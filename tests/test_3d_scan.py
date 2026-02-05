@@ -45,7 +45,7 @@ class Test3DScan(unittest.TestCase):
             
             # Scenario 1: Kaggle has video
             mock_kaggle.exists.return_value = True
-            mock_kaggle.rglob.return_value = ["found_kaggle.mp4"]
+            mock_kaggle.rglob.return_value = iter(["found_kaggle.mp4"])
             
             res = self.scan_module.find_input_video()
             self.assertEqual(res, "found_kaggle.mp4")
@@ -53,10 +53,10 @@ class Test3DScan(unittest.TestCase):
             # Scenario 2: Kaggle empty, Local has video
             # Reset checks
             mock_kaggle.exists.return_value = True # dir exists
-            mock_kaggle.rglob.return_value = []    # but empty
+            mock_kaggle.rglob.return_value = iter([])    # but empty
             
             mock_local.exists.return_value = True
-            mock_local.rglob.return_value = ["found_local.mp4"]
+            mock_local.rglob.return_value = iter(["found_local.mp4"])
             
             res = self.scan_module.find_input_video()
             self.assertEqual(res, "found_local.mp4")
