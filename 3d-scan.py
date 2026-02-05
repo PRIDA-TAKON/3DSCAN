@@ -13,9 +13,6 @@ import concurrent.futures
 print("✅ Imports complete")
 
 # ================= CONFIGURATION =================
-print("✅ Imports complete")
-
-# ================= CONFIGURATION =================
 PROJECT_NAME = "3d_scan"
 # Function to find input video dynamically
 def find_input_video():
@@ -40,7 +37,7 @@ PROJECT_DIR = WORKING_DIR / PROJECT_NAME
 DATABASE_PATH = PROJECT_DIR / "database.db"
 IMAGES_DIR = PROJECT_DIR / "images"
 SPARSE_PATH = PROJECT_DIR / "sparse"
-OUTPUTS_DIR = Path("outputs") / PROJECT_NAME / "splatfacto"
+OUTPUTS_DIR = Path("outputs") / PROJECT_NAME / "taichi_splatting"
 
 # Environment tweaks
 os.environ['MAX_JOBS'] = '1' # Prevent freezing on Kaggle
@@ -112,6 +109,10 @@ def install_dependencies():
         # Ensure plyfile is installed even if nerfstudio is present
         if importlib.util.find_spec("plyfile") is None:
              run_command("pip install plyfile", shell=True)
+
+    # Install Taichi Splatting dependencies and plyfile
+    # We install these regardless of whether nerfstudio was just installed or pre-existing
+    run_command("pip install taichi taichi-splatting plyfile", shell=True)
 
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
@@ -358,9 +359,9 @@ def process_data(resume_path=None):
         return False
 
 def train_model():
-    print("--- Training Splatfacto Model ---")
-    # ns-train splatfacto --data {PROJECT_DIR} --viewer.quit-on-train-completion True
-    cmd_train = f"ns-train splatfacto --data \"{PROJECT_DIR}\" --viewer.quit-on-train-completion True"
+    print("--- Training with Taichi Splatting ---")
+    # Using our standalone script
+    cmd_train = f"python train_taichi.py --project_path \"{PROJECT_DIR}\" --output_path \"{OUTPUTS_DIR}\""
     run_command(cmd_train, shell=True)
 
 def convert_ply_to_splat(ply_file: Path, output_file: Path):
@@ -457,54 +458,25 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         print(f"❌ Conversion failed: {e}")
 
 def export_model():
-    print("--- Exporting .splat ---")
-    training_output_path = OUTPUTS_DIR
-
-    if not training_output_path.exists():
-        print(f"❌ Error: Training output directory not found at {training_output_path}")
+    print("--- Verifying Export ---")
+    if not OUTPUTS_DIR.exists():
+        print(f"❌ Error: Training output directory not found at {OUTPUTS_DIR}")
         return
 
-    latest_run = None
-    latest_mtime = -1
-
-    with os.scandir(training_output_path) as it:
-        for entry in it:
-            if entry.is_dir():
-                if entry.stat().st_mtime > latest_mtime:
-                    latest_mtime = entry.stat().st_mtime
-                    latest_run = Path(entry.path)
-
-    if latest_run is None:
-         print("❌ Error: No training run folders found.")
-         return
-
-    config_path = latest_run / "config.yml"
-
-    if not config_path.exists():
-        print(f"❌ Error: Config file not found in {latest_run}")
-        return
-
-    print(f"✅ Found latest config: {config_path}")
-
-    # Run export
-    cmd_export = f"ns-export gaussian-splat --load-config \"{config_path}\" --output-dir \"{latest_run}\""
-    run_command(cmd_export, shell=True)
-
-    # Verify result
-    generated_splats = list(latest_run.glob("*.splat"))
+    # ตรวจสอบไฟล์ PLY ที่ถูก export มาจาก train_taichi.py
+    generated_splats = list(OUTPUTS_DIR.glob("*.ply"))
+    
     if generated_splats:
         print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
+        
+        # ลองแปลงเป็น .splat เพื่อความสะดวกในการใช้งาน (ถ้ามีฟังก์ชันรองรับ)
+        splat_output = OUTPUTS_DIR / "model.splat"
+        convert_ply_to_splat(generated_splats[0], splat_output)
     else:
-        # Check for PLY if SPLAT not found
-        generated_plys = list(latest_run.glob("*.ply"))
-        if generated_plys:
-             print(f"⚠️ .splat not found, but found .ply: {generated_plys[0]}")
-             splat_file = latest_run / "model.splat"
-             convert_ply_to_splat(generated_plys[0], splat_file)
-        else:
-            print(f"❌ Export command finished but no .splat or .ply file was found in {latest_run}")
-            print("📂 Directory content:")
-            for f in latest_run.iterdir():
+        print(f"❌ No .ply file found in {OUTPUTS_DIR}")
+        print("📂 Directory content:")
+        if OUTPUTS_DIR.exists():
+            for f in OUTPUTS_DIR.iterdir():
                 print(f" - {f.name}")
 
 if __name__ == "__main__":
