@@ -182,7 +182,7 @@ def patch_nerfstudio():
                 content = f.read()
 
             # Robust regex search for the target line
-            pattern = r'(loaded_state\s*=\s*torch\.load\s*\(\s*load_path\s*,\s*map_location\s*=\s*["\']cpu["\'])\s*\)'
+            pattern = r'(loaded_state\s*=\s*torch\.load\s*\(\s*load_path\s*,\s*map_location\s*=\s*["\']cpu["\'])\s*,?\s*\)'
 
             if re.search(pattern, content):
                 new_content = re.sub(pattern, r'\1, weights_only=False)', content)
@@ -249,7 +249,7 @@ def process_data(resume_path=None):
              return False
 
     # --- NORMAL PROCESSING START ---
-    if not VIDEO_INPUT_PATH.exists():
+    if VIDEO_INPUT_PATH is None or not VIDEO_INPUT_PATH.exists():
         print(f"❌ Error: Video file not found at {VIDEO_INPUT_PATH}")
         print("Please upload your video and update VIDEO_INPUT_PATH in the script.")
         return False
@@ -286,10 +286,10 @@ def process_data(resume_path=None):
 
     if use_nvenc:
          # -preset fast -cq 23
-         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=iw/2:ih/2", "-c:v", "h264_nvenc", "-preset", "fast", "-cq", "23", "-an", str(downscaled_video)]
+         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=trunc(iw/4)*2:trunc(ih/4)*2", "-c:v", "h264_nvenc", "-preset", "fast", "-cq", "23", "-an", str(downscaled_video)]
     else:
          # -preset veryfast -crf 23
-         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=iw/2:ih/2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-an", str(downscaled_video)]
+         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=trunc(iw/4)*2:trunc(ih/4)*2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-an", str(downscaled_video)]
 
     run_command(cmd_downscale, shell=False)
 
