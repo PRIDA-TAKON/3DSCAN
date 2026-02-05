@@ -119,8 +119,16 @@ def install_dependencies():
     if os.path.exists("taichi-splatting"):
         shutil.rmtree("taichi-splatting")
     
-    # Use shallow clone to avoid timeout (User requested fix)
-    run_command("git clone --depth 1 https://github.com/taichi-dev/taichi-splatting.git", shell=True)
+    # Use wget/unzip to avoid git clone hangs
+    print("⏳ Downloading taichi-splatting source (ZIP method)...")
+    run_command("wget https://github.com/taichi-dev/taichi-splatting/archive/refs/heads/main.zip -O taichi-splatting.zip || wget https://github.com/taichi-dev/taichi-splatting/archive/refs/heads/master.zip -O taichi-splatting.zip", shell=True)
+    run_command("unzip -q taichi-splatting.zip", shell=True)
+    
+    # Rename folder (it will be taichi-splatting-main or taichi-splatting-master)
+    if os.path.exists("taichi-splatting-main"):
+        shutil.move("taichi-splatting-main", "taichi-splatting")
+    elif os.path.exists("taichi-splatting-master"):
+        shutil.move("taichi-splatting-master", "taichi-splatting")
     
     # Patch requirements to use stable taichi
     run_command("find taichi-splatting -type f \\( -name 'pyproject.toml' -o -name 'setup.py' -o -name 'requirements.txt' \\) -exec sed -i 's/taichi-nightly/taichi/g' {} +", shell=True)
