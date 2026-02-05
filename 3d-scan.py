@@ -386,38 +386,70 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
             / (1 / (1 + np.exp(-vert["opacity"])))
         )
 
-        buffer = bytearray()
-        for idx in sorted_indices:
-            position = np.array([vert["x"][idx], vert["y"][idx], vert["z"][idx]], dtype=np.float32)
-            scales = np.array([vert["scale_0"][idx], vert["scale_1"][idx], vert["scale_2"][idx]], dtype=np.float32)
-            rot = np.array([vert["rot_0"][idx], vert["rot_1"][idx], vert["rot_2"][idx], vert["rot_3"][idx]], dtype=np.float32)
+        # Vectorized implementation
+        N = len(sorted_indices)
 
-            # Color (Spherical Harmonics DC term)
-            SH_C0 = 0.28209479177387814
-            r = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_0"][idx]) * 255)))
-            g = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_1"][idx]) * 255)))
-            b = max(0, min(255, int((0.5 + SH_C0 * vert["f_dc_2"][idx]) * 255)))
-            color = np.array([r, g, b, 255], dtype=np.uint8)
+        # 1. Position
+        x = vert["x"][sorted_indices]
+        y = vert["y"][sorted_indices]
+        z = vert["z"][sorted_indices]
+        position = np.stack([x, y, z], axis=1).astype(np.float32)
 
-            # Normalize Rotation
-            length = np.sqrt(np.sum(rot ** 2))
-            rot /= length
+        # 2. Scales
+        s0 = vert["scale_0"][sorted_indices]
+        s1 = vert["scale_1"][sorted_indices]
+        s2 = vert["scale_2"][sorted_indices]
+        scales = np.stack([s0, s1, s2], axis=1).astype(np.float32)
+        scales = np.exp(scales)
 
-            # Exp scales to get linear scale
-            scales = np.exp(scales)
+        # 3. Rotation
+        r0 = vert["rot_0"][sorted_indices]
+        r1 = vert["rot_1"][sorted_indices]
+        r2 = vert["rot_2"][sorted_indices]
+        r3 = vert["rot_3"][sorted_indices]
+        rot = np.stack([r0, r1, r2, r3], axis=1).astype(np.float32)
 
-            # Pack into buffer
-            # Format: position(3f), scale(3f), color(4b), rotation(4b)
-            buffer.extend(position.tobytes())
-            buffer.extend(scales.tobytes())
-            buffer.extend(color.tobytes())
+        # Normalize Rotation (row-wise norm)
+        length = np.sqrt(np.sum(rot ** 2, axis=1, keepdims=True))
+        rot /= length
 
-            # Quantize Rotation to 8-bit
-            rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
-            buffer.extend(rot_int.tobytes())
+        # Quantize Rotation to 8-bit
+        rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
+
+        # 4. Color (Spherical Harmonics DC term)
+        SH_C0 = 0.28209479177387814
+        dc0 = vert["f_dc_0"][sorted_indices]
+        dc1 = vert["f_dc_1"][sorted_indices]
+        dc2 = vert["f_dc_2"][sorted_indices]
+
+        R = (0.5 + SH_C0 * dc0) * 255
+        G = (0.5 + SH_C0 * dc1) * 255
+        B = (0.5 + SH_C0 * dc2) * 255
+
+        R = np.clip(R, 0, 255).astype(np.uint8)
+        G = np.clip(G, 0, 255).astype(np.uint8)
+        B = np.clip(B, 0, 255).astype(np.uint8)
+        A = np.full_like(R, 255, dtype=np.uint8)
+
+        color = np.stack([R, G, B, A], axis=1)
+
+        # Pack into buffer
+        # Format: position(3f), scale(3f), color(4b), rotation(4b)
+        dtype_output = np.dtype([
+            ('position', np.float32, 3),
+            ('scale', np.float32, 3),
+            ('color', np.uint8, 4),
+            ('rot', np.uint8, 4)
+        ])
+
+        structured_data = np.empty(N, dtype=dtype_output)
+        structured_data['position'] = position
+        structured_data['scale'] = scales
+        structured_data['color'] = color
+        structured_data['rot'] = rot_int
 
         with open(output_file, "wb") as f:
-            f.write(buffer)
+            f.write(structured_data.tobytes())
 
         print(f"✅ Successfully converted to {output_file}")
 
