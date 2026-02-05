@@ -8,7 +8,7 @@
 
 ### 1. การเตรียมตัว (Setup)
 1.  สร้าง **New Notebook** ใน Kaggle
-2.  เลือก **File -> Import Notebook** แล้วเลือกไฟล์ `3d-scan.ipynb` หรือ `3d-scan-resume.ipynb` จากโปรเจคนี้
+2.  เลือก **File -> Import Notebook** แล้วเลือกไฟล์ `3d-scan-fixed.ipynb` (หลัก) หรือ `3d-scan-resume.ipynb` จากโปรเจคนี้
 3.  เปิดการตั้งค่าด้านขวา (Settings):
     *   **Internet:** On (เปิดใช้งานอินเทอร์เน็ต)
     *   **Accelerator:** GPU P100 หรือ T4 x2
@@ -21,11 +21,7 @@
 *ใช้เมื่อ:* คุณมีไฟล์วิดีโอ (.mp4) และต้องการเริ่มกระบวนการตั้งแต่ต้น (แปลงไฟล์ -> สร้าง Point Cloud -> เทรนโมเดล)
 
 1.  **Add Data:** อัปโหลดไฟล์วิดีโอของคุณไปที่ Kaggle Dataset
-2.  **ตั้งค่า Path:** ในโค้ด `3d-scan.ipynb` แก้ไขตัวแปร `VIDEO_INPUT_PATH` ให้ตรงกับไฟล์วิดีโอของคุณ
-    ```python
-    # ตัวอย่าง
-    VIDEO_INPUT_PATH = Path('/kaggle/input/my-video/car.mp4')
-    ```
+2.  **ตั้งค่า Path:** ไม่ต้องแก้ไข path วิดีโอ ระบบจะค้นหาไฟล์ .mp4 ใน `/kaggle/input` ให้อัตโนมัติ
 3.  **ตั้งค่า Resume:** ปล่อยตัวแปร `RESUME_PATH` ให้ว่างไว้
     ```python
     RESUME_PATH = "" 
@@ -42,7 +38,7 @@
     *   `sparse/` (โฟลเดอร์โมเดล Colmap)
     *   `database.db`
 2.  **Add Data:** เพิ่ม Dataset งานเก่าของคุณเข้ามาใน Notebook
-3.  **ตั้งค่า Path:** ในโค้ด `3d-scan.ipynb` (หรือ `3d-scan-resume.ipynb`) ให้ใส่ Path ของโฟลเดอร์นั้น
+3.  **ตั้งค่า Path:** ในโค้ด `3d-scan-fixed.ipynb` (หรือ `3d-scan-resume.ipynb`) ให้ใส่ Path ของโฟลเดอร์นั้น
     ```python
     # ตัวอย่าง
     RESUME_PATH = "/kaggle/input/my-old-scan/car_scan"
@@ -54,7 +50,7 @@
 
 ## 📂 ผลลัพธ์ (Outputs)
 เมื่อทำงานเสร็จสิ้น ไฟล์โมเดลจะถูกบันทึกอยู่ที่:
-`/kaggle/working/outputs/car_scan/splatfacto/.../config.yml` และไฟล์ `.splat`
+`/kaggle/working/outputs/3d_scan/splatfacto/.../config.yml` และไฟล์ `.splat`
 
 คุณสามารถดาวน์โหลดไฟล์ `.splat` ไปเปิดดูใน Viewer (เช่น Polycam หรือ Splat Viewer) ได้ทันที
 
