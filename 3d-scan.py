@@ -9,6 +9,8 @@ from pathlib import Path
 import json
 import importlib.util
 import concurrent.futures
+import math
+import numpy as np
 
 print("✅ Imports complete")
 
@@ -86,13 +88,12 @@ def check_numpy_integrity():
         return False
 
 def install_dependencies():
-    print("⏳ Installing dependencies (Force Numpy 2.0 Mode)...")
+    print("⏳ Installing dependencies (Manual Pipeline Mode)...")
 
     # 1. Upgrade pip first
     run_command("pip install --upgrade pip", shell=True)
 
     # 2. Force Upgrade Numpy to 2.x and essential libs to compatible versions
-    # We explicitly upgrade opencv, numba, scipy, pandas, scikit-learn, etc. to avoid conflicts
     print("🚀 Force upgrading core libraries for Numpy 2.0 compatibility...")
     libs_to_upgrade = [
         "numpy>=2.0",
@@ -104,30 +105,16 @@ def install_dependencies():
         "opencv-python-headless", 
         "opencv-contrib-python",
         "matplotlib",
-        "pillow"
+        "pillow",
+        "plyfile",
+        "tqdm"
     ]
     run_command(f"pip install --upgrade {' '.join(libs_to_upgrade)}", shell=True)
 
-    # 3. Handle TensorFlow (often causes conflicts, upgrade it too)
-    try:
-        run_command("pip install --upgrade tensorflow", shell=True)
-    except:
-        print("⚠️ Failed to upgrade tensorflow, proceeding...")
-
-    # 4. Install Nerfstudio (without deps first maybe? No, let pip handle it but we pre-installed newer versions)
-    # We trust that the newer libs above rely on numpy 2.0, so pip won't downgrade if we just install nerfstudio now.
-    # However, nerfstudio requirements might strictly say <2.0. We might need to permit it or ignore deps if it fails.
-    # Let's try standard install first, it usually respects installed packages if they satisfy constraints, 
-    # but if nerfstudio hardcodes numpy<2.0, we have a problem.
-    # Luckily, newer nerfstudio/gsplat might support it.
-    
-    print("⏳ Installing Nerfstudio & Utils...")
-    run_command("pip install nerfstudio plyfile", shell=True)
-
-    # 5. Install Taichi (Stable)
+    # 3. Install Taichi (Stable)
     run_command("pip install taichi", shell=True)
 
-    # 6. Install Taichi Splatting from source (Patched for stable taichi)
+    # 4. Install Taichi Splatting from source (Patched for stable taichi)
     print("⏳ Installing taichi-splatting from source...")
     if os.path.exists("taichi-splatting"):
         shutil.rmtree("taichi-splatting")
@@ -141,37 +128,26 @@ def install_dependencies():
     # Install from source
     run_command("pip install ./taichi-splatting", shell=True)
 
+    # Install COLMAP & ffmpeg
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
-
-    # Check if colmap is installed
+    
     try:
         run_command("colmap help", shell=True)
         print("   COLMAP already installed.")
     except:
-        print("⏳ Installing COLMAP via apt-get...")
         run_command("apt-get install -y colmap", shell=True)
 
-    # Check if ffmpeg is installed
     try:
         run_command("ffmpeg -version", shell=True)
         print("   ffmpeg already installed.")
     except:
         run_command("apt-get install -y ffmpeg", shell=True)
-
-    # Check if xvfb is installed (required for COLMAP with GPU)
+    
     try:
         run_command("which xvfb-run", shell=True)
-        print("   xvfb already installed.")
     except:
-        print("⏳ Installing xvfb...")
         run_command("apt-get install -y xvfb", shell=True)
-
-    try:
-        run_command("colmap help", shell=True)
-        print("✅ COLMAP installed successfully.")
-    except:
-        print("❌ COLMAP installation failed.")
 
 
 def patch_numpy_compatibility():
@@ -191,44 +167,154 @@ def patch_numpy_compatibility():
     except Exception as e:
         print(f"   ⚠️ Numpy patch failed: {e}")
 
+# --- COLMAP UTILS (Replaces Nerfstudio dependency) ---
+def qvec2rotmat(qvec):
+    return np.array([
+        [1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,
+         2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],
+         2 * qvec[3] * qvec[1] + 2 * qvec[0] * qvec[2]],
+        [2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],
+         1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,
+         2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]],
+        [2 * qvec[3] * qvec[1] - 2 * qvec[0] * qvec[2],
+         2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
+         1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])
 
-def patch_nerfstudio():
-    """
-    Patches nerfstudio installed in the system to fix PyTorch 2.6+ compatibility issues.
-    """
-    print("🔧 Patching nerfstudio for PyTorch 2.6+ compatibility...")
-    try:
-        potential_paths = glob.glob("/usr/local/lib/python*/dist-packages/nerfstudio/utils/eval_utils.py")
-        if not potential_paths:
-            potential_paths = glob.glob("/opt/conda/lib/python*/site-packages/nerfstudio/utils/eval_utils.py")
+def read_cameras_text(path):
+    cameras = {}
+    with open(path, "r") as f:
+        for line in f:
+            if line.startswith("#") or not line.strip():
+                continue
+            els = line.split()
+            camera_id = int(els[0])
+            model = els[1]
+            width = int(els[2])
+            height = int(els[3])
+            params = np.array([float(x) for x in els[4:]])
+            cameras[camera_id] = {"model": model, "width": width, "height": height, "params": params}
+    return cameras
 
-        if potential_paths:
-            target_file = Path(potential_paths[0])
-            print(f"   Found file: {target_file}")
+def read_images_text(path):
+    images = {}
+    with open(path, "r") as f:
+        while True:
+            line = f.readline()
+            if not line: break
+            if line.startswith("#") or not line.strip(): continue
+            
+            # Line 1: Image ID, Qvec, Tvec, Camera ID, Name
+            els = line.split()
+            image_id = int(els[0])
+            qvec = np.array([float(x) for x in els[1:5]])
+            tvec = np.array([float(x) for x in els[5:8]])
+            camera_id = int(els[8])
+            image_name = els[9]
+            
+            # Line 2: Points 2D (discard)
+            f.readline()
+            
+            images[image_id] = {
+                "qvec": qvec, "tvec": tvec, "camera_id": camera_id, "name": image_name
+            }
+    return images
 
-            with open(target_file, "r") as f:
-                content = f.read()
-
-            # Robust regex search for the target line
-            pattern = r'(loaded_state\s*=\s*torch\.load\s*\(\s*load_path\s*,\s*map_location\s*=\s*["\']cpu["\'])\s*,?\s*\)'
-
-            if re.search(pattern, content):
-                new_content = re.sub(pattern, r'\1, weights_only=False)', content)
-                with open(target_file, "w") as f:
-                    f.write(new_content)
-                print("✅ Patch applied successfully!")
-            elif 'weights_only=False' in content:
-                 print("✅ Patch was already applied.")
-            else:
-                print(f"⚠️ Target code not found in {target_file}. The library version might be different.")
-        else:
-            print("⚠️ Could not locate nerfstudio/utils/eval_utils.py to patch.")
-    except Exception as e:
-        print(f"❌ Failed to patch nerfstudio: {e}")
+def convert_colmap_to_transforms(colmap_dir, images_dir, output_path):
+    print(f"🔄 Converting COLMAP text output to {output_path}...")
+    
+    cameras_file = colmap_dir / "cameras.txt"
+    images_file = colmap_dir / "images.txt"
+    
+    if not cameras_file.exists() or not images_file.exists():
+        print("❌ COLMAP output files not found (cameras.txt/images.txt).")
+        return False
+        
+    cameras = read_cameras_text(cameras_file)
+    images = read_images_text(images_file)
+    
+    # Sort images by name
+    sorted_image_ids = sorted(images.keys(), key=lambda k: images[k]["name"])
+    
+    frames = []
+    if not cameras: 
+        print("❌ No cameras found.")
+        return False
+        
+    cam_id = list(cameras.keys())[0]
+    cam = cameras[cam_id]
+    
+    w, h = cam["width"], cam["height"]
+    fl_x = cam["params"][0]
+    fl_y = cam["params"][1]
+    k1 = cam["params"][2] if len(cam["params"]) > 2 else 0
+    k2 = cam["params"][3] if len(cam["params"]) > 3 else 0
+    p1 = cam["params"][4] if len(cam["params"]) > 4 else 0
+    p2 = cam["params"][5] if len(cam["params"]) > 5 else 0
+    cx = cam["params"][2] if len(cam["params"]) == 3 else w / 2.0
+    cy = cam["params"][3] if len(cam["params"]) == 3 else h / 2.0
+    
+    angle_x = 2 * math.atan(w / (2 * fl_x))
+    angle_y = 2 * math.atan(h / (2 * fl_y))
+    
+    json_data = {
+        "camera_angle_x": angle_x,
+        "camera_angle_y": angle_y,
+        "fl_x": fl_x,
+        "fl_y": fl_y,
+        "k1": k1, "k2": k2, "p1": p1, "p2": p2,
+        "cx": cx, "cy": cy,
+        "w": w, "h": h,
+        "aabb_scale": 16,
+        "frames": []
+    }
+    
+    # Transformation matrix to align COLMAP (Right-Down-Forward) to Nerfstudio/OpenGL (Right-Up-Back)
+    flip_mat = np.array([
+        [1, 0, 0, 0],
+        [0, -1, 0, 0],
+        [0, 0, -1, 0],
+        [0, 0, 0, 1]
+    ])
+    
+    for img_id in sorted_image_ids:
+        img = images[img_id]
+        
+        R = qvec2rotmat(img["qvec"])
+        t = img["tvec"]
+        
+        # World-to-Camera to Camera-to-World
+        # W2C = [R | t]
+        # C2W = [R' | -R't]
+        
+        c2w = np.eye(4)
+        c2w[:3, :3] = R.T
+        c2w[:3, 3] = -R.T @ t
+        
+        # Flip axes
+        c2w = c2w @ flip_mat
+        
+        frame = {
+            "file_path": f"images/{img['name']}",
+            "transform_matrix": c2w.tolist()
+        }
+        frames.append(frame)
+        
+    json_data["frames"] = frames
+    
+    with open(output_path, "w") as f:
+        json.dump(json_data, f, indent=4)
+        
+    print(f"✅ Saved {len(frames)} frames to {output_path}")
+    return True
 
 def process_data(resume_path=None):
     """
-    Processes video into images and run COLMAP, OR resumes from existing data.
+    Manual processing pipeline:
+    1. Video -> Images (ffmpeg)
+    2. Feature Extraction (colmap)
+    3. Matching (colmap)
+    4. Reconstruction (colmap)
+    5. Convert to transforms.json
     """
     if resume_path:
         print(f"🔄 RESUME MODE ENABLED. Loading data from: {resume_path}")
@@ -241,32 +327,19 @@ def process_data(resume_path=None):
         # Create project directory if it doesn't exist
         PROJECT_DIR.mkdir(parents=True, exist_ok=True)
 
-        # List of critical items to copy
-        items_to_copy = ["transforms.json", "images", "sparse", "database.db", "sparse_pc.ply"]
+        items_to_copy = ["transforms.json", "images", "sparse", "database.db"]
         
         def copy_item(item):
             src = resume_source / item
             dst = PROJECT_DIR / item
-            
             if src.exists():
                 if dst.exists():
-                    print(f"   Removing existing {dst}...")
-                    if dst.is_dir():
-                        shutil.rmtree(dst)
-                    else:
-                        dst.unlink()
-                
-                print(f"   Copying {item}...")
-                if src.is_dir():
-                    shutil.copytree(src, dst)
-                else:
-                    shutil.copy2(src, dst)
-            else:
-                 print(f"⚠️ Warning: '{item}' not found in resume source. Proceeding cautiously.")
+                    if dst.is_dir(): shutil.rmtree(dst)
+                    else: dst.unlink()
+                if src.is_dir(): shutil.copytree(src, dst)
+                else: shutil.copy2(src, dst)
 
-        # Parallelize copying to speed up data transfer
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # We convert to list to ensure any exceptions are raised during execution
             list(executor.map(copy_item, items_to_copy))
 
         if (PROJECT_DIR / "transforms.json").exists():
@@ -287,103 +360,51 @@ def process_data(resume_path=None):
         shutil.rmtree(PROJECT_DIR)
     PROJECT_DIR.mkdir(parents=True, exist_ok=True)
     IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    COLMAP_DIR = PROJECT_DIR / "colmap"
+    COLMAP_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Determine COLMAP binary command (use xvfb-run if available)
-    colmap_cmd = ["colmap"]
+    print("--- 2. Downscale Video & Extract Frames ---")
+    # Extract frames at 2 FPS (or just extract all and downsample? 2 FPS is safe for Taichi training speed)
+    run_command(f"ffmpeg -i \"{VIDEO_INPUT_PATH}\" -qscale:v 1 -r 2 \"{IMAGES_DIR}/%04d.jpg\" -hide_banner", shell=True)
+    
+    num_images = len(list(IMAGES_DIR.glob("*.jpg")))
+    print(f"✅ Extracted {num_images} images.")
+    
+    print("--- 3. Running COLMAP Structure-from-Motion ---")
+    colmap_binary = "colmap" 
     try:
         subprocess.run(["which", "xvfb-run"], check=True, stdout=subprocess.DEVNULL)
-        colmap_cmd = ["xvfb-run", "-a", "colmap"]
-        print(f"✅ xvfb-run detected. Using: {colmap_cmd}")
+        colmap_binary = "xvfb-run -a colmap"
+        print("   Using xvfb-run for headless COLMAP")
     except:
-        print("⚠️ xvfb-run not found. Using raw colmap command.")
-
-    print("--- 2. Downscale Video ---")
-    # Check for h264_nvenc
-    use_nvenc = False
-    try:
-        result = subprocess.run(["ffmpeg", "-encoders"], capture_output=True, text=True)
-        if "h264_nvenc" in result.stdout:
-            use_nvenc = True
-            print("✅ h264_nvenc detected. Using GPU acceleration for video processing.")
-        else:
-            print("⚠️ h264_nvenc not found. Using CPU encoding.")
-    except Exception:
-         print("⚠️ Failed to check ffmpeg encoders. Defaulting to CPU.")
-
-    downscaled_video = WORKING_DIR / f"{PROJECT_NAME}_downscaled.mp4"
-
-    if use_nvenc:
-         # -preset fast -cq 23
-         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=trunc(iw/4)*2:trunc(ih/4)*2", "-c:v", "h264_nvenc", "-preset", "fast", "-cq", "23", "-an", str(downscaled_video)]
-    else:
-         # -preset veryfast -crf 23
-         cmd_downscale = ["ffmpeg", "-y", "-i", str(VIDEO_INPUT_PATH), "-vf", "scale=trunc(iw/4)*2:trunc(ih/4)*2", "-c:v", "libx264", "-preset", "veryfast", "-crf", "23", "-an", str(downscaled_video)]
-
-    run_command(cmd_downscale, shell=False)
-
-    print("--- 3. Extract Frames (2 FPS) ---")
-    cmd_frames = ["ffmpeg", "-y", "-i", str(downscaled_video), "-vf", "fps=2", str(IMAGES_DIR / "frame_%05d.png"), "-hide_banner"]
-    run_command(cmd_frames, shell=False)
-
-    num_images = sum(1 for _ in os.scandir(IMAGES_DIR))
-    print(f"✅ Extracted {num_images} images.")
-
-    print("--- 4. Feature Extraction ---")
-    # Using CPU (use_gpu 0) for feature extraction/matching to avoid OpenGL crashes in headless environments
-
-    cmd_extract = colmap_cmd + [
-        "feature_extractor",
-        "--database_path", str(DATABASE_PATH),
-        "--image_path", str(IMAGES_DIR),
-        "--ImageReader.camera_model", "OPENCV",
-        "--SiftExtraction.use_gpu", "0",
-        "--SiftExtraction.num_threads", "16",
-        "--SiftExtraction.peak_threshold", "0.004",
-    ]
-    run_command(cmd_extract, shell=False)
-
-    print("--- 5. Matching (Sequential) ---")
-    # Loop detection disabled to prevent crashes
-    cmd_match = colmap_cmd + [
-        "sequential_matcher",
-        "--database_path", str(DATABASE_PATH),
-        "--SiftMatching.use_gpu", "0",
-        "--SequentialMatching.loop_detection", "0",
-        "--SequentialMatching.overlap", "10"
-    ]
-    run_command(cmd_match, shell=False)
-
-    print("--- 6. Mapper (Relaxed) ---")
-    SPARSE_PATH.mkdir(parents=True, exist_ok=True)
-    cmd_mapper = colmap_cmd + [
-        "mapper",
-        "--database_path", str(DATABASE_PATH),
-        "--image_path", str(IMAGES_DIR),
-        "--output_path", str(SPARSE_PATH),
-        "--Mapper.min_num_matches", "10",
-        "--Mapper.init_min_tri_angle", "2",
-        "--Mapper.multiple_models", "0"
-    ]
-    run_command(cmd_mapper, shell=False)
-
-    print("--- 7. Converting to transforms.json ---")
-    recon_dir = SPARSE_PATH / "0"
-    if not recon_dir.exists():
-        print("❌ FAILED: Sparse reconstruction failed. No model found.")
+        pass
+        
+    db_path = COLMAP_DIR / "database.db"
+    
+    print("   Feature Extraction...")
+    run_command(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {IMAGES_DIR} --ImageReader.camera_model OPENCV", shell=True)
+    
+    print("   Matching...")
+    run_command(f"{colmap_binary} sequential_matcher --database_path {db_path}", shell=True)
+    
+    print("   Reconstruction (Mapper)...")
+    sparse_dir = COLMAP_DIR / "sparse"
+    sparse_dir.mkdir(parents=True, exist_ok=True)
+    run_command(f"{colmap_binary} mapper --database_path {db_path} --image_path {IMAGES_DIR} --output_path {sparse_dir}", shell=True)
+    
+    print("--- 4. Converting to transforms.json ---")
+    # Convert binary to text for our python parser
+    text_dir = COLMAP_DIR / "text"
+    text_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Check if sparse reconstruction succeeded (folder 0 usually exists)
+    if not (sparse_dir / "0").exists():
+        print("❌ COLMAP reconstruction failed (no model found).")
         return False
-
-    from nerfstudio.process_data.colmap_utils import colmap_to_json
-    colmap_to_json(
-        recon_dir=recon_dir,
-        output_dir=PROJECT_DIR,
-    )
-
-    if (PROJECT_DIR / "transforms.json").exists():
-        print("✅ transforms.json created.")
-        return True
-    else:
-        print("❌ Failed to create transforms.json")
-        return False
+        
+    run_command(f"{colmap_binary} model_converter --input_path {sparse_dir}/0 --output_path {text_dir} --output_type TXT", shell=True)
+    
+    return convert_colmap_to_transforms(text_dir, IMAGES_DIR, PROJECT_DIR / "transforms.json")
 
 def train_model():
     print("--- Training with Taichi Splatting ---")
@@ -414,55 +435,40 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
             / (1 / (1 + np.exp(-vert["opacity"])))
         )
 
-        # Vectorized implementation
-        N = len(sorted_indices)
-
-        # 1. Position
+        n = len(sorted_indices)
         x = vert["x"][sorted_indices]
         y = vert["y"][sorted_indices]
         z = vert["z"][sorted_indices]
         position = np.stack([x, y, z], axis=1).astype(np.float32)
 
-        # 2. Scales
         s0 = vert["scale_0"][sorted_indices]
         s1 = vert["scale_1"][sorted_indices]
         s2 = vert["scale_2"][sorted_indices]
         scales = np.stack([s0, s1, s2], axis=1).astype(np.float32)
         scales = np.exp(scales)
 
-        # 3. Rotation
         r0 = vert["rot_0"][sorted_indices]
         r1 = vert["rot_1"][sorted_indices]
         r2 = vert["rot_2"][sorted_indices]
         r3 = vert["rot_3"][sorted_indices]
         rot = np.stack([r0, r1, r2, r3], axis=1).astype(np.float32)
-
-        # Normalize Rotation (row-wise norm)
         length = np.sqrt(np.sum(rot ** 2, axis=1, keepdims=True))
         rot /= length
-
-        # Quantize Rotation to 8-bit
         rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
 
-        # 4. Color (Spherical Harmonics DC term)
         SH_C0 = 0.28209479177387814
         dc0 = vert["f_dc_0"][sorted_indices]
         dc1 = vert["f_dc_1"][sorted_indices]
         dc2 = vert["f_dc_2"][sorted_indices]
-
         R = (0.5 + SH_C0 * dc0) * 255
         G = (0.5 + SH_C0 * dc1) * 255
         B = (0.5 + SH_C0 * dc2) * 255
-
         R = np.clip(R, 0, 255).astype(np.uint8)
         G = np.clip(G, 0, 255).astype(np.uint8)
         B = np.clip(B, 0, 255).astype(np.uint8)
         A = np.full_like(R, 255, dtype=np.uint8)
-
         color = np.stack([R, G, B, A], axis=1)
 
-        # Pack into buffer
-        # Format: position(3f), scale(3f), color(4b), rotation(4b)
         dtype_output = np.dtype([
             ('position', np.float32, 3),
             ('scale', np.float32, 3),
@@ -470,7 +476,7 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
             ('rot', np.uint8, 4)
         ])
 
-        structured_data = np.empty(N, dtype=dtype_output)
+        structured_data = np.empty(n, dtype=dtype_output)
         structured_data['position'] = position
         structured_data['scale'] = scales
         structured_data['color'] = color
@@ -490,13 +496,10 @@ def export_model():
         print(f"❌ Error: Training output directory not found at {OUTPUTS_DIR}")
         return
 
-    # ตรวจสอบไฟล์ PLY ที่ถูก export มาจาก train_taichi.py
     generated_splats = list(OUTPUTS_DIR.glob("*.ply"))
     
     if generated_splats:
         print(f"🎉 SUCCESS! Exported file: {generated_splats[0]}")
-        
-        # ลองแปลงเป็น .splat เพื่อความสะดวกในการใช้งาน (ถ้ามีฟังก์ชันรองรับ)
         splat_output = OUTPUTS_DIR / "model.splat"
         convert_ply_to_splat(generated_splats[0], splat_output)
     else:
@@ -518,21 +521,16 @@ if __name__ == "__main__":
     # 2. Install Deps
     install_dependencies()
 
-    # 2.1 Apply Numpy Compatibility Patch
+    # 2.1 Apply Numpy Compatibility Patch (Just in case, though we force np2.0)
     patch_numpy_compatibility()
-
-    # 3. Apply Patch (Critical Fix)
-    patch_nerfstudio()
 
     # 4. Process Data (or Resume)
     if process_data(resume_path=args.resume_path):
         print("✅ Data ready.")
 
         # 5. Train
-        # Only run if transforms.json exists
         if (PROJECT_DIR / "transforms.json").exists():
             train_model()
-
             # 6. Export
             if OUTPUTS_DIR.exists():
                 export_model()
