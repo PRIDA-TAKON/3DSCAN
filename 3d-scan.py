@@ -25,10 +25,10 @@ def find_input_video():
     for search_path in search_paths:
         if search_path.exists():
             # Find all mp4 files recursively
-            videos = list(search_path.rglob("*.mp4"))
-            if videos:
-                print(f"✅ Found video: {videos[0]}")
-                return videos[0]
+            video = next(search_path.rglob("*.mp4"), None)
+            if video:
+                print(f"✅ Found video: {video}")
+                return video
     
     print("❌ No .mp4 video found in /kaggle/input or local input/")
     return None
