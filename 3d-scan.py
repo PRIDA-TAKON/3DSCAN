@@ -85,6 +85,7 @@ def check_numpy_integrity():
     except (ImportError, AttributeError, RuntimeError):
         return False
 
+def install_dependencies():
     print("⏳ Installing dependencies (Force Numpy 2.0 Mode)...")
 
     # 1. Upgrade pip first
