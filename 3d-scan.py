@@ -118,7 +118,7 @@ def install_dependencies():
     if os.path.exists("taichi-splatting"):
         shutil.rmtree("taichi-splatting")
     
-    run_command("git clone https://github.com/taichi-dev/taichi-splatting.git", shell=True)
+    run_command("git clone --depth 1 https://github.com/taichi-dev/taichi-splatting.git", shell=True)
     
     # Patch requirements using sed (works on Linux/Kaggle) to use stable taichi
     # We defensively try to patch common dependency files
