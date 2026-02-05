@@ -326,7 +326,7 @@ def export_ply(filepath, gaussians):
 
 def train(args):
     device = torch.device('cuda')
-    ti.init(arch=ti.cuda, device_memory_GB=0.1) # Check if this works on Kaggle
+    ti.init(arch=ti.cuda, device_memory_GB=4.0) # Optimized for Kaggle T4
 
     dataset = SceneDataset(args.project_path, device=device)
 
