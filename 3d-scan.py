@@ -84,10 +84,12 @@ def install_dependencies():
         run_command("pip install \"numpy<2.0\" --force-reinstall", shell=True)
         run_command("pip install torch torchvision", shell=True)
         run_command("pip install nerfstudio", shell=True)
-        run_command("pip install taichi taichi-splatting plyfile", shell=True)
     else:
         print("   nerfstudio already installed.")
-        run_command("pip install taichi taichi-splatting plyfile", shell=True)
+
+    # Install Taichi Splatting dependencies and plyfile
+    # We install these regardless of whether nerfstudio was just installed or pre-existing
+    run_command("pip install taichi taichi-splatting plyfile", shell=True)
 
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
