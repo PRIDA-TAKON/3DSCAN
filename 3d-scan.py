@@ -107,7 +107,8 @@ def install_dependencies():
         "matplotlib",
         "pillow",
         "plyfile",
-        "tqdm"
+        "tqdm",
+        "roma"
     ]
     run_command(f"pip install --upgrade {' '.join(libs_to_upgrade)}", shell=True)
 
