@@ -6,9 +6,9 @@
 
 | ไฟล์ (File) | หน้าที่ (Description) |
 | :--- | :--- |
-| **`3d-scan-fixed.ipynb`** | **ตัวรันหลัก (Recommended Launcher):** เวอร์ชันแก้ไขที่ฝังโค้ด `3d-scan.py` ฉบับล่าสุดไว้ภายใน (Fixed Script Embedded) แก้ปัญหา Path และการตัดเสียงวิดีโอ เหมาะสำหรับรันบน Kaggle โดยไม่ต้องรอ git update |
-| **`3d-scan.ipynb`** | **ตัวสำรอง (Legislated Launcher):** ไฟล์ต้นฉบับที่ดึงโค้ดจาก GitHub (อาจไม่อัปเดตเท่า fixed version) |
-| **`3d-scan.py`** | **โค้ดหลัก (Core Script):** สคริปต์ Python ที่ควบคุม Process การทำงานทั้งหมด ตั้งแต่แปลงวิดีโอ, รัน COLMAP, เทรนโมเดล Splatfacto, และส่งออกไฟล์ .splat |
+| **`3d-scan-fixed.ipynb`** | **ตัวรันหลัก (Main Launcher):** Notebook สำหรับรันบน Kaggle ทำหน้าที่ Clone โค้ดจาก GitHub และสั่งรัน `3d-scan.py` |
+| **`3d-scan-resume.ipynb`** | **ตัวรันโหมดทำต่อ (Resume Launcher):** Notebook สำหรับการรันต่อจากงานเดิม (Resume) โดยเฉพาะ |
+| **`3d-scan.py`** | **โค้ดหลัก (Core Script):** สคริปต์ Python ที่ควบคุม Process การทำงานทั้งหมด ตั้งแต่จัดการ Environment, แปลงวิดีโอ, รัน COLMAP, เทรนโมเดล Splatfacto, และส่งออกไฟล์ .splat |
 | `LICENSE` | ไลเซนส์ของโปรเจค (MIT License) |
 | `*.txt` | ไฟล์ Log บันทึกผลการทำงาน (เช่น `3d-scan.log.txt`) |
 
@@ -18,38 +18,38 @@
 
 การทำงานของโปรเจคนี้บน Kaggle ถูกแบ่งออกเป็น 2 ส่วนหลักที่ทำงานประสานกัน:
 
-### 1. `3d-scan.ipynb` (ผู้จัดการ Environment)
-ไฟล์นี้จะทำหน้าที่เตรียมความพร้อมก่อนเริ่มงานจริง:
+### 1. `3d-scan-fixed.ipynb` (Launcher)
+ทำหน้าที่เป็นตัวจุดชนวนการทำงาน:
 1.  **Clone Code:** ดึงโค้ดล่าสุดจาก GitHub `PRIDA-TAKON/3DSCAN` ลงมาใน Kaggle
-2.  **Install Dependencies:** สั่งติดตั้ง Library ที่จำเป็นผ่าน pip และ apt-get
-3.  **Apply Patches:** แก้ไขบั๊กของ Library บางตัวเพื่อให้รันบน Kaggle ได้ราบรื่น:
-    *   *Patch NumPy:* แก้ปัญหา `ImportError: cannot import name 'broadcast_to'`
-    *   *Patch Nerfstudio:* แก้ปัญหาความเข้ากันได้กับ PyTorch 2.6+ (`weights_only=False`)
-4.  **Execute Script:** เมื่อทุกอย่างพร้อม จะสั่งรันคำสั่ง `python 3d-scan.py`
+2.  **Execute Script:** สั่งรันคำสั่ง `python 3d-scan.py` พร้อมบันทึก Log
 
-### 2. `3d-scan.py` (ผู้ปฏิบัติงาน)
-เมื่อถูกเรียกใช้ ไฟล์นี้จะทำงานตามขั้นตอนดังนี้ (Pipeline):
-1.  **Check GPU:** ตรวจสอบว่ามี GPU (P100/T4) หรือไม่
-2.  **Environment Setup:** ติดตั้ง `colmap`, `ffmpeg`, `nerfstudio` หากยังไม่มี
-3.  **Process Data:**
-    *   **Convert Video:** แปลงวิดีโอขาเข้า (Input) เป็นภาพนิ่ง (Extract Frames)
-    *   **COLMAP:** รันกระบวนการ Photogrammetry (Structure for Motion) เพื่อหาตำแหน่งกล้อง (Transforms)
+### 2. `3d-scan.py` (Core Pipeline)
+ไฟล์นี้เป็นหัวใจสำคัญ ทำหน้าที่จัดการทุกอย่างเมื่อถูกเรียกใช้:
+1.  **Environment Management:**
+    *   **Check GPU:** ตรวจสอบ GPU
+    *   **Install Dependencies:** ติดตั้ง `colmap`, `ffmpeg`, `nerfstudio`, `plyfile` หากยังไม่มี
+    *   **Apply Patches:**
+        *   *Patch NumPy:* แก้ปัญหา `ImportError: cannot import name 'broadcast_to'`
+        *   *Patch Nerfstudio:* แก้ปัญหาความเข้ากันได้กับ PyTorch 2.6+ (`weights_only=False`)
+2.  **Process Data:**
+    *   **Find Video:** ค้นหาวิดีโอ .mp4 ใน `/kaggle/input` อัตโนมัติ
+    *   **Convert Video:** แปลงวิดีโอเป็นภาพนิ่ง (Extract Frames)
+    *   **COLMAP:** รันกระบวนการ Photogrammetry (Structure for Motion)
     *   **Generate JSON:** สร้างไฟล์ `transforms.json` สำหรับ Nerfstudio
-4.  **Train Model:** เทรนโมเดลด้วย `ns-train splatfacto`
-5.  **Export:** ส่งออกผลลัพธ์เป็นไฟล์ `.splat` ไปยังโฟลเดอร์ Output ของ Kaggle
+3.  **Train Model:** เทรนโมเดลด้วย `ns-train splatfacto`
+4.  **Export:** ส่งออกผลลัพธ์เป็นไฟล์ `.splat` ไปยังโฟลเดอร์ Output ของ Kaggle
 
 ---
 
 ## 🚀 วิธีการใช้งานบน Kaggle
 
 1.  **Create New Notebook:** สร้าง Notebook ใหม่บน Kaggle
-2.  **Import Notebook:** อัปโหลดไฟล์ `3d-scan.ipynb` หรือ copy โค้ดลงไป
+2.  **Import Notebook:** อัปโหลดไฟล์ `3d-scan-fixed.ipynb` หรือ copy โค้ดลงไป
 3.  **Add Data:**
-    *   อัปโหลดวิดีโอที่ต้องการสแกนไปที่ Input Dataset
-    *   แก้ไข path ในโค้ด (ถ้าจำเป็น) ให้ตรงกับตำแหน่งไฟล์วิดีโอ (default: `/kaggle/input/car-video/video_car.mp4`)
+    *   อัปโหลดวิดีโอที่ต้องการสแกนไปที่ Input Dataset (ระบบจะหาไฟล์อัตโนมัติ)
 4.  **Settings:**
     *   เปิด **Internet: On**
     *   เลือก **Accelerator: GPU P100** หรือ **T4 x2**
 5.  **Run All:** กด Run All เพื่อเริ่มกระบวนการทั้งหมด
 
-ระบบจะทำงานอัตโนมัติและบันทึกไฟล์ `.splat` ไว้ในโฟลเดอร์ `/kaggle/working/outputs/` เมื่อเสร็จสิ้น
+ระบบจะทำงานอัตโนมัติและบันทึกไฟล์ `.splat` ไว้ในโฟลเดอร์ `/kaggle/working/outputs/3d_scan/splatfacto/` เมื่อเสร็จสิ้น
