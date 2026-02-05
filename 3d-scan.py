@@ -110,9 +110,22 @@ def install_dependencies():
         if importlib.util.find_spec("plyfile") is None:
              run_command("pip install plyfile", shell=True)
 
-    # Install Taichi Splatting dependencies and plyfile
-    # We install these regardless of whether nerfstudio was just installed or pre-existing
-    run_command("pip install taichi taichi-splatting plyfile", shell=True)
+    # Install Taichi (Stable) and plyfile
+    run_command("pip install taichi plyfile", shell=True)
+
+    # Install Taichi Splatting from source to fix 'taichi-nightly' dependency issue
+    print("⏳ Installing taichi-splatting from source (patching taichi-nightly)...")
+    if os.path.exists("taichi-splatting"):
+        shutil.rmtree("taichi-splatting")
+    
+    run_command("git clone https://github.com/taichi-dev/taichi-splatting.git", shell=True)
+    
+    # Patch requirements using sed (works on Linux/Kaggle) to use stable taichi
+    # We defensively try to patch common dependency files
+    run_command("find taichi-splatting -type f \\( -name 'pyproject.toml' -o -name 'setup.py' -o -name 'requirements.txt' \\) -exec sed -i 's/taichi-nightly/taichi/g' {} +", shell=True)
+    
+    # Install from source
+    run_command("pip install ./taichi-splatting", shell=True)
 
     print("⏳ Installing COLMAP & ffmpeg...")
     run_command("apt-get update", shell=True)
