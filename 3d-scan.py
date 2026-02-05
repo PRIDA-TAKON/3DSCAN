@@ -13,9 +13,6 @@ import concurrent.futures
 print("✅ Imports complete")
 
 # ================= CONFIGURATION =================
-print("✅ Imports complete")
-
-# ================= CONFIGURATION =================
 PROJECT_NAME = "3d_scan"
 # Function to find input video dynamically
 def find_input_video():
