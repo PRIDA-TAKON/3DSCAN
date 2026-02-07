@@ -311,7 +311,15 @@ def train(args):
         gt_image = dataset.images[idx]
 
         # Render
-        rendering = render_gaussians(params, cam, config, compute_split_heuristics=True)
+        # Wrap params in Gaussians3D for the renderer (strict type check)
+        gaussians_wrapper = Gaussians3D(
+            position=params.position,
+            log_scaling=params.log_scaling,
+            rotation=params.rotation,
+            alpha_logit=params.alpha_logit,
+            feature=params.feature
+        )
+        rendering = render_gaussians(gaussians_wrapper, cam, config, compute_split_heuristics=True)
 
         image = rendering.image
 
