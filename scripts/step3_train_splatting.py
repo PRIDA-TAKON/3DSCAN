@@ -1,3 +1,4 @@
+
 import argparse
 import json
 import math
@@ -18,8 +19,6 @@ import taichi_splatting
 from taichi_splatting.data_types import Gaussians3D, RasterConfig
 from taichi_splatting.renderer import render_gaussians
 from taichi_splatting.perspective import CameraParams
-# from taichi_splatting.misc.encode_depth import encode_depth # Unused and missing in repo
-# from taichi_splatting.misc.radius import compute_radius
 from taichi_splatting.misc.parameter_class import ParameterClass
 from functools import partial
 
@@ -68,55 +67,8 @@ def read_points3d_txt(path_to_model_file):
                 # Skip error (elem 7) and track list (elems 8+)
     return points3D
 
-def qvec2rotmat(qvec):
-    return np.array([
-        [1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,
-         2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],
-         2 * qvec[1] * qvec[3] + 2 * qvec[0] * qvec[2]],
-        [2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],
-         1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,
-         2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]],
-        [2 * qvec[1] * qvec[3] - 2 * qvec[0] * qvec[2],
-         2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
-         1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])
-
-def rotmat2qvec(R):
-    Rxx, Ryx, Rzx, Rxy, Ryy, Rzy, Rxz, Ryz, Rzz = R.flat
-    K = np.array([
-        [Rxx - Ryy - Rzz, 0, 0, 0],
-        [Ryx + Rxy, Ryy - Rxx - Rzz, 0, 0],
-        [Rzx + Rxz, Rzy + Ryz, Rzz - Rxx - Ryy, 0],
-        [Ryz - Rzy, Rzx - Rxz, Rxy - Ryx, Rxx + Ryy + Rzz]]) / 3.0
-    eigvals, eigvecs = np.linalg.eigh(K)
-    qvec = eigvecs[[3, 0, 1, 2], np.argmax(eigvals)]
-    if qvec[0] < 0:
-        qvec *= -1
-    return qvec
-
 def inverse_sigmoid(x):
     return torch.log(x / (1 - x))
-
-def get_projection_matrix(znear, zfar, fovX, fovY):
-    tanHalfFovY = math.tan((fovY / 2))
-    tanHalfFovX = math.tan((fovX / 2))
-
-    top = tanHalfFovY * znear
-    bottom = -top
-    right = tanHalfFovX * znear
-    left = -right
-
-    P = torch.zeros(4, 4)
-
-    z_sign = 1.0
-
-    P[0, 0] = 2.0 * znear / (right - left)
-    P[1, 1] = 2.0 * znear / (top - bottom)
-    P[0, 2] = (right + left) / (right - left)
-    P[1, 2] = (top + bottom) / (top - bottom)
-    P[3, 2] = z_sign
-    P[2, 2] = z_sign * zfar / (zfar - znear)
-    P[2, 3] = -(zfar * znear) / (zfar - znear)
-    return P
 
 class SceneDataset:
     def __init__(self, project_dir, device='cuda'):
@@ -133,6 +85,10 @@ class SceneDataset:
 
     def load_transforms(self):
         json_path = self.project_dir / "transforms.json"
+        
+        if not json_path.exists():
+             raise FileNotFoundError(f"transforms.json not found in {self.project_dir}")
+
         with open(json_path, 'r') as f:
             meta = json.load(f)
 
@@ -172,16 +128,6 @@ class SceneDataset:
             img_tensor = img_tensor.to(self.device)
             self.images.append(img_tensor)
 
-            # Load Pose
-            # transforms.json is usually OpenGL convention: +Y up, -Z forward.
-            # taichi-splatting/CameraParams usually expects World-to-Camera?
-            # CameraParams doc: T_camera_world (4,4) camera view matrix (World -> Camera?)
-            # Wait, doc says: "T_camera_world : torch.Tensor # (4, 4) camera view matrix"
-            # But usually T_camera_world means T_{camera <- world} which is the View Matrix (inverse of Pose).
-            # Let's check params.py:
-            # camera_position property: T_world_camera = torch.inverse(self.T_camera_world); return T_world_camera[0:3, 3]
-            # So T_camera_world is indeed the View Matrix (World to Camera).
-
             c2w = torch.tensor(frame['transform_matrix'], dtype=torch.float32, device=self.device)
 
             # Nerfstudio transforms are C2W (Camera to World).
@@ -208,20 +154,24 @@ class SceneDataset:
         candidates = [
             self.project_dir / "sparse" / "0" / "points3D.bin",
             self.project_dir / "sparse" / "0" / "points3D.txt",
+            self.project_dir / "colmap" / "sparse" / "0" / "points3D.bin", # Handles Step 2 strict structure
+            self.project_dir / "colmap" / "sparse" / "0" / "points3D.txt",
             self.project_dir / "sparse_pc.ply"
         ]
 
         points = {}
+        found_source = False
+        
         for p in candidates:
             if p.exists():
                 print(f"Loading points from {p}")
+                found_source = True
                 if p.suffix == ".bin":
                     points = read_points3d_binary(p)
                 elif p.suffix == ".txt":
                     points = read_points3d_txt(p)
                 elif p.suffix == ".ply":
                     # TODO: Implement PLY loader if needed, or rely on plyfile
-                    # Using simple heuristic for now or plyfile
                     if PlyData:
                         plydata = PlyData.read(str(p))
                         v = plydata['vertex']
@@ -259,24 +209,14 @@ def export_ply(filepath, gaussians):
     xyz = gaussians.position.detach().cpu().numpy()
     normals = np.zeros_like(xyz)
     f_dc = gaussians.feature.detach().cpu().numpy() # Assume SH=0 (RGB) or SH. We only take DC.
-    # If SH, feature is (N, 3, (D+1)**2) or (N, C)
-    # If standard 3DGS, f_dc is (N, 3) (or colors)
-
-    # Check shape
+    
     if len(f_dc.shape) == 3:
-        # (N, 3, K) -> take K=0
         f_dc = f_dc[:, :, 0]
 
-    # f_dc is usually SH coefficients. 0-th band is color/0.28209
-    # But here we might just store RGB directly if we trained that way.
-    # Let's assume we trained RGB directly for simplicity, or convert.
-    # Standard PLY for splat viewers expects f_dc_0, f_dc_1, f_dc_2
-
-    opacities = gaussians.alpha.detach().cpu().numpy().flatten() # sigmoid(alpha_logit)
-    scale = gaussians.scale.detach().cpu().numpy() # exp(log_scaling)
+    opacities = gaussians.alpha.detach().cpu().numpy().flatten()
+    scale = gaussians.scale.detach().cpu().numpy() 
     rotation = gaussians.rotation.detach().cpu().numpy() # (w, x, y, z)
 
-    # Create dtype
     dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
              ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
              ('f_dc_0', 'f4'), ('f_dc_1', 'f4'), ('f_dc_2', 'f4'),
@@ -294,28 +234,15 @@ def export_ply(filepath, gaussians):
     elements['f_dc_0'] = f_dc[:, 0]
     elements['f_dc_1'] = f_dc[:, 1]
     elements['f_dc_2'] = f_dc[:, 2]
-    elements['opacity'] = inverse_sigmoid(torch.tensor(opacities)).numpy() # Viewers often expect logit?
-    # Wait, standard PLY:
-    # opacity: logit or raw?
-    # "opacity": usually passed through sigmoid in renderer. In PLY it is often stored as logit or raw value 0-1.
-    # Standard 3DGS implementation stores 'opacity' as sigmoid(logit).
-    # But some viewers might expect logit.
-    # Original 3DGS stores opacity as passed through sigmoid?
-    # No, original 3DGS source:
-    # "opacity": sigmoid(logit)
-
+    # elements['opacity'] = inverse_sigmoid(torch.tensor(opacities)).numpy() 
     elements['opacity'] = opacities
-
-    # Scale: log scale?
-    # Original 3DGS stores log scale.
     elements['scale_0'] = np.log(scale[:, 0])
     elements['scale_1'] = np.log(scale[:, 1])
     elements['scale_2'] = np.log(scale[:, 2])
-
-    elements['rot_0'] = rotation[:, 0] # w
-    elements['rot_1'] = rotation[:, 1] # x
-    elements['rot_2'] = rotation[:, 2] # y
-    elements['rot_3'] = rotation[:, 3] # z
+    elements['rot_0'] = rotation[:, 0] 
+    elements['rot_1'] = rotation[:, 1] 
+    elements['rot_2'] = rotation[:, 2] 
+    elements['rot_3'] = rotation[:, 3] 
 
     if PlyData:
         el = PlyElement.describe(elements, 'vertex')
@@ -326,17 +253,14 @@ def export_ply(filepath, gaussians):
 
 def train(args):
     device = torch.device('cuda')
-    ti.init(arch=ti.cuda, device_memory_GB=4.0) # Optimized for Kaggle T4
+    ti.init(arch=ti.cuda, device_memory_GB=4.0) 
 
     dataset = SceneDataset(args.project_path, device=device)
 
     # Initialize Gaussians
     xyz = torch.from_numpy(dataset.points_xyz).float().to(device)
     rgb = torch.from_numpy(dataset.points_rgb).float().to(device)
-
-    # SH: We will stick to RGB (DC only) for simplicity and speed
-    # Or initialize SH degree 0
-    features = rgb # (N, 3)
+    features = rgb 
 
     # Scale
     dist2 = torch.clamp_min(torch.ones_like(xyz[:, 0]) * 0.01, 0.0000001)
@@ -366,7 +290,6 @@ def train(args):
         alpha_logit=0.05
     )
 
-    # Use ParameterClass for easier optimization and densification
     params = ParameterClass.create(
         gaussians.to_tensordict(),
         learning_rates,
@@ -389,7 +312,6 @@ def train(args):
         gt_image = dataset.images[idx]
 
         # Render
-        # params acts as Gaussians3D
         rendering = render_gaussians(params, cam, config, compute_split_heuristics=True)
 
         image = rendering.image
@@ -404,7 +326,6 @@ def train(args):
         # Accumulate gradients
         with torch.no_grad():
              if rendering.split_heuristics is not None:
-                 # Resize accumulator if needed
                  if grad_accumulator.shape[0] != params.batch_size[0]:
                      grad_accumulator = torch.zeros((params.batch_size[0], 2), device=device)
                  grad_accumulator += rendering.split_heuristics
@@ -419,13 +340,11 @@ def train(args):
                 visibility = stats[:, 0]
                 grads = stats[:, 1]
 
-                grad_accumulator.zero_() # Reset
+                grad_accumulator.zero_() 
 
                 grad_thresh = 0.0002
-
-                # Masks
                 scales = params.log_scaling.exp().max(dim=1).values
-                scene_extent = 5.0 # simplified
+                scene_extent = 5.0 
 
                 split_mask = (grads > grad_thresh) & (scales > 0.01 * scene_extent)
                 clone_mask = (grads > grad_thresh) & (scales <= 0.01 * scene_extent)
@@ -433,10 +352,8 @@ def train(args):
                 # Split (sample new points)
                 if split_mask.any():
                     splits = params[split_mask].clone()
-                    splits.log_scaling -= np.log(1.6) # Scale down
-                    # Perturb position
+                    splits.log_scaling -= np.log(1.6) 
                     splits.position += torch.randn_like(splits.position) * splits.log_scaling.exp()
-
                     params = params.append_tensors(splits.to_tensordict())
 
                 if clone_mask.any():
@@ -449,7 +366,7 @@ def train(args):
     out_dir = Path(args.output_path)
     out_dir.mkdir(parents=True, exist_ok=True)
     export_ply(out_dir / "point_cloud.ply", params)
-    export_ply(out_dir / "model.ply", params) # Backup name
+    export_ply(out_dir / "model.ply", params)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
