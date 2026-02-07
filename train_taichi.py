@@ -143,13 +143,8 @@ class SceneDataset:
         cx = float(meta.get('cx', w/2))
         cy = float(meta.get('cy', h/2))
 
-        # Build intrinsic matrix (K)
-        # Note: taichi-splatting CameraParams uses T_image_camera which is K
-        K = torch.tensor([
-            [fl_x, 0, cx],
-            [0, fl_y, cy],
-            [0, 0, 1]
-        ], dtype=torch.float32, device=self.device)
+        # Build projection vector [fx, fy, cx, cy]
+        projection = torch.tensor([fl_x, fl_y, cx, cy], dtype=torch.float32, device=self.device)
 
         for frame in meta['frames']:
             fname = frame['file_path']
@@ -193,7 +188,7 @@ class SceneDataset:
             ih, iw = img.shape[:2]
 
             cam_param = CameraParams(
-                T_image_camera=K,
+                projection=projection,
                 T_camera_world=w2c,
                 near_plane=0.1,
                 far_plane=100.0,
