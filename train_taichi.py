@@ -18,7 +18,7 @@ import taichi_splatting
 from taichi_splatting.data_types import Gaussians3D, RasterConfig
 from taichi_splatting.renderer import render_gaussians
 from taichi_splatting.perspective import CameraParams
-from taichi_splatting.misc.encode_depth import encode_depth
+# from taichi_splatting.misc.encode_depth import encode_depth # Unused and missing in repo
 from taichi_splatting.misc.radius import compute_radius
 from taichi_splatting.misc.parameter_class import ParameterClass
 from functools import partial
