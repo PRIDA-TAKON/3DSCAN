@@ -19,7 +19,11 @@ import taichi_splatting
 from taichi_splatting.data_types import Gaussians3D, RasterConfig
 from taichi_splatting.renderer import render_gaussians
 from taichi_splatting.perspective import CameraParams
-from taichi_splatting.misc.parameter_class import ParameterClass
+try:
+    from taichi_splatting.misc.parameter_class import ParameterClass
+except ImportError:
+    # Use local fallback if missing in library
+    from parameter_class import ParameterClass
 from functools import partial
 
 # Try importing plyfile, handle if missing
