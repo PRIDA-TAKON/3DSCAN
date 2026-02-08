@@ -32,16 +32,27 @@ def main():
     output_path.mkdir(parents=True, exist_ok=True)
 
     # Paths setup
+    # Paths setup
     colmap_path = project_path / "sparse" / "0"
     if not colmap_path.exists():
-        # Fallback to sparse if 0 doesn't exist (some colmap versions)
+        # Fallback 1: sparse folder directly
         colmap_path = project_path / "sparse"
     
+    if not colmap_path.exists():
+        # Fallback 2: nested colmap folder (as created by step2)
+        colmap_path = project_path / "colmap" / "sparse" / "0"
+
+    if not colmap_path.exists():
+        # Fallback 3: nested colmap folder (sparse only)
+        colmap_path = project_path / "colmap" / "sparse"
+
     images_path = project_path / "images"
     
     if not colmap_path.exists():
-        print(f"❌ Error: COLMAP sparse reconstruction not found at {colmap_path}")
+        print(f"❌ Error: COLMAP sparse reconstruction not found at {project_path}/(colmap/)sparse")
         return
+    
+    print(f"📂 Found COLMAP model at: {colmap_path}")
 
     # 1. Convert Data to Taichi Format
     print("🚀 Converting COLMAP data for Taichi Splatting...")
