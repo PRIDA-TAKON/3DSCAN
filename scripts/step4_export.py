@@ -4,33 +4,35 @@ import argparse
 from pathlib import Path
 import numpy as np
 import sys
+import subprocess
+import glob
 
-# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi OR taichi_3d_gaussian_splatting
-sys.path.append(str(Path(__file__).parent.parent / "temp_new_taichi"))
-sys.path.append(str(Path(__file__).parent.parent / "taichi_3d_gaussian_splatting"))
-
-def convert_parquet_to_ply(parquet_path: Path, ply_path: Path):
-    """
-    Converts a Parquet file to a PLY file using taichi_3d_gaussian_splatting.
-    """
-    print(f"⏳ Converting {parquet_path.name} to {ply_path.name}...")
+def run_command(cmd):
+    print(f"🚀 Running: {cmd}")
     try:
-        from taichi_3d_gaussian_splatting.GaussianPointCloudScene import GaussianPointCloudScene
-        # Load scene from parquet
-        scene = GaussianPointCloudScene.from_parquet(
-            str(parquet_path), 
-            config=GaussianPointCloudScene.PointCloudSceneConfig(max_num_points_ratio=None)
-        )
-        # Save to PLY
-        scene.to_ply(str(ply_path))
-        print(f"✅ Successfully exported PLY to {ply_path}")
+        subprocess.run(cmd, shell=True, check=True)
         return True
-    except ImportError:
-        print("❌ Error: taichi_3d_gaussian_splatting not installed. Cannot convert parquet.")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Command failed: {cmd}")
         return False
-    except Exception as e:
-        print(f"❌ Parquet conversion failed: {e}")
-        return False
+
+def export_nerfstudio_to_ply(config_path: Path, ply_output_path: Path):
+    """
+    Exports Nerfstudio model to PLY using ns-export.
+    """
+    print(f"⏳ Exporting Nerfstudio model to {ply_output_path}...")
+    cmd = f"ns-export gaussian-splat --load-config {config_path} --output-dir {ply_output_path.parent}"
+    # Note: ns-export gaussian-splat typically creates a folder or specific naming.
+    # We might need to handle the output name.
+    if run_command(cmd):
+        # ns-export usually saves as splat.ply in the output-dir
+        exported_ply = ply_output_path.parent / "splat.ply"
+        if exported_ply.exists() and exported_ply != ply_output_path:
+            shutil.move(str(exported_ply), str(ply_output_path))
+        return True
+    return False
+
+import shutil
 
 def convert_ply_to_splat(ply_file: Path, output_file: Path):
     """
@@ -40,7 +42,6 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
     output_file = Path(output_file)
     
     print(f"⏳ Converting {ply_file.name} to .splat format...")
-    # Import plyfile locally to ensure it is available (installed in deps)
     try:
         from plyfile import PlyData, PlyElement
     except ImportError:
@@ -56,50 +57,48 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         vert = plydata["vertex"]
 
         # Sort by scale/opacity importance approximation
-        sorted_indices = np.argsort(
-            -np.exp(vert["scale_0"] + vert["scale_1"] + vert["scale_2"])
-            / (1 / (1 + np.exp(-vert["opacity"])))
-        )
+        # Nerfstudio PLY properties might differ slightly from Taichi
+        # Common keys: x, y, z, opacity, scale_0, scale_1, scale_2, f_dc_0...
+        
+        scales_keys = [k for k in vert.data.dtype.names if k.startswith("scale_")]
+        opacity_key = "opacity" if "opacity" in vert.data.dtype.names else None
+        
+        if not scales_keys or not opacity_key:
+             print("⚠️ Warning: Could not find standard scale/opacity keys. Using default sorting.")
+             sorted_indices = np.arange(len(vert["x"]))
+        else:
+             # Approximation of importance
+             scale_sum = np.sum([vert[k] for k in scales_keys], axis=0)
+             sorted_indices = np.argsort(
+                -np.exp(scale_sum) / (1 / (1 + np.exp(-vert[opacity_key])))
+             )
 
         n = len(sorted_indices)
-        x = vert["x"][sorted_indices]
-        y = vert["y"][sorted_indices]
-        z = vert["z"][sorted_indices]
-        position = np.stack([x, y, z], axis=1).astype(np.float32)
+        position = np.stack([vert["x"][sorted_indices], vert["y"][sorted_indices], vert["z"][sorted_indices]], axis=1).astype(np.float32)
 
-        s0 = vert["scale_0"][sorted_indices]
-        s1 = vert["scale_1"][sorted_indices]
-        s2 = vert["scale_2"][sorted_indices]
-        scales = np.stack([s0, s1, s2], axis=1).astype(np.float32)
+        scales = np.stack([vert[k][sorted_indices] for k in scales_keys], axis=1).astype(np.float32)
         scales = np.exp(scales)
 
-        r0 = vert["rot_0"][sorted_indices]
-        r1 = vert["rot_1"][sorted_indices]
-        r2 = vert["rot_2"][sorted_indices]
-        r3 = vert["rot_3"][sorted_indices]
-        rot = np.stack([r0, r1, r2, r3], axis=1).astype(np.float32)
-        length = np.sqrt(np.sum(rot ** 2, axis=1, keepdims=True))
-        rot /= length
-        rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
+        rot_keys = ["rot_0", "rot_1", "rot_2", "rot_3"]
+        if all(k in vert.data.dtype.names for k in rot_keys):
+            rot = np.stack([vert[k][sorted_indices] for k in rot_keys], axis=1).astype(np.float32)
+            length = np.sqrt(np.sum(rot ** 2, axis=1, keepdims=True))
+            rot /= length
+            rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
+        else:
+            rot_int = np.zeros((n, 4), dtype=np.uint8)
 
         # Handle color/SH
-        # Implementation depends on what the PLY contains.
-        # taichi_3d_gaussian_splatting PLY output might need checking.
-        # Assuming it outputs f_dc_* or red/green/blue.
-        
         SH_C0 = 0.28209479177387814
         R = np.zeros(n, dtype=np.uint8)
         G = np.zeros(n, dtype=np.uint8)
         B = np.zeros(n, dtype=np.uint8)
         
-        if "f_dc_0" in vert:
-             dc0 = vert["f_dc_0"][sorted_indices]
-             dc1 = vert["f_dc_1"][sorted_indices]
-             dc2 = vert["f_dc_2"][sorted_indices]
-             R = (0.5 + SH_C0 * dc0) * 255
-             G = (0.5 + SH_C0 * dc1) * 255
-             B = (0.5 + SH_C0 * dc2) * 255
-        elif "red" in vert:
+        if "f_dc_0" in vert.data.dtype.names:
+             R = (0.5 + SH_C0 * vert["f_dc_0"][sorted_indices]) * 255
+             G = (0.5 + SH_C0 * vert["f_dc_1"][sorted_indices]) * 255
+             B = (0.5 + SH_C0 * vert["f_dc_2"][sorted_indices]) * 255
+        elif "red" in vert.data.dtype.names:
              R = vert["red"][sorted_indices]
              G = vert["green"][sorted_indices]
              B = vert["blue"][sorted_indices]
@@ -107,8 +106,8 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         R = np.clip(R, 0, 255).astype(np.uint8)
         G = np.clip(G, 0, 255).astype(np.uint8)
         B = np.clip(B, 0, 255).astype(np.uint8)
-        A = np.full_like(R, 255, dtype=np.uint8) # Full opacity for splat visualization
-        color = np.stack([R, G, B, A], axis=1) # RGBA
+        A = np.full_like(R, 255, dtype=np.uint8)
+        color = np.stack([R, G, B, A], axis=1)
 
         dtype_output = np.dtype([
             ('position', np.float32, 3),
@@ -131,37 +130,58 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
 
     except Exception as e:
         print(f"❌ Conversion failed: {e}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def main():
-    parser = argparse.ArgumentParser(description="Step 4: Export to SPLAT")
-    parser.add_argument("--input_ply", help="Path to input .ply file")
-    parser.add_argument("--input_parquet", help="Path to input .parquet file (from taichi training)")
+    parser = argparse.ArgumentParser(description="Step 4: Export Nerfstudio Model to SPLAT")
+    parser.add_argument("--input_config", help="Path to Nerfstudio config.yml")
+    parser.add_argument("--input_ply", help="Path to input .ply file (if already exported)")
     parser.add_argument("--output_splat", required=True, help="Path to output .splat file")
     
     args = parser.parse_args()
 
     ply_path = args.input_ply
     
-    # Check for parquet input
-    if args.input_parquet:
-        parquet_path = Path(args.input_parquet)
-        if parquet_path.exists():
-            # Generate intermediate PLY path
-            ply_path = parquet_path.with_suffix(".ply")
-            if not convert_parquet_to_ply(parquet_path, ply_path):
-                print("❌ Failed to convert Parquet to PLY.")
+    if args.input_config:
+        config_path = Path(args.input_config)
+        if config_path.exists():
+            # Create a temp PLY
+            temp_ply = Path("temp_model.ply")
+            if export_nerfstudio_to_ply(config_path, temp_ply):
+                ply_path = str(temp_ply)
+            else:
+                print("❌ Failed to export Nerfstudio model to PLY.")
                 return
         else:
-             print(f"❌ Error: Input Parquet file {parquet_path} not found.")
-             # Proceed to check ply_path if provided, else fail
-             if not ply_path: return
+             # Search for config.yml in the dir if path is a directory
+             if config_path.is_dir():
+                 configs = list(config_path.glob("**/config.yml"))
+                 if configs:
+                     # Use the latest one
+                     latest_config = sorted(configs, key=lambda p: p.stat().st_mtime)[-1]
+                     print(f"📂 Found config: {latest_config}")
+                     temp_ply = Path("temp_model.ply")
+                     if export_nerfstudio_to_ply(latest_config, temp_ply):
+                         ply_path = str(temp_ply)
+                     else: return
+                 else:
+                     print(f"❌ No config.yml found in {config_path}")
+                     return
+             else:
+                 print(f"❌ Error: config.yml not found at {config_path}")
+                 return
 
     if not ply_path:
-        print("❌ Error: No input file specified (--input_ply or --input_parquet)")
+        print("❌ Error: No input provided (--input_config or --input_ply)")
         return
 
-    convert_ply_to_splat(ply_path, args.output_splat)
+    convert_ply_to_splat(Path(ply_path), Path(args.output_splat))
+    
+    # Cleanup temp_ply if created
+    if args.input_config and Path("temp_model.ply").exists():
+        os.remove("temp_model.ply")
 
 if __name__ == "__main__":
     main()

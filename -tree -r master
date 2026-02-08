@@ -1,0 +1,281 @@
+[33mcommit 94a18424467885fe6b283bc6ee9504ec609be7d9[m
+Author: PRIDA-TAKON <takonaom@gmail.com>
+Date:   Sun Feb 8 15:55:14 2026 +0700
+
+    update
+
+[1mdiff --git a/PROJECT_STRUCTURE.md b/PROJECT_STRUCTURE.md[m
+[1mindex d6b9528..1470068 100644[m
+[1m--- a/PROJECT_STRUCTURE.md[m
+[1m+++ b/PROJECT_STRUCTURE.md[m
+[36m@@ -1,55 +1,52 @@[m
+ # โครงสร้างโปรเจค 3DSCAN สำหรับ Kaggle[m
+ [m
+[31m-โปรเจคนี้ถูกออกแบบมาเพื่อรันกระบวนการ **3D Gaussian Splatting** บน **Kaggle** โดยอัตโนมัติ ตั้งแต่การเตรียมข้อมูลวิดีโอ ไปจนถึงการเทรนโมเดลและส่งออกไฟล์ `.splat` เพื่อนำไปใช้งานต่อ[m
+[32m+[m[32mโปรเจคนี้ถูกออกแบบมาเพื่อ rันกระบวนการ **3D Gaussian Splatting** บน **Kaggle** โดยแบ่งการทำงานออกเป็น 2 ส่วน (Parts) เพื่อแก้ปัญหา Environment Conflict (NumPy version) และเพิ่มความเสถียร[m
+ [m
+ ## 📁 โครงสร้างไฟล์ (File Structure)[m
+ [m
+[31m-| ไฟล์ (File) | หน้าที่ (Description) |[m
+[32m+[m[32m| ไฟล์/โฟลเดอร์ (File/Folder) | หน้าที่ (Description) |[m
+ | :--- | :--- |[m
+[31m-| **`3d-scan-fixed.ipynb`** | **ตัวรันหลัก (Main Launcher):** Notebook สำหรับรันบน Kaggle ทำหน้าที่ Clone โค้ดจาก GitHub และสั่งรัน `3d-scan.py` |[m
+[31m-| **`3d-scan-resume.ipynb`** | **ตัวรันโหมดทำต่อ (Resume Launcher):** Notebook สำหรับการรันต่อจากงานเดิม (Resume) โดยเฉพาะ |[m
+[31m-| **`3d-scan.py`** | **โค้ดหลัก (Core Script):** สคริปต์ Python ที่ควบคุม Process การทำงานทั้งหมด ตั้งแต่จัดการ Environment, แปลงวิดีโอ, รัน COLMAP, เทรนโมเดล Splatfacto, และส่งออกไฟล์ .splat |[m
+[32m+[m[32m| **`3d-scan-part1-data-prep.ipynb`** | **ส่วนที่ 1 (เตรียมข้อมูล):** รันบน Kaggle เพื่อแปลงวิดีโอเป็นภาพ และทำ Sparse Reconstruction (COLMAP) ส่งออกเป็นไฟล์ Zip |[m
+[32m+[m[32m| **`3d-scan-part2-training.ipynb`** | **ส่วนที่ 2 (เทรนโมเดล):** รันบน Kaggle โดยรับไฟล์ Zip จากส่วนที่ 1 มาเทรนโมเดลด้วย Taichi Splatting และส่งออกไฟล์ `.splat` |[m
+[32m+[m[32m| **`taichi-splatting-kaggle/`** | **ไลบรารีเสริม (Submodule):** Fork ของ `taichi_3d_gaussian_splatting` ที่ถูกแก้บั๊ก (Fixed) แล้ว สำหรับใช้ใน Part 2 |[m
+[32m+[m[32m| `scripts/` | **สคริปต์หลัก (Core Scripts):** โฟลเดอร์เก็บไฟล์ Python (`step1` ถึง `step4`) ที่ถูกเรียกใช้โดย Notebooks |[m
+ | `LICENSE` | ไลเซนส์ของโปรเจค (MIT License) |[m
+[31m-| `*.txt` | ไฟล์ Log บันทึกผลการทำงาน (เช่น `3d-scan.log.txt`) |[m
+ [m
+ ---[m
+ [m
+ ## ⚙️ การทำงานบน Kaggle (Workflow)[m
+ [m
+[31m-การทำงานของโปรเจคนี้บน Kaggle ถูกแบ่งออกเป็น 2 ส่วนหลักที่ทำงานประสานกัน:[m
+[31m-[m
+[31m-### 1. `3d-scan-fixed.ipynb` (Launcher)[m
+[31m-ทำหน้าที่เป็นตัวจุดชนวนการทำงาน:[m
+[31m-1.  **Clone Code:** ดึงโค้ดล่าสุดจาก GitHub `PRIDA-TAKON/3DSCAN` ลงมาใน Kaggle[m
+[31m-2.  **Execute Script:** สั่งรันคำสั่ง `python 3d-scan.py` พร้อมบันทึก Log[m
+[31m-[m
+[31m-### 2. `3d-scan.py` (Core Pipeline)[m
+[31m-ไฟล์นี้เป็นหัวใจสำคัญ ทำหน้าที่จัดการทุกอย่างเมื่อถูกเรียกใช้:[m
+[31m-1.  **Environment Management:**[m
+[31m-    *   **Check GPU:** ตรวจสอบ GPU[m
+[31m-    *   **Install Dependencies:** ติดตั้ง `colmap`, `ffmpeg`, `nerfstudio`, `plyfile` หากยังไม่มี[m
+[31m-    *   **Apply Patches:**[m
+[31m-        *   *Patch NumPy:* แก้ปัญหา `ImportError: cannot import name 'broadcast_to'`[m
+[31m-        *   *Patch Nerfstudio:* แก้ปัญหาความเข้ากันได้กับ PyTorch 2.6+ (`weights_only=False`)[m
+[31m-2.  **Process Data:**[m
+[31m-    *   **Find Video:** ค้นหาวิดีโอ .mp4 ใน `/kaggle/input` อัตโนมัติ[m
+[31m-    *   **Convert Video:** แปลงวิดีโอเป็นภาพนิ่ง (Extract Frames)[m
+[31m-    *   **COLMAP:** รันกระบวนการ Photogrammetry (Structure for Motion)[m
+[31m-    *   **Generate JSON:** สร้างไฟล์ `transforms.json` สำหรับ Nerfstudio[m
+[31m-3.  **Train Model:** เทรนโมเดลด้วย `ns-train splatfacto`[m
+[31m-4.  **Export:** ส่งออกผลลัพธ์เป็นไฟล์ `.splat` ไปยังโฟลเดอร์ Output ของ Kaggle[m
+[32m+[m[32mการทำงานถูกแบ่งเป็น 2 ขั่นตอน เพื่อแยก Environment ออกจากกันอย่างชัดเจน:[m
+[32m+[m
+[32m+[m[32m### 1. `3d-scan-part1-data-prep.ipynb` (Data Preparation)[m
+[32m+[m
+[32m+[m[32m* **Environment:** Kaggle Default (รองรับ NumPy 2.x)[m
+[32m+[m[32m* **Input:** วิดีโอ (`.mp4`) หรือ ภาพถ่าย[m
+[32m+[m[32m* **Process:**[m
+[32m+[m[32m    1. Extract Frames (แปลงวิดีโอเป็นภาพ)[m
+[32m+[m[32m    2. COLMAP SfM (สร้าง Sparse Point Cloud)[m
+[32m+[m[32m* **Output:** ไฟล์ `3d_scan_data_part1.zip` (ต้องดาวน์โหลดเก็บไว้)[m
+[32m+[m
+[32m+[m[32m### 2. `3d-scan-part2-training.ipynb` (Training)[m
+[32m+[m
+[32m+[m[32m* **Environment:** Custom (Strict NumPy < 2.0, Taichi)[m
+[32m+[m[32m* **Input:** ไฟล์ `3d_scan_data_part1.zip` (จากขั้นตอนที่ 1)[m
+[32m+[m[32m* **Process:**[m
+[32m+[m[32m    1. Install Dependencies (จาก `taichi-splatting-kaggle` fork)[m
+[32m+[m[32m    2. Train Taichi Splatting (เทรนโมเดล)[m
+[32m+[m[32m    3. Export to .splat[m
+[32m+[m[32m* **Output:** ไฟล์ `3d_splat_model.zip` (โมเดล 3D พร้อมใช้งาน)[m
+ [m
+ ---[m
+ [m
+[31m-## 🚀 วิธีการใช้งานบน Kaggle[m
+[32m+[m[32m## 🚀 วิธีการใช้งาน (Step-by-Step)[m
+ [m
+[31m-1.  **Create New Notebook:** สร้าง Notebook ใหม่บน Kaggle[m
+[31m-2.  **Import Notebook:** อัปโหลดไฟล์ `3d-scan-fixed.ipynb` หรือ copy โค้ดลงไป[m
+[31m-3.  **Add Data:**[m
+[31m-    *   อัปโหลดวิดีโอที่ต้องการสแกนไปที่ Input Dataset (ระบบจะหาไฟล์อัตโนมัติ)[m
+[31m-4.  **Settings:**[m
+[31m-    *   เปิด **Internet: On**[m
+[31m-    *   เลือก **Accelerator: GPU P100** หรือ **T4 x2**[m
+[31m-5.  **Run All:** กด Run All เพื่อเริ่มกระบวนการทั้งหมด[m
+[32m+[m[32m1. **รัน Part 1:**[m
+[32m+[m[32m    * สร้าง Notebook ใหม่ -> Import `3d-scan-part1-data-prep.ipynb`[m
+[32m+[m[32m    * รันจนจบ -> ดาวน์โหลด `output/3d_scan_data_part1.zip`[m
+ [m
+[31m-ระบบจะทำงานอัตโนมัติและบันทึกไฟล์ `.splat` ไว้ในโฟลเดอร์ `/kaggle/working/outputs/3d_scan/splatfacto/` เมื่อเสร็จสิ้น[m
+[32m+[m[32m2. **รัน Part 2:**[m
+[32m+[m[32m    * สร้าง Notebook ใหม่ -> Import `3d-scan-part2-training.ipynb`[m
+[32m+[m[32m    * สร้าง **New Dataset** ใน Kaggle โดยอัปโหลดไฟล์ `3d_scan_data_part1.zip` ที่ได้มา[m
+[32m+[m[32m    * เพิ่ม Dataset นี้เข้าใน Notebook[m
+[32m+[m[32m    * รันจนจบ -> ดาวน์โหลด `3d_splat_model.zip`[m
+
+[33mcommit 35856843afbabe2ae6e41840b91286d30ffa4896[m
+Author: PRIDA-TAKON <takonaom@gmail.com>
+Date:   Fri Feb 6 00:32:33 2026 +0700
+
+    kill nef
+
+[1mdiff --git a/3d-scan.py b/3d-scan.py[m
+[1mindex f84d96f..222c0dd 100644[m
+[1m--- a/3d-scan.py[m
+[1m+++ b/3d-scan.py[m
+[36m@@ -9,6 +9,8 @@[m [mfrom pathlib import Path[m
+ import json[m
+ import importlib.util[m
+ import concurrent.futures[m
+[32m+[m[32mimport math[m
+[32m+[m[32mimport numpy as np[m
+ [m
+ print("✅ Imports complete")[m
+ [m
+[36m@@ -86,13 +88,12 @@[m [mdef check_numpy_integrity():[m
+         return False[m
+ [m
+ def install_dependencies():[m
+[31m-    print("⏳ Installing dependencies (Force Numpy 2.0 Mode)...")[m
+[32m+[m[32m    print("⏳ Installing dependencies (Manual Pipeline Mode)...")[m
+ [m
+     # 1. Upgrade pip first[m
+     run_command("pip install --upgrade pip", shell=True)[m
+ [m
+     # 2. Force Upgrade Numpy to 2.x and essential libs to compatible versions[m
+[31m-    # We explicitly upgrade opencv, numba, scipy, pandas, scikit-learn, etc. to avoid conflicts[m
+     print("🚀 Force upgrading core libraries for Numpy 2.0 compatibility...")[m
+     libs_to_upgrade = [[m
+         "numpy>=2.0",[m
+[36m@@ -104,30 +105,16 @@[m [mdef install_dependencies():[m
+         "opencv-python-headless", [m
+         "opencv-contrib-python",[m
+         "matplotlib",[m
+[31m-        "pillow"[m
+[32m+[m[32m        "pillow",[m
+[32m+[m[32m        "plyfile",[m
+[32m+[m[32m        "tqdm"[m
+     ][m
+     run_command(f"pip install --upgrade {' '.join(libs_to_upgrade)}", shell=True)[m
+ [m
+[31m-    # 3. Handle TensorFlow (often causes conflicts, upgrade it too)[m
+[31m-    try:[m
+[31m-        run_command("pip install --upgrade tensorflow", shell=True)[m
+[31m-    except:[m
+[31m-        print("⚠️ Failed to upgrade tensorflow, proceeding...")[m
+[31m-[m
+[31m-    # 4. Install Nerfstudio (without deps first maybe? No, let pip handle it but we pre-installed newer versions)[m
+[31m-    # We trust that the newer libs above rely on numpy 2.0, so pip won't downgrade if we just install nerfstudio now.[m
+[31m-    # However, nerfstudio requirements might strictly say <2.0. We might need to permit it or ignore deps if it fails.[m
+[31m-    # Let's try standard install first, it usually respects installed packages if they satisfy constraints, [m
+[31m-    # but if nerfstudio hardcodes numpy<2.0, we have a problem.[m
+[31m-    # Luckily, newer nerfstudio/gsplat might support it.[m
+[31m-    [m
+[31m-    print("⏳ Installing Nerfstudio & Utils...")[m
+[31m-    run_command("pip install nerfstudio plyfile", shell=True)[m
+[31m-[m
+[31m-    # 5. Install Taichi (Stable)[m
+[32m+[m[32m    # 3. Install Taichi (Stable)[m
+     run_command("pip install taichi", shell=True)[m
+ [m
+[31m-    # 6. Install Taichi Splatting from source (Patched for stable taichi)[m
+[32m+[m[32m    # 4. Install Taichi Splatting from source (Patched for stable taichi)[m
+     print("⏳ Installing taichi-splatting from source...")[m
+     if os.path.exists("taichi-splatting"):[m
+         shutil.rmtree("taichi-splatting")[m
+[36m@@ -141,38 +128,27 @@[m [mdef install_dependencies():[m
+     # Install from source[m
+     run_command("pip install ./taichi-splatting", shell=True)[m
+ [m
+[32m+[m[32m    # Install COLMAP & ffmpeg[m
+     print("⏳ Installing COLMAP & ffmpeg...")[m
+     run_command("apt-get update", shell=True)[m
+[31m-[m
+[31m-    # Check if colmap is installed[m
+[32m+[m[41m    [m
+     try:[m
+         run_command("colmap help", shell=True)[m
+         print("   COLMAP already installed.")[m
+     except:[m
+[31m-        print("⏳ Installing COLMAP via apt-get...")[m
+         run_command("apt-get install -y colmap", shell=True)[m
+ [m
+[31m-    # Check if ffmpeg is installed[m
+     try:[m
+         run_command("ffmpeg -version", shell=True)[m
+         print("   ffmpeg already installed.")[m
+     except:[m
+         run_command("apt-get install -y ffmpeg", shell=True)[m
+[31m-[m
+[31m-    # Check if xvfb is installed (required for COLMAP with GPU)[m
+[32m+[m[41m    [m
+     try:[m
+         run_command("which xvfb-run", shell=True)[m
+[31m-        print("   xvfb already installed.")[m
+     except:[m
+[31m-        print("⏳ Installing xvfb...")[m
+         run_command("apt-get install -y xvfb", shell=True)[m
+ [m
+[31m-    try:[m
+[31m-        run_command("colmap help", shell=True)[m
+[31m-        print("✅ COLMAP installed successfully.")[m
+[31m-    except:[m
+[31m-        print("❌ COLMAP installation failed.")[m
+[31m-[m
+ [m
+ def patch_numpy_compatibility():[m
+     """[m
+[36m@@ -191,44 +167,154 @@[m [mdef patch_numpy_compatibility():[m
+     except Exception as e:[m
+         print(f"   ⚠️ Numpy patch failed: {e}")[m
+ [m
+[32m+[m[32m# --- COLMAP UTILS (Replaces Nerfstudio dependency) ---[m
+[32m+[m[32mdef qvec2rotmat(qvec):[m
+[32m+[m[32m    return np.array([[m
+[32m+[m[32m        [1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,[m
+[32m+[m[32m         2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],[m
+[32m+[m[32m         2 * qvec[3] * qvec[1] + 2 * qvec[0] * qvec[2]],[m
+[32m+[m[32m        [2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],[m
+[32m+[m[32m         1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,[m
+[32m+[m[32m         2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]],[m
+[32m+[m[32m        [2 * qvec[3] * qvec[1] - 2 * qvec[0] * qvec[2],[m
+[32m+[m[32m         2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],[m
+[32m+[m[32m         1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])[m
+[32m+[m
+[32m+[m[32mdef read_cameras_text(path):[m
+[32m+[m[32m    cameras = {}[m
+[32m+[m[32m    with open(path, "r") as f:[m
+[32m+[m[32m        for line in f:[m
+[32m+[m[32m            if line.startswith("#") or not line.strip():[m
+[32m+[m[32m                continue[m
+[32m+[m[32m            els = line.split()[m
+[32m+[m[32m            camera_id = int(els[0])[m
+[32m+[m[32m            model = els[1][m
+[32m+[m[32m            width = int(els[2])[m
+[32m+[m[32m            height = int(els[3])[m
+[32m+[m[32m            params = np.array([float(x) for x in els[4:]])[m
+[32m+[m[32m            cameras[camera_id] = {"model": model, "width": width, "height": height, "params": params}[m
+[32m+[m[32m    return cameras[m
+[32m+[m
+[32m+[m[32mdef read_images_text(path):[m
+[32m+[m[32m    images = {}[m
+[32m+[m[32m    with open(path, "r") as f:[m
+[32m+[m[32m        while True:[m
+[32m+[m[32m            line = f.readline()[m
+[32m+[m[32m            if not line: break[m
+[32m+[m[32m            if line.startswith("#") or not line.strip(): continue[m
+[32m+[m[41m            [m
+[32m+[m[32m            # Line 1: Image ID, Qvec, Tvec, Camera ID, Name[m
+[32m+[m[32m            els = line.split()[m
+[32m+[m[32m            image_id = int(els[0])[m
+[32m+[m[32m            qvec = np.array([float(x) for x in els[1:5]])[m
+[32m+[m[32m            tvec = np.array([float(x) for x in els[5:8]])[m
+[32m+[m[32m            camera_id = int(els[8])[m
+[32m+[m[32m            image_name = els[9][m
+[32m+[m[41m            [m
+[32m+[m[32m            # Line 2: Points 2D (discard)[m
+[32m+[m[32m            f.readline()[m
+[32m+[m[41m            [m
+[32m+[m[32m            images[image_id] = {[m
+[32m+[m[32m                "qvec": qvec, "tvec": tvec, "camera_id": camera_id, "name": image_name[m
+[32m+[m[32m            }[m
+[32m+[m[32m    return images[m
+ [m
+[31m-def patch_nerfstudio():[m
+[31m-    """[m
+[31m-    Patches nerfstudio installed in the system to fix PyTorch 2.6+ compatibility issues.[m
+[31m-    """[m
+[31m-    print("🔧 Patching nerfstudio for PyTorch 2.6+ compatibility...")[m
+[31m-    try:[m
+[31m-        potential_paths = glob.glob("/usr/local/lib/python*/dist-packages/nerfstudio/utils/eval_utils.py")[m
+[31m-        if not potential_paths:[m
+[31m-            potential_paths = glob.glob("/opt/conda/lib/python*/site-packages/nerfstudio/utils/eval_utils.py")[m
+[31m-[m
+[31m-        if potent

@@ -3,116 +3,67 @@ import argparse
 from pathlib import Path
 import sys
 import os
+import subprocess
+import shutil
 
-# Ensure we can import from scripts directory
-sys.path.append(str(Path(__file__).parent))
-# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi OR taichi_3d_gaussian_splatting
-sys.path.append(str(Path(__file__).parent.parent / "temp_new_taichi"))
-sys.path.append(str(Path(__file__).parent.parent / "taichi_3d_gaussian_splatting"))
-import colmap_to_taichi
-
-try:
-    from taichi_3d_gaussian_splatting.GaussianPointTrainer import GaussianPointCloudTrainer
-except ImportError as e:
-    import traceback
-    traceback.print_exc()
-    print(f"❌ Error: taichi_3d_gaussian_splatting could not be imported: {e}")
-    print("Please install the library or check sys.path.")
-    sys.exit(1)
+def run_command(cmd):
+    print(f"🚀 Running: {cmd}")
+    try:
+        subprocess.run(cmd, shell=True, check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Command failed: {cmd}")
+        return False
 
 def main():
-    parser = argparse.ArgumentParser(description="Train Taichi Gaussian Splatting (Migrated Version)")
-    parser.add_argument("--project_path", type=str, required=True, help="Path to the project folder (containing sparse/0 and images)")
+    parser = argparse.ArgumentParser(description="Train Nerfstudio Splatfacto")
+    parser.add_argument("--project_path", type=str, required=True, help="Path to the project folder (containing transforms.json and images)")
     parser.add_argument("--output_path", type=str, required=True, help="Path to save outputs")
-    parser.add_argument("--iterations", type=int, default=3000, help="Number of training iterations")
+    parser.add_argument("--iterations", type=int, default=30000, help="Number of training iterations (Nerfstudio default is higher)")
+    parser.add_argument("--machine", type=str, default="colmap", help="Nerfstudio data parser (colmap, nerfosm, etc.)")
     args = parser.parse_args()
 
-    project_path = Path(args.project_path)
-    output_path = Path(args.output_path)
+    project_path = Path(args.project_path).absolute()
+    output_path = Path(args.output_path).absolute()
     output_path.mkdir(parents=True, exist_ok=True)
 
-    # Paths setup
-    # Paths setup
-    colmap_path = project_path / "sparse" / "0"
-    if not colmap_path.exists():
-        # Fallback 1: sparse folder directly
-        colmap_path = project_path / "sparse"
+    # Nerfstudio needs to know where to find the data
+    # We assume project_path contains images/ and transforms.json (from step 2)
+    # If transforms.json exists, we use colmap parser.
     
-    if not colmap_path.exists():
-        # Fallback 2: nested colmap folder (as created by step2)
-        colmap_path = project_path / "colmap" / "sparse" / "0"
+    print(f"📂 Project Path: {project_path}")
+    print(f"📂 Output Path: {output_path}")
 
-    if not colmap_path.exists():
-        # Fallback 3: nested colmap folder (sparse only)
-        colmap_path = project_path / "colmap" / "sparse"
-
-    images_path = project_path / "images"
+    # 1. Run Nerfstudio Training
+    # We use splatfacto for Gaussian Splatting
+    # We set a deterministic base directory for outputs
     
-    if not colmap_path.exists():
-        print(f"❌ Error: COLMAP sparse reconstruction not found at {project_path}/(colmap/)sparse")
-        return
+    cmd = (
+        f"ns-train splatfacto "
+        f"--data {project_path} "
+        f"--output-dir {output_path} "
+        f"--max-num-iterations {args.iterations} "
+        f"--vis wandb " # Or 'none' if no internet/account
+        f"colmap " # Using colmap parser by default since step 2 provides compatible data
+    )
     
-    print(f"📂 Found COLMAP model at: {colmap_path}")
-
-    # 1. Convert Data to Taichi Format
-    print("🚀 Converting COLMAP data for Taichi Splatting...")
-    dataset_output_dir = output_path / "dataset"
+    # Check if wandb is available, otherwise use none
     try:
-        colmap_to_taichi.convert_colmap_to_taichi(
-            base_path=str(colmap_path),
-            image_path=str(images_path),
-            output_dir=str(dataset_output_dir)
-        )
-    except Exception as e:
-        print(f"❌ Data conversion failed: {e}")
-        return
+        import wandb
+    except ImportError:
+        cmd = cmd.replace("--vis wandb", "--vis none")
 
-    # 2. Configure Training
-    print("⚙️ Configuring Trainer...")
-    config = GaussianPointCloudTrainer.TrainConfig()
-    
-    config.train_dataset_json_path = str(dataset_output_dir / "train.json")
-    config.val_dataset_json_path = str(dataset_output_dir / "val.json")
-    config.pointcloud_parquet_path = str(dataset_output_dir / "point_cloud.parquet")
-    config.summary_writer_log_dir = str(output_path / "logs")
-    config.output_model_dir = str(output_path / "models")
-    config.num_iterations = args.iterations
-    
-    # Adjust for T4/Kaggle environment if needed
-    config.val_interval = 500  # Frequent validation for monitoring
-    config.print_metrics_to_console = True
-
-    # 3. Run Training
-    print("🔥 Starting Training...")
-    trainer = GaussianPointCloudTrainer(config)
-    trainer.train()
-    
-    print(f"✅ Training Complete. Models saved to {config.output_model_dir}")
-    
-    # Verify output
-    # Verify output
-    best_scene_path = Path(config.output_model_dir) / "best_scene.parquet"
-    latest_scene_path = Path(config.output_model_dir) / "latest_scene.parquet"
-    final_output_model = Path(output_path) / "model.parquet"
-    
-    import shutil
-
-    if best_scene_path.exists():
-         print(f"✅ Best scene found: {best_scene_path}")
-         shutil.copy(best_scene_path, final_output_model)
-    elif latest_scene_path.exists():
-         print(f"⚠️ 'best_scene.parquet' not found. Using latest scene: {latest_scene_path}")
-         shutil.copy(latest_scene_path, final_output_model)
+    print("🔥 Starting Nerfstudio Training...")
+    if run_command(cmd):
+        print("✅ Training sequence completed.")
+        
+        # Nerfstudio saves in output_path/nerfstudio_models/<config>/...
+        # We want to find the latest config folder and provide it as a reference
+        model_root = output_path
+        print(f"ℹ️ Check {model_root} for training results.")
     else:
-        print("❌ No model parquet files (best or latest) found! Checking for any scene_*.parquet...")
-        # Fallback: check for any scene_*.parquet
-        scenes = list(Path(config.output_model_dir).glob("scene_*.parquet"))
-        if scenes:
-             latest_available = sorted(scenes, key=lambda p: p.stat().st_mtime)[-1]
-             print(f"⚠️ Using fallback scene: {latest_available}")
-             shutil.copy(latest_available, final_output_model)
-        else:
-             print("❌ FATAL: No model parquet files found at all!")
+        print("❌ Training failed.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
