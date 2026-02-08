@@ -6,3 +6,4 @@ __pycache__/
 .ipynb_checkpoints/
 3DSCAN/
 log/
+temp_new_taichi/
