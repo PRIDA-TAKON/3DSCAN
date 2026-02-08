@@ -6,14 +6,18 @@ import os
 
 # Ensure we can import from scripts directory
 sys.path.append(str(Path(__file__).parent))
-# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi
+# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi OR taichi_3d_gaussian_splatting
 sys.path.append(str(Path(__file__).parent.parent / "temp_new_taichi"))
+sys.path.append(str(Path(__file__).parent.parent / "taichi_3d_gaussian_splatting"))
 import colmap_to_taichi
 
 try:
     from taichi_3d_gaussian_splatting.GaussianPointTrainer import GaussianPointCloudTrainer
-except ImportError:
-    print("❌ Error: taichi_3d_gaussian_splatting not found. Please install the library.")
+except ImportError as e:
+    import traceback
+    traceback.print_exc()
+    print(f"❌ Error: taichi_3d_gaussian_splatting could not be imported: {e}")
+    print("Please install the library or check sys.path.")
     sys.exit(1)
 
 def main():
