@@ -1,67 +1,60 @@
-# 📸 3DSCAN - 3D Gaussian Splatting on Kaggle
+# 📸 3DSCAN - 3D Gaussian Splatting on Kaggle (Split Version)
 
-โปรเจคสำหรับสร้างโมเดล 3D (.splat) จากไฟล์วิดีโอ โดยรันบน Kaggle ฟรี! รองรับทั้งการเริ่มทำใหม่และการทำต่อจากเดิม (Resume)
-
----
-
-## 🚀 วิธีการใช้งาน (How to Use)
-
-### 1. การเตรียมตัว (Setup)
-1.  สร้าง **New Notebook** ใน Kaggle
-2.  เลือก **File -> Import Notebook** แล้วเลือกไฟล์ `3d-scan-fixed.ipynb` (หลัก) หรือ `3d-scan-resume.ipynb` จากโปรเจคนี้
-3.  เปิดการตั้งค่าด้านขวา (Settings):
-    *   **Internet:** On (เปิดใช้งานอินเทอร์เน็ต)
-    *   **Accelerator:** GPU P100 หรือ T4 x2
+โปรเจคสำหรับสร้างโมเดล 3D (.splat) จากไฟล์วิดีโอ โดยใช้เทคนิค **3D Gaussian Splatting** บน **Kaggle**
+**เวอร์ชันใหม่:** แบ่งกระบวนการออกเป็น 2 ส่วน (Parts) เพื่อแก้ปัญหา NumPy Conflict และเพิ่มความเสถียรในการทำงาน
 
 ---
 
-### 2. เลือกโหมดการทำงาน (Modes)
+## 🚀 วิธีการใช้งาน (Step-by-Step Guide)
 
-#### 🎬 2.1 โหมดเริ่มใหม่ (New Run)
-*ใช้เมื่อ:* คุณมีไฟล์วิดีโอ (.mp4) และต้องการเริ่มกระบวนการตั้งแต่ต้น (แปลงไฟล์ -> สร้าง Point Cloud -> เทรนโมเดล)
+### ส่วนที่ 1: เตรียมข้อมูล (Part 1 - Data Prep)
 
-1.  **Add Data:** อัปโหลดไฟล์วิดีโอของคุณไปที่ Kaggle Dataset
-2.  **ตั้งค่า Path:** ไม่ต้องแก้ไข path วิดีโอ ระบบจะค้นหาไฟล์ .mp4 ใน `/kaggle/input` ให้อัตโนมัติ
-3.  **ตั้งค่า Resume:** ปล่อยตัวแปร `RESUME_PATH` ให้ว่างไว้
-    ```python
-    RESUME_PATH = "" 
-    ```
-4.  กด **Run All**
+*ไฟล์: `3d-scan-part1-data-prep.ipynb`*
 
-#### 🔄 2.2 โหมดทำต่อ (Resume Mode)
-*ใช้เมื่อ:* คุณเคยรัน Colmap (สร้าง Sparse Point Cloud) เสร็จแล้ว แต่เทรนไม่จบ หรือต้องการเทรนเพิ่มโดยไม่ต้องเสียเวลาทำ Colmap ใหม่
-
-1.  **เตรียมข้อมูล:** ตรวจสอบว่า Dataset ของคุณมีไฟล์/โฟลเดอร์เหล่านี้ครบ:
-    *   `sparse_pc.ply` (สำคัญมาก! Sparse Point Cloud)
-    *   `transforms.json` (ข้อมูลตำแหน่งกล้อง)
-    *   `images/` (โฟลเดอร์รูปภาพที่แปลงแล้ว)
-    *   `sparse/` (โฟลเดอร์โมเดล Colmap)
-    *   `database.db`
-2.  **Add Data:** เพิ่ม Dataset งานเก่าของคุณเข้ามาใน Notebook
-3.  **ตั้งค่า Path:** ในโค้ด `3d-scan-fixed.ipynb` (หรือ `3d-scan-resume.ipynb`) ให้ใส่ Path ของโฟลเดอร์นั้น
-    ```python
-    # ตัวอย่าง
-    RESUME_PATH = "/kaggle/input/my-old-scan/car_scan"
-    ```
-4.  กด **Run All**
-    *   *ระบบจะข้ามขั้นตอน Colmap ให้อัตโนมัติ และเริ่ม Training ทันที*
+1. **Create New Notebook** ใน Kaggle
+2. **Import Notebook:** อัปโหลดหรือ Copy โค้ดจาก `3d-scan-part1-data-prep.ipynb`
+3. **Add Data:** อัปโหลดวิดีโอ (`.mp4`) หรือโฟลเดอร์รูปภาพ
+4. **Run All:** กดรันจนจบกระบวนการ
+    * *สิ่งที่ทำ:* ระบบจะแยกเฟรมจากวิดีโอ และรัน COLMAP (Structure-from-Motion)
+5. **Download Output:**
+    * ให้ดาวน์โหลดไฟล์ `3d_scan_data_part1.zip` จากโฟลเดอร์ Output เก็บไว้ที่เครื่องคอมพิวเตอร์ของคุณ
 
 ---
 
-## 📂 ผลลัพธ์ (Outputs)
-เมื่อทำงานเสร็จสิ้น ไฟล์โมเดลจะถูกบันทึกอยู่ที่:
-`/kaggle/working/outputs/3d_scan/splatfacto/.../config.yml` และไฟล์ `.splat`
+### ส่วนที่ 2: เทรนโมเดล (Part 2 - Training)
 
-คุณสามารถดาวน์โหลดไฟล์ `.splat` ไปเปิดดูใน Viewer (เช่น Polycam หรือ Splat Viewer) ได้ทันที
+*ไฟล์: `3d-scan-part2-training.ipynb`*
+
+**สิ่งสำคัญ:** ส่วนนี้จะใช้ไลบรารีพิเศษที่ถูกแก้บั๊กแล้ว (`taichi-splatting-kaggle`) โดยอัตโนมัติ
+
+1. **Create New Notebook** ใน Kaggle
+2. **Import Notebook:** อัปโหลดหรือ Copy โค้ดจาก `3d-scan-part2-training.ipynb`
+3. **Add Data (สำคัญ!):**
+    * สร้าง **New Dataset** ใน Kaggle โดยอัปโหลดไฟล์ `3d_scan_data_part1.zip` ที่ได้จาก Part 1
+    * กดปุ่ม **Add Data** ใน Notebook แล้วเลือก Dataset ที่เพิ่งสร้าง
+4. **Settings:**
+    * **Internet:** On (ต้องเปิดเน็ตเพื่อดาวน์โหลด Dependencies)
+    * **Accelerator:** GPU T4 x2 (แนะนำ) หรือ P100
+5. **Run All:** กดรันจนจบ
+    * *สิ่งที่ทำ:* ระบบจะติดตั้ง Taichi Splatting (เวอร์ชัน Fixed), แตกไฟล์ Zip, และเริ่มเทรนโมเดล
+6. **Download Model:**
+    * เมื่อเสร็จสิ้น ให้ดาวน์โหลดไฟล์ `3d_splat_model.zip` (ข้างในมีไฟล์ `.splat`)
+    * นำไฟล์ `.splat` ไปเปิดดูใน [Polycam Viewer](https://poly.cam/tools/viewer) หรือ [Splat Viewer](https://splat.antimatter.ai/) ได้เลย!
 
 ---
 
-## ❓ การแก้ปัญหา (Troubleshooting)
-*   **Error: Read PLY failed / sparse_pc.ply not found:**
-    *   ตรวจสอบว่าใน Dataset ที่นำมา Resume มีไฟล์ `sparse_pc.ply` อยู่จริง
-    *   ถ้าไม่มี ให้ลองกลับไปรันโหมด New Run ใหม่ให้จบขั้นตอน Colmap
-*   **Code ไม่อัปเดต (Old Code Detected):**
-    *   โค้ดบน Kaggle อาจจะยังเป็นเวอร์ชั่นเก่า
-    *   ให้ทำการ `git push` โค้ดล่าสุดจากเครื่องคอมของคุณขึ้น GitHub ก่อน แล้วค่อยกดรันใน Kaggle ใหม่
+## ❓ คำถามที่พบบ่อย (FAQ)
 
-    ตัวอย่างผลลัพธ์ https://superspl.at/view?id=fa12962d
+* **ทำไมต้องแบ่งเป็น 2 ส่วน?**
+  * เพื่อให้ **Environment ไม่ตีกัน** ครับ (Part 1 ใช้ NumPy รุ่นใหม่ได้ แต่ Part 2 ต้องการ NumPy รุ่นเก่า < 2.0 อย่างเคร่งครัด) การแยก Notebook ช่วยให้แต่ละส่วนทำงานได้อย่างมีประสิทธิภาพสูงสุด
+* **Taichi Splatting คืออะไร?**
+  * เป็นไลบรารีสำหรับสร้าง 3D Gaussian Splatting ที่เขียนด้วยภาษา Taichi ซึ่งทำงานได้เร็วกว่าและติดตั้งง่ายกว่าเวอร์ชันดั้งเดิม
+* **มีบั๊ก "Non contiguous tensors" หรือไม่?**
+  * **แก้แล้วครับ!** ใน Part 2 เราใช้ Repository พิเศษ (`taichi-splatting-kaggle`) ที่ถูกแก้บั๊กนี้เรียบร้อยแล้ว
+
+---
+
+## 📂 ลิงก์ที่เกี่ยวข้อง
+
+* **Repository หลัก:** `https://github.com/PRIDA-TAKON/3DSCAN`
+* **Library Fork:** `https://github.com/PRIDA-TAKON/taichi-splatting-kaggle` (สำหรับดู Code ที่แก้แล้ว)
