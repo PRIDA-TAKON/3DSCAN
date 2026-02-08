@@ -3,6 +3,10 @@ import os
 import argparse
 from pathlib import Path
 import numpy as np
+import sys
+
+# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi
+sys.path.append(str(Path(__file__).parent.parent / "temp_new_taichi"))
 
 def convert_parquet_to_ply(parquet_path: Path, ply_path: Path):
     """
