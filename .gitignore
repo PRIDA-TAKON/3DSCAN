@@ -7,3 +7,5 @@ __pycache__/
 3DSCAN/
 log/
 temp_new_taichi/
+taichi-splatting-kaggle/
+taichi_3d_gaussian_splatting/
