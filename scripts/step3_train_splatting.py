@@ -90,22 +90,29 @@ def main():
     print(f"✅ Training Complete. Models saved to {config.output_model_dir}")
     
     # Verify output
+    # Verify output
     best_scene_path = Path(config.output_model_dir) / "best_scene.parquet"
+    latest_scene_path = Path(config.output_model_dir) / "latest_scene.parquet"
+    final_output_model = Path(output_path) / "model.parquet"
+    
+    import shutil
+
     if best_scene_path.exists():
          print(f"✅ Best scene found: {best_scene_path}")
-         # Copy to model.parquet for step 4 convenience
-         import shutil
-         shutil.copy(best_scene_path, output_path / "model.parquet")
+         shutil.copy(best_scene_path, final_output_model)
+    elif latest_scene_path.exists():
+         print(f"⚠️ 'best_scene.parquet' not found. Using latest scene: {latest_scene_path}")
+         shutil.copy(latest_scene_path, final_output_model)
     else:
-        print("⚠️ 'best_scene.parquet' not found. Checking for latest scene...")
-        # Check for any scene_*.parquet
+        print("❌ No model parquet files (best or latest) found! Checking for any scene_*.parquet...")
+        # Fallback: check for any scene_*.parquet
         scenes = list(Path(config.output_model_dir).glob("scene_*.parquet"))
         if scenes:
-             latest_scene = sorted(scenes, key=lambda p: p.stat().st_mtime)[-1]
-             print(f"✅ Using latest scene: {latest_scene}")
-             shutil.copy(latest_scene, output_path / "model.parquet")
+             latest_available = sorted(scenes, key=lambda p: p.stat().st_mtime)[-1]
+             print(f"⚠️ Using fallback scene: {latest_available}")
+             shutil.copy(latest_available, final_output_model)
         else:
-             print("❌ No model parquet files found!")
+             print("❌ FATAL: No model parquet files found at all!")
 
 if __name__ == "__main__":
     main()
