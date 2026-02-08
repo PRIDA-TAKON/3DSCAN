@@ -21,7 +21,7 @@ def main():
     parser.add_argument("--output_path", type=str, required=True, help="Path to save outputs")
     parser.add_argument("--iterations", type=int, default=30000, help="Number of training iterations (Nerfstudio default is higher)")
     parser.add_argument("--machine", type=str, default="colmap", help="Nerfstudio data parser (colmap, nerfosm, etc.)")
-    parser.add_argument("--vis", type=str, default="none", help="Visualizer to use (none, wandb, tensorboard, viewer)")
+    parser.add_argument("--vis", type=str, default="tensorboard", help="Visualizer to use (tensorboard, wandb, viewer)")
     args = parser.parse_args()
 
     project_path = Path(args.project_path).absolute()
