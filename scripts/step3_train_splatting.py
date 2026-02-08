@@ -6,6 +6,8 @@ import os
 
 # Ensure we can import from scripts directory
 sys.path.append(str(Path(__file__).parent))
+# Ensure we can import taichi_3d_gaussian_splatting from temp_new_taichi
+sys.path.append(str(Path(__file__).parent.parent / "temp_new_taichi"))
 import colmap_to_taichi
 
 try:
