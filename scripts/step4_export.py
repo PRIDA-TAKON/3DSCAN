@@ -4,6 +4,29 @@ import argparse
 from pathlib import Path
 import numpy as np
 
+def convert_parquet_to_ply(parquet_path: Path, ply_path: Path):
+    """
+    Converts a Parquet file to a PLY file using taichi_3d_gaussian_splatting.
+    """
+    print(f"⏳ Converting {parquet_path.name} to {ply_path.name}...")
+    try:
+        from taichi_3d_gaussian_splatting.GaussianPointCloudScene import GaussianPointCloudScene
+        # Load scene from parquet
+        scene = GaussianPointCloudScene.from_parquet(
+            str(parquet_path), 
+            config=GaussianPointCloudScene.PointCloudSceneConfig(max_num_points_ratio=None)
+        )
+        # Save to PLY
+        scene.to_ply(str(ply_path))
+        print(f"✅ Successfully exported PLY to {ply_path}")
+        return True
+    except ImportError:
+        print("❌ Error: taichi_3d_gaussian_splatting not installed. Cannot convert parquet.")
+        return False
+    except Exception as e:
+        print(f"❌ Parquet conversion failed: {e}")
+        return False
+
 def convert_ply_to_splat(ply_file: Path, output_file: Path):
     """
     Converts a PLY file to a .splat file.
@@ -14,7 +37,7 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
     print(f"⏳ Converting {ply_file.name} to .splat format...")
     # Import plyfile locally to ensure it is available (installed in deps)
     try:
-        from plyfile import PlyData
+        from plyfile import PlyData, PlyElement
     except ImportError:
         print("❌ Error: plyfile not found. Cannot convert.")
         return False
@@ -54,30 +77,33 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         rot /= length
         rot_int = ((rot * 128 + 128).clip(0, 255)).astype(np.uint8)
 
-        # Assuming DC0, DC1, DC2 are RGB
+        # Handle color/SH
+        # Implementation depends on what the PLY contains.
+        # taichi_3d_gaussian_splatting PLY output might need checking.
+        # Assuming it outputs f_dc_* or red/green/blue.
+        
         SH_C0 = 0.28209479177387814
+        R = np.zeros(n, dtype=np.uint8)
+        G = np.zeros(n, dtype=np.uint8)
+        B = np.zeros(n, dtype=np.uint8)
+        
         if "f_dc_0" in vert:
              dc0 = vert["f_dc_0"][sorted_indices]
              dc1 = vert["f_dc_1"][sorted_indices]
              dc2 = vert["f_dc_2"][sorted_indices]
-        elif "red" in vert: # Fallback to color ply
+             R = (0.5 + SH_C0 * dc0) * 255
+             G = (0.5 + SH_C0 * dc1) * 255
+             B = (0.5 + SH_C0 * dc2) * 255
+        elif "red" in vert:
              R = vert["red"][sorted_indices]
              G = vert["green"][sorted_indices]
              B = vert["blue"][sorted_indices]
-             # Already 0-255?
-             pass
 
-        # Handle simplified color export from train script
-        # In our train script we save f_dc, so...
-        R = (0.5 + SH_C0 * dc0) * 255
-        G = (0.5 + SH_C0 * dc1) * 255
-        B = (0.5 + SH_C0 * dc2) * 255
-        
         R = np.clip(R, 0, 255).astype(np.uint8)
         G = np.clip(G, 0, 255).astype(np.uint8)
         B = np.clip(B, 0, 255).astype(np.uint8)
-        A = np.full_like(R, 255, dtype=np.uint8)
-        color = np.stack([R, G, B, A], axis=1)
+        A = np.full_like(R, 255, dtype=np.uint8) # Full opacity for splat visualization
+        color = np.stack([R, G, B, A], axis=1) # RGBA
 
         dtype_output = np.dtype([
             ('position', np.float32, 3),
@@ -102,11 +128,35 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         print(f"❌ Conversion failed: {e}")
         return False
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Step 4: Export PLY to SPLAT")
-    parser.add_argument("--input_ply", required=True, help="Path to input .ply file")
+def main():
+    parser = argparse.ArgumentParser(description="Step 4: Export to SPLAT")
+    parser.add_argument("--input_ply", help="Path to input .ply file")
+    parser.add_argument("--input_parquet", help="Path to input .parquet file (from taichi training)")
     parser.add_argument("--output_splat", required=True, help="Path to output .splat file")
     
     args = parser.parse_args()
+
+    ply_path = args.input_ply
     
-    convert_ply_to_splat(args.input_ply, args.output_splat)
+    # Check for parquet input
+    if args.input_parquet:
+        parquet_path = Path(args.input_parquet)
+        if parquet_path.exists():
+            # Generate intermediate PLY path
+            ply_path = parquet_path.with_suffix(".ply")
+            if not convert_parquet_to_ply(parquet_path, ply_path):
+                print("❌ Failed to convert Parquet to PLY.")
+                return
+        else:
+             print(f"❌ Error: Input Parquet file {parquet_path} not found.")
+             # Proceed to check ply_path if provided, else fail
+             if not ply_path: return
+
+    if not ply_path:
+        print("❌ Error: No input file specified (--input_ply or --input_parquet)")
+        return
+
+    convert_ply_to_splat(ply_path, args.output_splat)
+
+if __name__ == "__main__":
+    main()

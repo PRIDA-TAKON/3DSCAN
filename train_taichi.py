@@ -385,7 +385,7 @@ def train(args):
 
         # Render
         # params acts as Gaussians3D
-        rendering = render_gaussians(params, cam, config, compute_split_heuristics=True)
+        rendering = render_gaussians(params, cam, config)
 
         image = rendering.image
 

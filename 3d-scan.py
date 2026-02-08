@@ -71,6 +71,9 @@ def main():
         print("❌ No input video found. Please provide --video path.")
         return
 
+    # --- Step 0: Check & Install Dependencies ---
+    install_dependencies()
+
     # --- Step 1: Extract Frames ---
     if not args.resume:
         print("\n=== STEP 1: Extract Frames ===")
@@ -92,16 +95,29 @@ def main():
 
         # --- Step 4: Export ---
         print("\n=== STEP 4: Export ===")
-        ply_file = OUTPUTS_DIR / "model.ply" # Train script exports as model.ply
-        if ply_file.exists():
-            run_script("step4_export.py", ["--input_ply", str(ply_file), "--output_splat", str(OUTPUTS_DIR / "model.splat")])
+        model_parquet = OUTPUTS_DIR / "model.parquet"
+        model_ply = OUTPUTS_DIR / "model.ply"
+        
+        output_splat = OUTPUTS_DIR / "model.splat"
+        
+        if model_parquet.exists():
+            run_script("step4_export.py", ["--input_parquet", str(model_parquet), "--output_splat", str(output_splat)])
+        elif model_ply.exists():
+            run_script("step4_export.py", ["--input_ply", str(model_ply), "--output_splat", str(output_splat)])
         else:
-            # Fallback if train script used standard name
-            ply_file = OUTPUTS_DIR / "point_cloud.ply"
-            if ply_file.exists():
-                run_script("step4_export.py", ["--input_ply", str(ply_file), "--output_splat", str(OUTPUTS_DIR / "model.splat")])
-            else:
-                 print("❌ Training finished but no .ply file found for export.")
+             print("❌ Training finished but no .parquet or .ply file found for export.")
+
+def install_dependencies():
+    print("📦 Checking dependencies...")
+    try:
+        import taichi_3d_gaussian_splatting
+        print("✅ taichi_3d_gaussian_splatting already installed.")
+    except ImportError:
+        print("🚀 Installing taichi_3d_gaussian_splatting (Wanmeihuali Version)...")
+        if not os.path.exists("taichi_3d_gaussian_splatting"):
+            subprocess.run(["git", "clone", "--depth", "1", "https://github.com/wanmeihuali/taichi_3d_gaussian_splatting.git"], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", "-r", "taichi_3d_gaussian_splatting/requirements.txt"], check=True)
+        subprocess.run([sys.executable, "-m", "pip", "install", "./taichi_3d_gaussian_splatting"], check=True)
 
 if __name__ == "__main__":
     main()
