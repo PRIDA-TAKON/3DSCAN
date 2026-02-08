@@ -49,6 +49,7 @@ def read_images_binary(path_to_model_file):
     return images
 
 def parse_parameters_dict(row):
+    params = row['params']
     model = row['model']
     if model == 'SIMPLE_RADIAL' or model == 'SIMPLE_RADIAL_FISHEYE':
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3]}
