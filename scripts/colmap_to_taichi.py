@@ -49,16 +49,22 @@ def read_images_binary(path_to_model_file):
     return images
 
 def parse_parameters_dict(row):
-    params = row['params']
     model = row['model']
-    if model == 'SIMPLE_RADIAL':
+    if model == 'SIMPLE_RADIAL' or model == 'SIMPLE_RADIAL_FISHEYE':
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3]}
-    elif model == 'RADIAL':
+    elif model == 'RADIAL' or model == 'RADIAL_FISHEYE':
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3], 'k2': params[4]}
     elif model == 'PINHOLE':
         return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
     elif model == 'SIMPLE_PINHOLE':
         return {'f': params[0], 'cx': params[1], 'cy': params[2]}
+    elif model in ['OPENCV', 'OPENCV_FISHEYE', 'FULL_OPENCV']: 
+        # fx, fy, cx, cy, k1, k2, p1, p2 (for OPENCV)
+        # We only really need K for training often, distortion handled elsewhere or ignored here
+        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
+    elif model == 'FOV':
+        # fx, fy, cx, cy, omega
+        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
     else:
         return {'params': params}
 
