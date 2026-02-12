@@ -63,12 +63,15 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         scales_keys = [k for k in vert.data.dtype.names if k.startswith("scale_")]
         opacity_key = "opacity" if "opacity" in vert.data.dtype.names else None
         
+        scales_raw = None
         if not scales_keys or not opacity_key:
              print("⚠️ Warning: Could not find standard scale/opacity keys. Using default sorting.")
              sorted_indices = np.arange(len(vert["x"]))
         else:
              # Approximation of importance
-             scale_sum = np.sum([vert[k] for k in scales_keys], axis=0)
+             # Extract scales once into a (3, N) array for efficiency
+             scales_raw = np.array([vert[k] for k in scales_keys])
+             scale_sum = np.sum(scales_raw, axis=0)
              sorted_indices = np.argsort(
                 -np.exp(scale_sum) / (1 / (1 + np.exp(-vert[opacity_key])))
              )
@@ -76,7 +79,10 @@ def convert_ply_to_splat(ply_file: Path, output_file: Path):
         n = len(sorted_indices)
         position = np.stack([vert["x"][sorted_indices], vert["y"][sorted_indices], vert["z"][sorted_indices]], axis=1).astype(np.float32)
 
-        scales = np.stack([vert[k][sorted_indices] for k in scales_keys], axis=1).astype(np.float32)
+        if scales_raw is not None:
+             scales = scales_raw[:, sorted_indices].T.astype(np.float32)
+        else:
+             scales = np.stack([vert[k][sorted_indices] for k in scales_keys], axis=1).astype(np.float32)
         scales = np.exp(scales)
 
         rot_keys = ["rot_0", "rot_1", "rot_2", "rot_3"]
