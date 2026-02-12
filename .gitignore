@@ -9,3 +9,4 @@ log/
 temp_new_taichi/
 taichi-splatting-kaggle/
 taichi_3d_gaussian_splatting/
+benchmarks/images_large.txt

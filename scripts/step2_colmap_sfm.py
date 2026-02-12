@@ -38,25 +38,71 @@ def read_cameras_text(path):
 def read_images_text(path):
     images = {}
     with open(path, "r") as f:
-        while True:
-            line = f.readline()
-            if not line: break
-            if line.startswith("#") or not line.strip(): continue
-            
-            # Line 1: Image ID, Qvec, Tvec, Camera ID, Name
-            els = line.split()
-            image_id = int(els[0])
-            qvec = np.array([float(x) for x in els[1:5]])
-            tvec = np.array([float(x) for x in els[5:8]])
-            camera_id = int(els[8])
-            image_name = els[9]
-            
-            # Line 2: Points 2D (discard)
-            f.readline()
-            
-            images[image_id] = {
-                "qvec": qvec, "tvec": tvec, "camera_id": camera_id, "name": image_name
+        lines = f.readlines()
+
+    image_lines = []
+    i = 0
+    # Robustly identify image lines, skipping comments and empty lines between entries
+    # But ensuring we strictly consume the following line as points (even if empty)
+    while i < len(lines):
+        line = lines[i]
+        if line.strip().startswith("#") or not line.strip():
+            i += 1
+            continue
+
+        # Found potential Image line
+        image_lines.append(line)
+        i += 1
+
+        # Consumes the next line as Points 2D (discard)
+        if i < len(lines):
+            i += 1
+
+    if not image_lines:
+        return {}
+
+    # Parse numbers efficiently using numpy
+    try:
+        data = np.loadtxt(image_lines, usecols=range(9), dtype=np.float64)
+        if data.ndim == 1: data = data.reshape(1, -1)
+
+        # Parse names separately
+        names = [l.split()[9] for l in image_lines]
+
+        ids = data[:, 0].astype(int)
+        qvecs = data[:, 1:5]
+        tvecs = data[:, 5:8]
+        cam_ids = data[:, 8].astype(int)
+
+        for i in range(len(ids)):
+            img_id = ids[i]
+            images[img_id] = {
+                "qvec": qvecs[i],
+                "tvec": tvecs[i],
+                "camera_id": cam_ids[i],
+                "name": names[i]
             }
+    except Exception as e:
+        print(f"Warning: Optimized parsing failed ({e}), falling back to slow parsing.")
+        # Fallback for safety
+        with open(path, "r") as f:
+            while True:
+                line = f.readline()
+                if not line: break
+                if line.startswith("#") or not line.strip(): continue
+
+                els = line.split()
+                image_id = int(els[0])
+                qvec = np.array([float(x) for x in els[1:5]])
+                tvec = np.array([float(x) for x in els[5:8]])
+                camera_id = int(els[8])
+                image_name = els[9]
+
+                f.readline()
+
+                images[image_id] = {
+                    "qvec": qvec, "tvec": tvec, "camera_id": camera_id, "name": image_name
+                }
     return images
 
 def convert_colmap_to_transforms(colmap_dir, images_dir, output_path):
