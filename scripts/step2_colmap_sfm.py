@@ -9,16 +9,36 @@ import numpy as np
 from pathlib import Path
 
 def qvec2rotmat(qvec):
-    return np.array([
-        [1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,
-         2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],
-         2 * qvec[3] * qvec[1] + 2 * qvec[0] * qvec[2]],
-        [2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],
-         1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,
-         2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]],
-        [2 * qvec[3] * qvec[1] - 2 * qvec[0] * qvec[2],
-         2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
-         1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])
+    if qvec.ndim == 1:
+        return np.array([
+            [1 - 2 * qvec[2]**2 - 2 * qvec[3]**2,
+             2 * qvec[1] * qvec[2] - 2 * qvec[0] * qvec[3],
+             2 * qvec[3] * qvec[1] + 2 * qvec[0] * qvec[2]],
+            [2 * qvec[1] * qvec[2] + 2 * qvec[0] * qvec[3],
+             1 - 2 * qvec[1]**2 - 2 * qvec[3]**2,
+             2 * qvec[2] * qvec[3] - 2 * qvec[0] * qvec[1]],
+            [2 * qvec[3] * qvec[1] - 2 * qvec[0] * qvec[2],
+             2 * qvec[2] * qvec[3] + 2 * qvec[0] * qvec[1],
+             1 - 2 * qvec[1]**2 - 2 * qvec[2]**2]])
+    else:
+        # Batched input (N, 4)
+        q0, q1, q2, q3 = qvec[:, 0], qvec[:, 1], qvec[:, 2], qvec[:, 3]
+
+        R = np.zeros((qvec.shape[0], 3, 3))
+
+        R[:, 0, 0] = 1 - 2 * q2**2 - 2 * q3**2
+        R[:, 0, 1] = 2 * q1 * q2 - 2 * q0 * q3
+        R[:, 0, 2] = 2 * q3 * q1 + 2 * q0 * q2
+
+        R[:, 1, 0] = 2 * q1 * q2 + 2 * q0 * q3
+        R[:, 1, 1] = 1 - 2 * q1**2 - 2 * q3**2
+        R[:, 1, 2] = 2 * q2 * q3 - 2 * q0 * q1
+
+        R[:, 2, 0] = 2 * q3 * q1 - 2 * q0 * q2
+        R[:, 2, 1] = 2 * q2 * q3 + 2 * q0 * q1
+        R[:, 2, 2] = 1 - 2 * q1**2 - 2 * q2**2
+
+        return R
 
 def read_cameras_text(path):
     cameras = {}
@@ -75,7 +95,6 @@ def convert_colmap_to_transforms(colmap_dir, images_dir, output_path):
     
     sorted_image_ids = sorted(images.keys(), key=lambda k: images[k]["name"])
     
-    frames = []
     if not cameras: 
         print("❌ No cameras found.")
         return False
@@ -114,30 +133,49 @@ def convert_colmap_to_transforms(colmap_dir, images_dir, output_path):
         [0, 0, 0, 1]
     ])
     
-    for img_id in sorted_image_ids:
-        img = images[img_id]
+    num_frames = len(sorted_image_ids)
+    frames = []
+
+    if num_frames > 0:
+        qvecs = np.zeros((num_frames, 4))
+        tvecs = np.zeros((num_frames, 3))
+        image_names = []
+
+        for i, img_id in enumerate(sorted_image_ids):
+            img = images[img_id]
+            qvecs[i] = img["qvec"]
+            tvecs[i] = img["tvec"]
+            image_names.append(img["name"])
+
+        Rs = qvec2rotmat(qvecs) # (N, 3, 3)
         
-        R = qvec2rotmat(img["qvec"])
-        t = img["tvec"]
+        # Transpose rotation matrices: (N, 3, 3) -> (N, 3, 3) where last 2 dims are transposed
+        Rs_T = Rs.transpose(0, 2, 1)
         
-        c2w = np.eye(4)
-        c2w[:3, :3] = R.T
-        c2w[:3, 3] = -R.T @ t
+        # Compute translations: -R.T @ t
+        t_transformed = -Rs_T @ tvecs[:, :, None]
         
-        c2w = c2w @ flip_mat
+        c2w_all = np.eye(4)[None, :, :].repeat(num_frames, axis=0)
+        c2w_all[:, :3, :3] = Rs_T
+        c2w_all[:, :3, 3] = t_transformed[:, :, 0]
         
-        frame = {
-            "file_path": f"images/{img['name']}",
-            "transform_matrix": c2w.tolist()
-        }
-        frames.append(frame)
+        c2w_all = c2w_all @ flip_mat[None, :, :]
+
+        c2w_list = c2w_all.tolist()
+
+        for i in range(num_frames):
+            frame = {
+                "file_path": f"images/{image_names[i]}",
+                "transform_matrix": c2w_list[i]
+            }
+            frames.append(frame)
         
     json_data["frames"] = frames
     
     with open(output_path, "w") as f:
         json.dump(json_data, f, indent=4)
         
-    print(f"✅ Saved {len(frames)} frames to {output_path}")
+    print(f"✅ Saved {len(json_data['frames'])} frames to {output_path}")
     return True
 
 def run_step(cmd, shell=True):
