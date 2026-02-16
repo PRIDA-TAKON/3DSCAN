@@ -42,37 +42,36 @@ def run_command(cmd, env=None, cwd=None, capture_output=False):
             return e.stdout or e.stderr
         return False
 
+def setup_base_deps():
+    """Install minimal dependencies needed for auto-fetching and status updates."""
+    print("📦 Installing base dependencies (Supabase, Requests)...")
+    # Using --quiet to keep the log clean during auto-fetch checks
+    subprocess.run([sys.executable, "-m", "pip", "install", "--quiet", "supabase", "requests", "gdown", "google-api-python-client", "google-auth-httplib2", "google-auth-oauthlib"], check=True)
+
 def setup_environment():
     """Setup everything needed for the pipeline in Kaggle."""
     print("🛠️ Setting up End-to-End Pipeline Environment...")
     
-    # 1. Install Basic Utils
-    run_command("pip install numpy pandas opencv-python plyfile pyyaml requests supabase gdown google-api-python-client google-auth-httplib2 google-auth-oauthlib")
+    # 1. Install Heavy ML/CV Utils
+    run_command("pip install numpy pandas opencv-python plyfile pyyaml torch torchvision taichi")
     
-    # 2. Install COLMAP (Usually pre-installed on Kaggle, but let's be sure or check)
-    # colmap is usually in /usr/local/bin or /usr/bin
-    
-    # 3. Install Glomap
+    # 2. Install Glomap
     print("📦 Installing Glomap...")
     if not run_command("glomap --help"):
-        # Try to find conda in common paths
         conda_bin = "conda"
         if os.path.exists("/opt/conda/bin/conda"):
             conda_bin = "/opt/conda/bin/conda"
         
-        # Install via conda-forge
         success = run_command(f"{conda_bin} install -c conda-forge glomap -y")
         if not success:
             print("⚠️ Glomap installation failed. Attempting setup with default colmap as fallback...")
         
-    # 4. Setup Taichi 3DGS
-    print("📦 Setting up Taichi 3DGS...")
-    run_command("pip install taichi torch torchvision")
+    # 3. Setup Taichi 3DGS
+    print("📦 Setting up Taichi 3DGS local package...")
     repo_path = Path("taichi-splatting-kaggle")
     if repo_path.exists():
         run_command("pip install -e .", cwd=str(repo_path))
     else:
-        # Fallback to cloning if not present (though it should be in the workspace)
         print("⚠️ taichi-splatting-kaggle not found locally. Please ensure it is uploaded.")
 
 # --- Data Handling & Supabase ---
@@ -170,6 +169,9 @@ def main():
     parser.add_argument("--output_name", default="result.zip")
     args = parser.parse_args()
 
+    # 0. Setup Base Dependencies (needed for searching Supabase)
+    setup_base_deps()
+
     # Auto-fetch logic
     if args.auto:
         print("🔍 Searching for pending jobs in Supabase...")
@@ -196,11 +198,11 @@ def main():
         d.mkdir(parents=True, exist_ok=True)
 
     try:
-        # 0. Setup
+        # 1. Setup Full Environment (only if we have a job to do)
         if args.job_id == "ดึง-UUID-จาก-Frontend" or "UUID" in args.job_id:
             raise Exception("❌ คุณลืมเปลี่ยน job_id! กรุณาใส่ UUID จริงจาก Frontend หรือ Supabase ครับ")
             
-        update_status(args.job_id, "RUNNING", "Setting up environment...")
+        update_status(args.job_id, "RUNNING", "Setting up full environment (Glomap, Taichi)...")
         setup_environment()
         
         # 1. Download Video

@@ -4,6 +4,8 @@
 *.json
 !package.json
 !package-lock.json
+!tsconfig.json
+!next.config.ts
 !kernel-metadata.json
 
 # Google Drive Service Account (specific patterns)
