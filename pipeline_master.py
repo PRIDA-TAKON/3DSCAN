@@ -52,13 +52,18 @@ def setup_environment():
     # 2. Install COLMAP (Usually pre-installed on Kaggle, but let's be sure or check)
     # colmap is usually in /usr/local/bin or /usr/bin
     
-    # 3. Install Glomap (via micromamba for isolation and easy install of C++ deps)
+    # 3. Install Glomap
     print("📦 Installing Glomap...")
-    # Check if micromamba is available, if not, install a lite version or use conda
     if not run_command("glomap --help"):
-        # Attempt to install via conda/micromamba if possible
-        # For Kaggle, we often use:
-        run_command("conda install -c conda-forge glomap -y")
+        # Try to find conda in common paths
+        conda_bin = "conda"
+        if os.path.exists("/opt/conda/bin/conda"):
+            conda_bin = "/opt/conda/bin/conda"
+        
+        # Install via conda-forge
+        success = run_command(f"{conda_bin} install -c conda-forge glomap -y")
+        if not success:
+            print("⚠️ Glomap installation failed. Attempting setup with default colmap as fallback...")
         
     # 4. Setup Taichi 3DGS
     print("📦 Setting up Taichi 3DGS...")
@@ -79,8 +84,14 @@ def get_supabase_client():
         return None
     try:
         from supabase import create_client
-        return create_client(url, key)
-    except:
+        # Add a small delay and retry logic for schema cache issues
+        for _ in range(3):
+            client = create_client(url, key)
+            if client: return client
+            time.sleep(2)
+        return None
+    except Exception as e:
+        print(f"⚠️ Failed to init Supabase client: {e}")
         return None
 
 def update_status(job_id, status, message=""):
@@ -133,15 +144,47 @@ def upload_to_gdrive(file_path, folder_id=None):
         print(f"❌ Google Drive upload failed: {e}")
         return None
 
+def fetch_pending_job():
+    """Fetch the oldest pending job from Supabase."""
+    supabase = get_supabase_client()
+    if not supabase:
+        print("⚠️ Supabase client not available.")
+        return None
+    try:
+        response = supabase.table("jobs").select("*").eq("status", "PENDING").order("created_at").limit(1).execute()
+        if response.data and len(response.data) > 0:
+            return response.data[0]
+        return None
+    except Exception as e:
+        print(f"⚠️ Failed to fetch pending job: {e}")
+        return None
+
 # --- Pipeline Execution ---
 
 def main():
     parser = argparse.ArgumentParser(description="Kaggle 3DGS Master Pipeline")
-    parser.add_argument("--job_id", required=True)
-    parser.add_argument("--video_url", required=True) # Direct URL or Drive Link
+    parser.add_argument("--job_id", help="UUID of the job")
+    parser.add_argument("--video_url", help="Direct URL or Drive Link")
+    parser.add_argument("--auto", action="store_true", help="Automatically fetch pending job from Supabase")
     parser.add_argument("--output_folder_id", help="Optional GDrive folder ID for results")
     parser.add_argument("--output_name", default="result.zip")
     args = parser.parse_args()
+
+    # Auto-fetch logic
+    if args.auto:
+        print("🔍 Searching for pending jobs in Supabase...")
+        job = fetch_pending_job()
+        if job:
+            args.job_id = job['id']
+            args.video_url = job['video_url']
+            print(f"✅ Found job: {args.job_id}")
+        else:
+            print("😴 No pending jobs found. Exiting.")
+            sys.exit(0)
+
+    if not args.job_id or not args.video_url:
+        print("❌ Error: --job_id and --video_url are required unless --auto is used.")
+        sys.exit(1)
 
     work_dir = Path("work_dir")
     images_dir = work_dir / "images"
@@ -154,10 +197,16 @@ def main():
 
     try:
         # 0. Setup
+        if args.job_id == "ดึง-UUID-จาก-Frontend" or "UUID" in args.job_id:
+            raise Exception("❌ คุณลืมเปลี่ยน job_id! กรุณาใส่ UUID จริงจาก Frontend หรือ Supabase ครับ")
+            
         update_status(args.job_id, "RUNNING", "Setting up environment...")
         setup_environment()
         
         # 1. Download Video
+        if args.video_url == "ลิงก์วิดีโอ" or "ลิงก์" in args.video_url:
+            raise Exception("❌ คุณลืมเปลี่ยน video_url! กรุณาใส่ลิงก์ลิงก์วิดีโอ (Direct Link หรือ GDrive) ครับ")
+            
         update_status(args.job_id, "RUNNING", "Downloading video...")
         if "drive.google.com" in args.video_url:
             import gdown
@@ -215,15 +264,11 @@ iterations: 7000
                 }).eq("id", args.job_id).execute()
         else:
             raise Exception("Failed to upload results to Google Drive.")
-        
+            
     except Exception as e:
         print(f"💥 Pipeline Error: {e}")
-        update_status(args.job_id, "FAILED", str(e))
-        sys.exit(1)
-        
-    except Exception as e:
-        print(f"💥 Pipeline Error: {e}")
-        update_status(args.job_id, "FAILED", str(e))
+        if args.job_id and args.job_id != "ดึง-UUID-จาก-Frontend":
+            update_status(args.job_id, "FAILED", str(e))
         sys.exit(1)
 
 if __name__ == "__main__":
