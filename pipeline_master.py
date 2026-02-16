@@ -66,16 +66,30 @@ def setup_environment():
         run_command("apt-get update --quiet && apt-get install -y --quiet colmap")
 
     # 3. Install Glomap
-    print("📦 Installing Glomap...")
+    print("📦 Installing Glomap (Primary Mapper)...")
     if not run_command("glomap --help"):
-        conda_bin = "/opt/conda/bin/conda"
-        if not os.path.exists(conda_bin):
-            conda_bin = "conda"
+        # List of possible conda/mamba locations in Kaggle
+        package_managers = [
+            "/opt/conda/bin/mamba",
+            "/opt/conda/bin/conda",
+            "mamba",
+            "conda"
+        ]
         
-        print(f"📥 Attempting Glomap installation via {conda_bin}...")
-        success = run_command(f"{conda_bin} install -c conda-forge glomap -y")
-        if not success:
-            print("⚠️ Glomap installation failed. Falling back to COLMAP only.")
+        glomap_installed = False
+        for pm in package_managers:
+            # Check if manager exists
+            if pm.startswith("/") and not os.path.exists(pm):
+                continue
+                
+            print(f"📥 Attempting Glomap installation via {pm}...")
+            if run_command(f"{pm} install -c conda-forge glomap -y"):
+                glomap_installed = True
+                break
+        
+        if not glomap_installed:
+            print("⚠️ Glomap installation failed via all managers. Falling back to COLMAP mapper.")
+            print("💡 Note: Glomap is much faster, but COLMAP will still produce a valid result.")
         
     # 4. Setup Taichi 3DGS local package
     print("📦 Setting up Taichi 3DGS local package...")
