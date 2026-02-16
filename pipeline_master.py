@@ -60,11 +60,16 @@ def setup_environment():
     # dataclass-wizard and pytorch-msssim are required by the Taichi implementation
     run_command("pip install --quiet numpy pandas opencv-python plyfile pyyaml torch torchvision taichi dataclass-wizard pytorch-msssim")
     
-    # 2. Install COLMAP if not present
-    print("📦 Checking COLMAP...")
+    # 2. Install COLMAP and XVFB for headless display
+    print("📦 Checking COLMAP and XVFB...")
     if not run_command("colmap --help"):
-        print("📥 Installing COLMAP via apt-get...")
-        run_command("apt-get update --quiet && apt-get install -y --quiet colmap")
+        print("📥 Installing COLMAP and XVFB via apt-get...")
+        run_command("apt-get update --quiet && apt-get install -y --quiet colmap xvfb")
+    else:
+        # Check if xvfb is installed anyway
+        if not run_command("xvfb-run --help"):
+             print("📥 Installing XVFB for headless display...")
+             run_command("apt-get update --quiet && apt-get install -y --quiet xvfb")
 
     # 3. Install Glomap
     print("📦 Installing Glomap (Primary Mapper)...")
@@ -80,12 +85,17 @@ def setup_environment():
         glomap_installed = False
         for pm in package_managers:
             # Check if manager exists
-            if pm.startswith("/") and not os.path.exists(pm):
+            pm_path = pm if pm.startswith("/") else ""
+            if pm_path and not os.path.exists(pm_path):
                 continue
                 
             print(f"📥 Attempting Glomap installation via {pm}...")
-            # Use 'install' command carefully
-            if run_command(f"{pm} install -c conda-forge glomap -y"):
+            # Use 'install' command carefully. Use -p /opt/conda if it's the official one
+            install_cmd = f"{pm} install -c conda-forge glomap -y"
+            if pm == "/opt/conda/bin/conda":
+                install_cmd = f"{pm} install -p /opt/conda -c conda-forge glomap -y"
+                
+            if run_command(install_cmd):
                 glomap_installed = True
                 break
         
