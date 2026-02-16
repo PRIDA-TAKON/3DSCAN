@@ -8,6 +8,9 @@ import shutil
 import json
 from pathlib import Path
 
+# Fix PATH for Kaggle environments
+os.environ["PATH"] = f"/opt/conda/bin:/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
+
 # --- Configuration & Environment Setup ---
 
 def run_command(cmd, env=None, cwd=None, capture_output=False):
@@ -53,26 +56,38 @@ def setup_environment():
     print("🛠️ Setting up End-to-End Pipeline Environment...")
     
     # 1. Install Heavy ML/CV Utils
-    run_command("pip install numpy pandas opencv-python plyfile pyyaml torch torchvision taichi")
+    # dataclass-wizard and pytorch-msssim are required by the Taichi implementation
+    run_command("pip install --quiet numpy pandas opencv-python plyfile pyyaml torch torchvision taichi dataclass-wizard pytorch-msssim")
     
-    # 2. Install Glomap
+    # 2. Install COLMAP if not present
+    print("📦 Checking COLMAP...")
+    if not run_command("colmap --help"):
+        print("📥 Installing COLMAP via apt-get...")
+        run_command("apt-get update --quiet && apt-get install -y --quiet colmap")
+
+    # 3. Install Glomap
     print("📦 Installing Glomap...")
     if not run_command("glomap --help"):
-        conda_bin = "conda"
-        if os.path.exists("/opt/conda/bin/conda"):
-            conda_bin = "/opt/conda/bin/conda"
+        conda_bin = "/opt/conda/bin/conda"
+        if not os.path.exists(conda_bin):
+            conda_bin = "conda"
         
+        print(f"📥 Attempting Glomap installation via {conda_bin}...")
         success = run_command(f"{conda_bin} install -c conda-forge glomap -y")
         if not success:
-            print("⚠️ Glomap installation failed. Attempting setup with default colmap as fallback...")
+            print("⚠️ Glomap installation failed. Falling back to COLMAP only.")
         
-    # 3. Setup Taichi 3DGS
+    # 4. Setup Taichi 3DGS local package
     print("📦 Setting up Taichi 3DGS local package...")
     repo_path = Path("taichi-splatting-kaggle")
     if repo_path.exists():
+        # Install from its requirements.txt manually since its setup.py ignores them
+        req_file = repo_path / "requirements.txt"
+        if req_file.exists():
+            run_command(f"pip install --quiet -r {req_file}")
         run_command("pip install -e .", cwd=str(repo_path))
     else:
-        print("⚠️ taichi-splatting-kaggle not found locally. Please ensure it is uploaded.")
+        print("⚠️ taichi-splatting-kaggle not found locally.")
 
 # --- Data Handling & Supabase ---
 

@@ -11,9 +11,15 @@ import collections
 import struct
 
 def run_command(cmd):
+    """Run a shell command with updated PATH."""
     print(f"🚀 Running: {cmd}")
+    # Ensure standard Kaggle/Conda paths are included
+    custom_env = os.environ.copy()
+    paths = ["/opt/conda/bin", "/usr/local/bin", "/usr/bin", "/bin"]
+    custom_env["PATH"] = ":".join(paths + [custom_env.get("PATH", "")])
+    
     try:
-        subprocess.run(cmd, shell=True, check=True)
+        subprocess.run(cmd, shell=True, check=True, env=custom_env)
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Command failed: {cmd}")
