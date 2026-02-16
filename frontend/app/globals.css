@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.12 0.02 240);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.16 0.02 245);
+  --primary: oklch(0.65 0.25 260);
+  --primary-foreground: oklch(1 0 0);
+  --accent: oklch(0.7 0.2 150);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, oklch(0.65 0.25 260), oklch(0.7 0.2 150));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

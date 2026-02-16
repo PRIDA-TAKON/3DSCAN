@@ -1,11 +1,45 @@
+# Credentials & Secrets
+.env
+.env.*
+*.json
+!package.json
+!package-lock.json
+!kernel-metadata.json
+
+# Google Drive Service Account (specific patterns)
+*-*.json
+mcp-gantt-*.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.python-version
+
+# Temporary & Work Directories
+work_dir/
 input/
 output/
-outputs/
-__pycache__/
-*.pyc
+temp/
+*.zip
+*.ply
+*.parquet
+
+# Logs
+*.log
+logs/
+
+# MacOS
+.DS_Store
+
+# Frontend
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Kaggle / Notebook artifacts
 .ipynb_checkpoints/
-3DSCAN/
-log/
-temp_new_taichi/
-taichi-splatting-kaggle/
-taichi_3d_gaussian_splatting/

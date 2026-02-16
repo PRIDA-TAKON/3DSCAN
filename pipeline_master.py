@@ -1,0 +1,230 @@
+
+import os
+import subprocess
+import sys
+import argparse
+import time
+import shutil
+import json
+from pathlib import Path
+
+# --- Configuration & Environment Setup ---
+
+def run_command(cmd, env=None, cwd=None, capture_output=False):
+    """Run a shell command and handle errors."""
+    print(f"🚀 Running: {cmd}")
+    try:
+        if capture_output:
+            process = subprocess.run(
+                cmd, 
+                shell=True, 
+                check=True, 
+                env={**os.environ, **(env or {})}, 
+                cwd=cwd,
+                text=True,
+                capture_output=True
+            )
+            return process.stdout
+        else:
+            subprocess.run(
+                cmd, 
+                shell=True, 
+                check=True, 
+                env={**os.environ, **(env or {})}, 
+                cwd=cwd,
+                text=True
+            )
+            return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Command failed: {cmd}")
+        print(f"   Error: {e}")
+        if capture_output:
+            return e.stdout or e.stderr
+        return False
+
+def setup_environment():
+    """Setup everything needed for the pipeline in Kaggle."""
+    print("🛠️ Setting up End-to-End Pipeline Environment...")
+    
+    # 1. Install Basic Utils
+    run_command("pip install numpy pandas opencv-python plyfile pyyaml requests supabase gdown google-api-python-client google-auth-httplib2 google-auth-oauthlib")
+    
+    # 2. Install COLMAP (Usually pre-installed on Kaggle, but let's be sure or check)
+    # colmap is usually in /usr/local/bin or /usr/bin
+    
+    # 3. Install Glomap (via micromamba for isolation and easy install of C++ deps)
+    print("📦 Installing Glomap...")
+    # Check if micromamba is available, if not, install a lite version or use conda
+    if not run_command("glomap --help"):
+        # Attempt to install via conda/micromamba if possible
+        # For Kaggle, we often use:
+        run_command("conda install -c conda-forge glomap -y")
+        
+    # 4. Setup Taichi 3DGS
+    print("📦 Setting up Taichi 3DGS...")
+    run_command("pip install taichi torch torchvision")
+    repo_path = Path("taichi-splatting-kaggle")
+    if repo_path.exists():
+        run_command("pip install -e .", cwd=str(repo_path))
+    else:
+        # Fallback to cloning if not present (though it should be in the workspace)
+        print("⚠️ taichi-splatting-kaggle not found locally. Please ensure it is uploaded.")
+
+# --- Data Handling & Supabase ---
+
+def get_supabase_client():
+    url = os.environ.get("SUPABASE_URL")
+    key = os.environ.get("SUPABASE_KEY")
+    if not url or not key:
+        return None
+    try:
+        from supabase import create_client
+        return create_client(url, key)
+    except:
+        return None
+
+def update_status(job_id, status, message=""):
+    print(f"🔔 [{job_id}] {status}: {message}")
+    supabase = get_supabase_client()
+    if not supabase: return
+    try:
+        supabase.table("jobs").update({
+            "status": status,
+            "message": message,
+            "updated_at": "now()"
+        }).eq("id", job_id).execute()
+    except Exception as e:
+        print(f"⚠️ Supabase update failed: {e}")
+
+def upload_to_gdrive(file_path, folder_id=None):
+    """Upload file to Google Drive using Service Account."""
+    print(f"📤 Uploading {file_path} to Google Drive...")
+    try:
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaFileUpload
+        from google.oauth2 import service_account
+        
+        # Load Service Account from Kaggle Secrets
+        creds_json = os.environ.get("GDRIVE_SERVICE_ACCOUNT")
+        if not creds_json:
+            # Try to read from file if not in env
+            secrets_path = Path("/kaggle/input/secrets/gdrive_service_account.json")
+            if secrets_path.exists():
+                creds_json = secrets_path.read_text()
+            else:
+                print("⚠️ GDRIVE_SERVICE_ACCOUNT secret not found.")
+                return None
+                
+        import json
+        info = json.loads(creds_json)
+        creds = service_account.Credentials.from_service_account_info(info)
+        service = build('drive', 'v3', credentials=creds)
+        
+        file_metadata = {'name': Path(file_path).name}
+        if folder_id:
+            file_metadata['parents'] = [folder_id]
+            
+        media = MediaFileUpload(file_path, resumable=True)
+        file = service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
+        
+        print(f"✅ Upload successful. File ID: {file.get('id')}")
+        return file.get('webViewLink')
+    except Exception as e:
+        print(f"❌ Google Drive upload failed: {e}")
+        return None
+
+# --- Pipeline Execution ---
+
+def main():
+    parser = argparse.ArgumentParser(description="Kaggle 3DGS Master Pipeline")
+    parser.add_argument("--job_id", required=True)
+    parser.add_argument("--video_url", required=True) # Direct URL or Drive Link
+    parser.add_argument("--output_folder_id", help="Optional GDrive folder ID for results")
+    parser.add_argument("--output_name", default="result.zip")
+    args = parser.parse_args()
+
+    work_dir = Path("work_dir")
+    images_dir = work_dir / "images"
+    sfm_dir = work_dir / "sfm"
+    train_dir = work_dir / "train_output"
+    video_path = work_dir / "input_video.mp4"
+    
+    for d in [work_dir, images_dir, sfm_dir, train_dir]:
+        d.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 0. Setup
+        update_status(args.job_id, "RUNNING", "Setting up environment...")
+        setup_environment()
+        
+        # 1. Download Video
+        update_status(args.job_id, "RUNNING", "Downloading video...")
+        if "drive.google.com" in args.video_url:
+            import gdown
+            gdown.download(args.video_url, str(video_path), quiet=False, fuzzy=True)
+        else:
+            import requests
+            resp = requests.get(args.video_url, stream=True)
+            with open(video_path, 'wb') as f:
+                shutil.copyfileobj(resp.raw, f)
+            
+        # 2. Extract Frames
+        update_status(args.job_id, "RUNNING", "Extracting frames...")
+        if not run_command(f"python scripts/step1_extract_frames.py --input_video {video_path} --output_dir {images_dir}"):
+            raise Exception("Frame extraction failed.")
+            
+        # 3. Glomap SfM
+        update_status(args.job_id, "RUNNING", "Estimating camera poses (Glomap)...")
+        if not run_command(f"python scripts/run_glomap.py --images_dir {images_dir} --output_dir {sfm_dir}"):
+            raise Exception("SfM failed.")
+            
+        # 4. Training (Taichi 3DGS)
+        update_status(args.job_id, "RUNNING", "Training 3DGS model...")
+        config_path = work_dir / "train_config.yaml"
+        config_content = f"""
+train_dataset_json_path: {str(sfm_dir / 'train.json')}
+val_dataset_json_path: {str(sfm_dir / 'val.json')}
+pointcloud_parquet_path: {str(sfm_dir / 'point_cloud.parquet')}
+summary_writer_log_dir: {str(train_dir / 'logs')}
+output_model_dir: {str(train_dir / 'models')}
+iterations: 7000
+"""
+        with open(config_path, "w") as f:
+            f.write(config_content)
+            
+        if not run_command(f"python taichi-splatting-kaggle/gaussian_point_train.py --train_config {config_path}"):
+            raise Exception("Training failed.")
+            
+        # 5. Export & Pack
+        update_status(args.job_id, "RUNNING", "Finalizing results...")
+        zip_path = f"job_{args.job_id}_{args.output_name}"
+        if not zip_path.endswith(".zip"): zip_path += ".zip"
+        shutil.make_archive(zip_path.replace(".zip", ""), 'zip', train_dir)
+        
+        # 6. Upload to Google Drive
+        gdrive_link = upload_to_gdrive(zip_path, args.output_folder_id)
+        
+        if gdrive_link:
+            # Update Supabase with the result link
+            supabase = get_supabase_client()
+            if supabase:
+                supabase.table("jobs").update({
+                    "result_url": gdrive_link,
+                    "status": "COMPLETED",
+                    "message": "Model generated and uploaded to Google Drive."
+                }).eq("id", args.job_id).execute()
+        else:
+            raise Exception("Failed to upload results to Google Drive.")
+        
+    except Exception as e:
+        print(f"💥 Pipeline Error: {e}")
+        update_status(args.job_id, "FAILED", str(e))
+        sys.exit(1)
+        
+    except Exception as e:
+        print(f"💥 Pipeline Error: {e}")
+        update_status(args.job_id, "FAILED", str(e))
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
