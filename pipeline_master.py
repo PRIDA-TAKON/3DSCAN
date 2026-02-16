@@ -8,8 +8,9 @@ import shutil
 import json
 from pathlib import Path
 
-# Fix PATH for Kaggle environments
+# Fix PATH and Display for Kaggle environments
 os.environ["PATH"] = f"/opt/conda/bin:/usr/local/bin:/usr/bin:/bin:{os.environ.get('PATH', '')}"
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
 # --- Configuration & Environment Setup ---
 
@@ -69,10 +70,10 @@ def setup_environment():
     print("📦 Installing Glomap (Primary Mapper)...")
     if not run_command("glomap --help"):
         # List of possible conda/mamba locations in Kaggle
+        # Prioritize absolute paths to avoid "fake" managers (e.g. python-mamba)
         package_managers = [
-            "/opt/conda/bin/mamba",
             "/opt/conda/bin/conda",
-            "mamba",
+            "/opt/conda/bin/mamba",
             "conda"
         ]
         
@@ -83,6 +84,7 @@ def setup_environment():
                 continue
                 
             print(f"📥 Attempting Glomap installation via {pm}...")
+            # Use 'install' command carefully
             if run_command(f"{pm} install -c conda-forge glomap -y"):
                 glomap_installed = True
                 break
