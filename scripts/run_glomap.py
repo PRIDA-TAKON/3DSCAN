@@ -151,8 +151,12 @@ def run_glomap_sfm(images_dir, output_dir):
             return False
         
     # 2. Matching
-    if not run_command(f"colmap sequential_matcher --database_path {db_path}"):
-        return False
+    match_cmd = f"colmap sequential_matcher --database_path {db_path}"
+    print("🔥 Starting Feature Matching (with Virtual Display)...")
+    if not run_command(f"xvfb-run -a {match_cmd}"):
+        print("⚠️ Virtual Display failed. Retrying with CPU only (SiftMatching.use_gpu 0)...")
+        if not run_command(f"{match_cmd} --SiftMatching.use_gpu 0"):
+            return False
         
     # 3. Glomap Mapper
     sparse_dir = output_dir / "sparse"
@@ -163,8 +167,11 @@ def run_glomap_sfm(images_dir, output_dir):
     print("🔥 Starting Glomap Mapper...")
     if not run_command(glomap_cmd):
         print("⚠️ Glomap failed or not found. Falling back to COLMAP mapper...")
-        if not run_command(f"colmap mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}"):
-            return False
+        mapper_cmd = f"colmap mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}"
+        if not run_command(f"xvfb-run -a {mapper_cmd}"):
+             print("⚠️ Mapper failed with GPU. Retrying with CPU only (Mapper.ba_use_gpu 0)...")
+             if not run_command(f"{mapper_cmd} --Mapper.ba_use_gpu 0"):
+                 return False
             
     # Glomap usually outputs to sparse_dir/0
     model_dir = sparse_dir / "0"
