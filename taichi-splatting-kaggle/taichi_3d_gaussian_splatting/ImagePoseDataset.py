@@ -72,25 +72,38 @@ class ImagePoseDataset(torch.utils.data.Dataset):
         base_camera_height = self.df.iloc[idx]["camera_height"]
         base_camera_width = self.df.iloc[idx]["camera_width"]
         camera_id = self.df.iloc[idx]["camera_id"]
+
         image = PIL.Image.open(image_path)
+
+        # Optimize: Resize PIL image before converting to tensor to save RAM
+        if image.height > MAX_RESOLUTION_TRAIN or image.width > MAX_RESOLUTION_TRAIN:
+            image = transforms.functional.resize(
+                image, size=1024, max_size=MAX_RESOLUTION_TRAIN, antialias=True
+            )
+
         image = torchvision.transforms.functional.to_tensor(image)
+
         # use real image size instead of camera_height and camera_width from colmap
         camera_height = image.shape[1]
         camera_width = image.shape[2]
+
+        # Update intrinsics based on the final loaded (and potentially resized) image size
         camera_intrinsics[0, :] = camera_intrinsics[0, :] * \
             camera_width / base_camera_width
         camera_intrinsics[1, :] = camera_intrinsics[1, :] * \
             camera_height / base_camera_height
+
         # we want image width and height to be always divisible by 16
         # so we crop the image
         camera_width = camera_width - camera_width % TILE_WIDTH
         camera_height = camera_height - camera_height % TILE_HEIGHT
         image = image[:3, :camera_height, :camera_width].contiguous()
+
         camera_info = CameraInfo(
             camera_intrinsics=camera_intrinsics,
             camera_height=camera_height,
             camera_width=camera_width,
             camera_id=camera_id,
         )
-        image, camera_info = ImagePoseDataset._autoscale_image_and_camera_info(image, camera_info)
+        # Note: _autoscale_image_and_camera_info call removed as resizing is now handled above
         return image, q_pointcloud_camera, t_pointcloud_camera, camera_info
