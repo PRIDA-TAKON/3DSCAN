@@ -229,7 +229,7 @@ def main():
         print("❌ Error: --job_id and --video_url are required unless --auto is used.")
         sys.exit(1)
 
-    work_dir = Path("work_dir")
+    work_dir = Path("/kaggle/working/work_dir")
     images_dir = work_dir / "images"
     sfm_dir = work_dir / "sfm"
     train_dir = work_dir / "train_output"
@@ -279,7 +279,9 @@ val_dataset_json_path: {str(sfm_dir / 'val.json')}
 pointcloud_parquet_path: {str(sfm_dir / 'point_cloud.parquet')}
 summary_writer_log_dir: {str(train_dir / 'logs')}
 output_model_dir: {str(train_dir / 'models')}
-iterations: 7000
+num_iterations: 30000
+densify_until_iter: 10000
+position_lr_final: 1e-6
 """
         with open(config_path, "w") as f:
             f.write(config_content)
@@ -294,7 +296,13 @@ iterations: 7000
         shutil.make_archive(zip_path.replace(".zip", ""), 'zip', train_dir)
         
         # 6. Upload to Google Drive
-        gdrive_link = upload_to_gdrive(zip_path, args.output_folder_id)
+        gdrive_link = None
+        for attempt in range(3):
+            gdrive_link = upload_to_gdrive(zip_path, args.output_folder_id)
+            if gdrive_link:
+                break
+            print(f"⚠️ Upload attempt {attempt+1} failed. Retrying in 5 seconds...")
+            time.sleep(5)
         
         if gdrive_link:
             # Update Supabase with the result link
