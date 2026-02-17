@@ -37,7 +37,7 @@ class GaussianPointCloudTrainer:
         num_iterations: int = 30000
         val_interval: int = 1000
         feature_learning_rate: float = 1e-3
-        position_learning_rate: float = 1e-5
+        position_learning_rate: float = 1.6e-5
         position_lr_final: float = 1e-6
         densify_until_iter: int = 10000
         position_learning_rate_decay_rate: float = 0.97
@@ -76,6 +76,7 @@ class GaussianPointCloudTrainer:
         self.scene = GaussianPointCloudScene.from_parquet(
             self.config.pointcloud_parquet_path, config=self.config.gaussian_point_cloud_scene_config)
         self.scene = self.scene.cuda()
+        self._remove_outliers()
         # Propagate densify_until_iter to adaptive_controller_config
         self.config.adaptive_controller_config.densify_until_iter = self.config.densify_until_iter
         self.adaptive_controller = GaussianPointAdaptiveController(
@@ -119,6 +120,30 @@ class GaussianPointCloudTrainer:
             camera_id=camera_info.camera_id)
         return image, resized_camera_info
 
+    def _remove_outliers(self):
+        """Removes points that are statistical outliers (mean +/- 3 * std)."""
+        with torch.no_grad():
+            points = self.scene.point_cloud
+            mean = points.mean(dim=0)
+            std = points.std(dim=0)
+
+            # Simple box filter: within 3 std devs on each axis
+            mask = (torch.abs(points - mean) < 3 * std).all(dim=1)
+
+            num_points_before = points.shape[0]
+            num_points_after = mask.sum().item()
+
+            if num_points_after < num_points_before:
+                print(f"🧹 Removing outliers: {num_points_before} -> {num_points_after} points.")
+
+                # Update all scene parameters
+                self.scene.point_cloud = torch.nn.Parameter(points[mask])
+                self.scene.point_cloud_features = torch.nn.Parameter(self.scene.point_cloud_features[mask])
+                self.scene.point_invalid_mask = self.scene.point_invalid_mask[mask]
+                self.scene.point_object_id = self.scene.point_object_id[mask]
+            else:
+                print("✨ No outliers detected.")
+
     def train(self):
         ti.init(arch=ti.cuda, device_memory_GB=0.1, kernel_profiler=self.config.enable_taichi_kernel_profiler) # we don't use taichi fields, so we don't need to allocate memory, but taichi requires the memory to be allocated > 0
         train_data_loader = torch.utils.data.DataLoader(
@@ -143,6 +168,7 @@ class GaussianPointCloudTrainer:
         downsample_factor = self.config.initial_downsample_factor
 
         recent_losses = deque(maxlen=100)
+        consecutive_nan_count = 0
             
         previous_problematic_iteration = -1000
         for iteration in tqdm(range(self.config.num_iterations)):
@@ -185,9 +211,13 @@ class GaussianPointCloudTrainer:
                 pointcloud_features=self.scene.point_cloud_features.contiguous())
 
             if torch.isnan(loss):
-                print(f"⚠️ NaN Loss detected at iteration {iteration}! Skipping step to preserve model.")
+                consecutive_nan_count += 1
+                print(f"⚠️ NaN Loss detected at iteration {iteration}! ({consecutive_nan_count}/100 consecutive)")
+                if consecutive_nan_count > 100:
+                    raise ValueError("❌ Training aborted: Excessive NaN loss detected (>100 consecutive steps).")
                 continue
             
+            consecutive_nan_count = 0
             loss.backward()
 
             # Clip gradients to prevent exploding gradients
