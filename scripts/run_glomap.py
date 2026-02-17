@@ -165,7 +165,12 @@ def run_glomap_sfm(images_dir, output_dir):
     # Try running glomap. If it fails, fallback to COLMAP mapper.
     glomap_cmd = f"glomap mapper --database_path {db_path} --output_path {sparse_dir}"
     print("🔥 Starting Glomap Mapper...")
-    if not run_command(glomap_cmd):
+
+    success = False
+    if shutil.which("glomap"):
+        success = run_command(glomap_cmd)
+
+    if not success:
         print("⚠️ Glomap failed or not found. Falling back to COLMAP mapper...")
         mapper_cmd = f"colmap mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}"
         if not run_command(f"xvfb-run -a {mapper_cmd}"):
