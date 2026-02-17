@@ -258,6 +258,10 @@ position_lr_final: 1e-6
 """
         with open(config_path, "w") as f:
             f.write(config_content)
+
+        print(f"✅ Created training config at: {config_path}")
+        if not config_path.exists():
+            raise FileNotFoundError(f"❌ Failed to create config file at {config_path}")
             
         if not run_command(f"python taichi-splatting-kaggle/gaussian_point_train.py --train_config {config_path}"):
             raise Exception("Training failed.")
