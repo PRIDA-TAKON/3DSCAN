@@ -37,7 +37,7 @@ class GaussianPointCloudTrainer:
         num_iterations: int = 30000
         val_interval: int = 1000
         feature_learning_rate: float = 1e-3
-        position_learning_rate: float = 1e-5
+        position_learning_rate: float = 1.6e-5
         position_lr_final: float = 1e-6
         densify_until_iter: int = 10000
         position_learning_rate_decay_rate: float = 0.97
@@ -75,6 +75,26 @@ class GaussianPointCloudTrainer:
             dataset_json_path=self.config.val_dataset_json_path)
         self.scene = GaussianPointCloudScene.from_parquet(
             self.config.pointcloud_parquet_path, config=self.config.gaussian_point_cloud_scene_config)
+
+        # --- Preprocessing: Remove Outliers (IQR Method) ---
+        with torch.no_grad():
+            points = self.scene.point_cloud.data
+            # Calculate Quartiles
+            q1 = torch.quantile(points, 0.25, dim=0)
+            q3 = torch.quantile(points, 0.75, dim=0)
+            iqr = q3 - q1
+            lower_bound = q1 - 1.5 * iqr
+            upper_bound = q3 + 1.5 * iqr
+
+            # Identify outliers in any dimension
+            outlier_mask = ((points < lower_bound) | (points > upper_bound)).any(dim=1)
+            num_outliers = outlier_mask.sum().item()
+
+            if num_outliers > 0:
+                print(f"🧹 Outlier Removal: Marked {num_outliers} points as invalid (IQR Method).")
+                self.scene.point_invalid_mask[outlier_mask] = 1
+        # ---------------------------------------------------
+
         self.scene = self.scene.cuda()
         # Propagate densify_until_iter to adaptive_controller_config
         self.config.adaptive_controller_config.densify_until_iter = self.config.densify_until_iter
@@ -143,6 +163,7 @@ class GaussianPointCloudTrainer:
         downsample_factor = self.config.initial_downsample_factor
 
         recent_losses = deque(maxlen=100)
+        consecutive_nan_count = 0
             
         previous_problematic_iteration = -1000
         for iteration in tqdm(range(self.config.num_iterations)):
@@ -185,9 +206,13 @@ class GaussianPointCloudTrainer:
                 pointcloud_features=self.scene.point_cloud_features.contiguous())
 
             if torch.isnan(loss):
-                print(f"⚠️ NaN Loss detected at iteration {iteration}! Skipping step to preserve model.")
+                consecutive_nan_count += 1
+                print(f"⚠️ NaN Loss detected at iteration {iteration}! ({consecutive_nan_count}/100 consecutive) Skipping step.")
+                if consecutive_nan_count >= 100:
+                    raise RuntimeError("❌ Training Unstable: NaN Loss detected for 100 consecutive steps. Aborting to save resources.")
                 continue
             
+            consecutive_nan_count = 0
             loss.backward()
 
             # Clip gradients to prevent exploding gradients
