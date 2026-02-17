@@ -34,10 +34,12 @@ class GaussianPointCloudTrainer:
         train_dataset_json_path: str = ""
         val_dataset_json_path: str = ""
         pointcloud_parquet_path: str = ""
-        num_iterations: int = 300000
+        num_iterations: int = 30000
         val_interval: int = 1000
         feature_learning_rate: float = 1e-3
         position_learning_rate: float = 1e-5
+        position_lr_final: float = 1e-6
+        densify_until_iter: int = 10000
         position_learning_rate_decay_rate: float = 0.97
         position_learning_rate_decay_interval: int = 100
         increase_color_max_sh_band_interval: int = 1000.
@@ -74,6 +76,8 @@ class GaussianPointCloudTrainer:
         self.scene = GaussianPointCloudScene.from_parquet(
             self.config.pointcloud_parquet_path, config=self.config.gaussian_point_cloud_scene_config)
         self.scene = self.scene.cuda()
+        # Propagate densify_until_iter to adaptive_controller_config
+        self.config.adaptive_controller_config.densify_until_iter = self.config.densify_until_iter
         self.adaptive_controller = GaussianPointAdaptiveController(
             config=self.config.adaptive_controller_config,
             maintained_parameters=GaussianPointAdaptiveController.GaussianPointAdaptiveControllerMaintainedParameters(
@@ -128,8 +132,14 @@ class GaussianPointCloudTrainer:
         position_optimizer = torch.optim.Adam(
             [self.scene.point_cloud], lr=self.config.position_learning_rate, betas=(0.9, 0.999))
 
+        # Calculate gamma based on position_lr_final
+        # LR_final = LR_init * gamma ^ (num_iterations / decay_interval)
+        # gamma = (LR_final / LR_init) ^ (1 / (num_iterations / decay_interval))
+        decay_steps = self.config.num_iterations / self.config.position_learning_rate_decay_interval
+        gamma = (self.config.position_lr_final / self.config.position_learning_rate) ** (1.0 / decay_steps)
+
         scheduler = torch.optim.lr_scheduler.ExponentialLR(
-            optimizer=position_optimizer, gamma=self.config.position_learning_rate_decay_rate)
+            optimizer=position_optimizer, gamma=gamma)
         downsample_factor = self.config.initial_downsample_factor
 
         recent_losses = deque(maxlen=100)
@@ -179,6 +189,11 @@ class GaussianPointCloudTrainer:
                 continue
             
             loss.backward()
+
+            # Clip gradients to prevent exploding gradients
+            torch.nn.utils.clip_grad_norm_([self.scene.point_cloud_features], 1.0)
+            torch.nn.utils.clip_grad_norm_([self.scene.point_cloud], 1.0)
+
             optimizer.step()
             position_optimizer.step()
 
@@ -270,6 +285,14 @@ class GaussianPointCloudTrainer:
             del image_gt, q_pointcloud_camera, t_pointcloud_camera, camera_info, gaussian_point_cloud_rasterisation_input, image_pred, loss, l1_loss, ssim_loss
             if (iteration % self.config.val_interval == 0 and iteration != 0) or iteration == 7000 or iteration == 5000: # they use 7000 in paper, it's hard to set a interval so hard code it here
                 self.validation(val_data_loader, iteration)
+
+        self.auto_zip_output()
+
+    def auto_zip_output(self):
+        import shutil
+        print(f"📦 Zipping output directory: {self.config.output_model_dir}")
+        shutil.make_archive(self.config.output_model_dir, 'zip', self.config.output_model_dir)
+        print(f"✅ Output zipped to {self.config.output_model_dir}.zip")
     
     @staticmethod
     def _easy_cmap(x: torch.Tensor):

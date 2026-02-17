@@ -54,6 +54,7 @@ class GaussianPointAdaptiveController:
     class GaussianPointAdaptiveControllerConfig(YAMLWizard):
         num_iterations_warm_up: int = 500
         num_iterations_densify: int = 100
+        densify_until_iter: int = 10000
         # from paper: densify every 100 iterations and remove any Gaussians that are essentially transparent, i.e., with 𝛼 less than a threshold 𝜖𝛼.
         transparent_alpha_threshold: float = -0.5
         # from paper: densify Gaussians with an average magnitude of view-space position gradients above a threshold 𝜏pos, which we set to 0.0002 in our tests.
@@ -141,7 +142,7 @@ class GaussianPointAdaptiveController:
             self.accumulated_position_gradients_norm[input_data.point_id_in_camera_list] += input_data.grad_point_in_camera.norm(dim=1)
             if self.iteration_counter < self.config.num_iterations_warm_up:
                 pass
-            elif self.iteration_counter % self.config.num_iterations_densify == 0:
+            elif self.iteration_counter < self.config.densify_until_iter and self.iteration_counter % self.config.num_iterations_densify == 0:
                 self._find_densify_points(input_data)
                 self.input_data = input_data
 
@@ -149,7 +150,7 @@ class GaussianPointAdaptiveController:
         with torch.no_grad():
             if self.iteration_counter < self.config.num_iterations_warm_up:
                 return
-            if self.iteration_counter % self.config.num_iterations_densify == 0:
+            if self.iteration_counter < self.config.densify_until_iter and self.iteration_counter % self.config.num_iterations_densify == 0:
                 self._add_densify_points()
                 self.accumulated_num_in_camera = torch.zeros_like(
                     self.maintained_parameters.pointcloud[:, 0], dtype=torch.int32)
