@@ -167,7 +167,7 @@ def run_glomap_sfm(images_dir, output_dir):
     print("🔥 Starting Glomap Mapper...")
 
     success = False
-    if shutil.which("glomap"):
+    if shutil.which("glomap", path=os.environ.get("PATH")):
         success = run_command(glomap_cmd)
 
     if not success:

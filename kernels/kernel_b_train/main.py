@@ -88,11 +88,26 @@ def main():
     # 1. Install Deps
     install_dependencies()
     
-    # 2. Get Job
-    job, supabase = get_job()
-    if not job:
-        print("😴 No 'TRAINING_QUEUED' jobs found. Exiting.")
-        return
+    # 2. Get Job or Use Debug SfM Outcome
+    debug_sfm_url = get_secret("DEBUG_SFM_URL")
+    if debug_sfm_url:
+        print(f"🛠️ DEBUG MODE: Using SfM result URL: {debug_sfm_url}")
+        job = {
+            'id': "debug_job_" + str(int(time.time())),
+            'sfm_url': debug_sfm_url,
+            'drive_folder_id': get_secret("DEBUG_DRIVE_FOLDER")
+        }
+        supabase = None
+        if SUPABASE_URL and SUPABASE_KEY:
+            from supabase import create_client
+            try:
+                supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+            except: pass
+    else:
+        job, supabase = get_job()
+        if not job:
+            print("😴 No 'TRAINING_QUEUED' jobs found. Exiting.")
+            return
 
     job_id = job['id']
     print(f"✅ Processing Job: {job_id}")

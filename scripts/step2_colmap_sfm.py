@@ -142,16 +142,25 @@ def convert_colmap_to_transforms(colmap_dir, images_dir, output_path):
 
 def run_step(cmd, shell=True):
     print(f"🚀 Running: {cmd}")
+    # We use subprocess.run without capture_output so it streams to Kaggle's log
     try:
         subprocess.run(cmd, shell=shell, check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ Command failed: {cmd}")
+        # In check=True mode, the exception usually has basic info, 
+        # but streaming directly to stdout/stderr is better for manual debugging on Kaggle.
         raise e
 
 def run_colmap(images_dir, output_dir):
-    images_dir = Path(images_dir)
     project_dir = Path(output_dir)
     project_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Check image count
+    num_images = len(list(Path(images_dir).glob("*.jpg")))
+    print(f"📊 Total images for SfM: {num_images}")
+    if num_images < 3:
+        print("❌ Error: Too few images for SfM (need at least 3).")
+        return False
     
     colmap_dir = project_dir / "colmap"
     colmap_dir.mkdir(parents=True, exist_ok=True)
@@ -170,15 +179,16 @@ def run_colmap(images_dir, output_dir):
         pass
 
     print("--- Feature Extraction ---")
-    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV")
+    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 0")
     
     print("--- Matching ---")
-    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path}")
+    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SiftMatching.use_gpu 0")
     
     print("--- Reconstruction (Mapper) ---")
     sparse_dir = colmap_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
-    run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}")
+    # Force CPU for mapper and BA
+    run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir} --Mapper.ba_global_use_gpu 0 --Mapper.ba_local_use_gpu 0")
     
     print("--- Converting to Text ---")
     text_dir = colmap_dir / "text"

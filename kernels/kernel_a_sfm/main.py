@@ -37,7 +37,7 @@ def install_dependencies():
     # For now, let's assume we use COLMAP as a fallback or a pre-compiled binary if available.
     # Real Glomap build on Kaggle takes time.
     print("⚠️ Glomap installation skipped in this template. Ensure it's in the environment or installed via apt/pip if possible.")
-    run_command("apt-get update --quiet && apt-get install -y --quiet colmap xvfb")
+    run_command("apt-get update --quiet && apt-get install -y --quiet colmap xvfb ffmpeg")
 
 def run_command(cmd, check=True):
     print(f"🚀 Running: {cmd}")
@@ -81,11 +81,26 @@ def main():
     # 1. Install Deps
     install_dependencies()
     
-    # 2. Get Job
-    job, supabase = get_job()
-    if not job:
-        print("😴 No 'SFM_QUEUED' jobs found. Exiting.")
-        return
+    # 2. Get Job or Use Debug Video
+    debug_video_url = get_secret("DEBUG_VIDEO_URL")
+    if debug_video_url:
+        print(f"🛠️ DEBUG MODE: Using video URL: {debug_video_url}")
+        job = {
+            'id': "debug_job_" + str(int(time.time())),
+            'video_url': debug_video_url,
+            'drive_folder_id': get_secret("DEBUG_DRIVE_FOLDER")
+        }
+        supabase = None # Mock or skip DB updates
+        if SUPABASE_URL and SUPABASE_KEY:
+            from supabase import create_client
+            try:
+                supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+            except: pass
+    else:
+        job, supabase = get_job()
+        if not job:
+            print("😴 No 'SFM_QUEUED' jobs found. Exiting.")
+            return
 
     job_id = job['id']
     print(f"✅ Processing Job: {job_id}")
@@ -115,6 +130,17 @@ def main():
             with open(video_path, 'wb') as f:
                 shutil.copyfileobj(resp.raw, f)
         
+        # --- DEBUG: Print Directory Structure ---
+        print(f"🕵️ DEBUG: Current Working Directory: {os.getcwd()}")
+        print(f"🕵️ DEBUG: Files in Current Directory: {os.listdir('.')}")
+        if os.path.exists("/kaggle/working"):
+            print(f"🕵️ DEBUG: Files in /kaggle/working: {os.listdir('/kaggle/working')}")
+        if os.path.exists("/kaggle/src"):
+             print(f"🕵️ DEBUG: Files in /kaggle/src: {os.listdir('/kaggle/src')}")
+        if os.path.exists("/kaggle/input"):
+             print(f"🕵️ DEBUG: Files in /kaggle/input: {os.listdir('/kaggle/input')}")
+        # ----------------------------------------
+
         if not video_path.exists():
             raise FileNotFoundError("Video download failed.")
 
