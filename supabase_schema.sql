@@ -1,21 +1,65 @@
+-- Create Enum for Job Status
+CREATE TYPE job_status AS ENUM (
+    'PENDING',
+    'SFM_QUEUED',
+    'SFM_RUNNING',
+    'SFM_COMPLETED',
+    'SFM_FAILED',
+    'TRAINING_QUEUED',
+    'TRAINING_RUNNING',
+    'TRAINING_COMPLETED',
+    'TRAINING_FAILED',
+    'CONVERSION_QUEUED',
+    'CONVERSION_RUNNING',
+    'COMPLETED',
+    'FAILED'
+);
+
 -- Create jobs table for tracking 3DGS tasks
 CREATE TABLE IF NOT EXISTS public.jobs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    
+    -- Inputs
     video_url TEXT NOT NULL,
-    status TEXT DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'RUNNING', 'COMPLETED', 'FAILED')),
+    config JSONB DEFAULT '{}'::jsonb, -- Hyperparameters
+    
+    -- Status tracking
+    status job_status DEFAULT 'PENDING',
     message TEXT,
-    result_url TEXT,
-    user_id UUID REFERENCES auth.users(id) -- Optional: if you want auth
+    
+    -- Google Drive Links/IDs
+    drive_folder_id TEXT, -- Main folder for this job
+    sfm_url TEXT,         -- Link to sparse_model.zip
+    model_url TEXT,       -- Link to model.ply / output.zip
+    result_url TEXT,      -- Link to .splat file (Final Result)
+    
+    -- Logs & Metadata
+    kaggle_kernel_run_ids JSONB DEFAULT '{}'::jsonb, -- { "sfm": "run_id", "train": "run_id" }
+    logs JSONB DEFAULT '[]'::jsonb,
+    
+    user_id UUID REFERENCES auth.users(id)
 );
 
--- Enable Row Level Security (RLS)
+-- Trigger to update updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = now();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_jobs_updated_at
+    BEFORE UPDATE ON public.jobs
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_updated_at_column();
+
+-- Enable RLS
 ALTER TABLE public.jobs ENABLE ROW LEVEL SECURITY;
 
--- Create policies (Example: Allow all for now, or restrict by user)
-CREATE POLICY "Allow authenticated full access" ON public.jobs
-    FOR ALL USING (true);
-
--- Create storage bucket for medical videos
--- Note: You should create a bucket named '3d-scans' in Supabase Dashbord and set it to Public or Managed RLS.
+-- Policies
+CREATE POLICY "Enable read access for all users" ON public.jobs FOR SELECT USING (true);
+CREATE POLICY "Enable insert for authenticated users only" ON public.jobs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Enable update for service role/dispatchers" ON public.jobs FOR UPDATE USING (true); -- Simplify for MVP, tighten later

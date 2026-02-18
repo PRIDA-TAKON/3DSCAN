@@ -7,10 +7,12 @@
 !tsconfig.json
 !next.config.ts
 !kernel-metadata.json
+!kernels/**/kernel-metadata.json
 
 # Google Drive Service Account (specific patterns)
-*-*.json
-mcp-gantt-*.json
+# Ensure sensitive keys are ignored
+*-abc12345.json
+
 
 # Python
 __pycache__/
