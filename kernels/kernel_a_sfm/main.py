@@ -16,7 +16,8 @@ def get_secret(key):
         from kaggle_secrets import UserSecretsClient
         user_secrets = UserSecretsClient()
         return user_secrets.get_secret(key)
-    except Exception:
+    except Exception as e:
+        print(f"⚠️ Failed to read secret '{key}': {e}")
         return None
 
 # --- Constants & Supabase Helper ---
