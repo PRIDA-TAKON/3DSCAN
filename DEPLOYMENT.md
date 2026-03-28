@@ -28,15 +28,14 @@
 
 ---
 
-## 3. การเตรียม Google Cloud สำหรับ Backend (Cloud Run Worker)
+## 3. การเตรียม Google Cloud สำหรับ Backend (Build Worker)
 
-ระบบประมวลผล 3D ต้องใช้ GPU ดังนั้นต้องตั้งค่าใน GCP ดังนี้:
+ระบบประมวลผล 3D ต้องใช้ GPU ดังนั้นเราจะใช้ GCP สำหรับการ Build เท่านั้น:
 
 ### ก. เปิดใช้งาน API ที่จำเป็น
 ใช้คำสั่งผ่าน Google Cloud SDK (gcloud CLI):
 ```bash
-gcloud services enable run.googleapis.com \
-                       artifactregistry.googleapis.com \
+gcloud services enable artifactregistry.googleapis.com \
                        cloudbuild.googleapis.com
 ```
 
@@ -49,38 +48,23 @@ gcloud artifacts repositories create 3d-scan-repo \
     --description="Docker repository for 3D Scan Worker"
 ```
 
-### ค. เตรียม Service Account สำหรับ Google Drive
-หากระบบมีการอัปโหลดไฟล์ไปที่ Google Drive:
-1.  สร้าง Service Account ใน GCP Console (IAM & Admin > Service Accounts)
-2.  สร้าง JSON Key และดาวน์โหลดไว้
-3.  นำเนื้อหาในไฟล์ JSON นั้นมาเตรียมไว้สำหรับใส่ใน Environment Variable `GDRIVE_SERVICE_ACCOUNT`
-
 ---
 
 ## 4. การ Deploy Backend Worker ไปยัง RunPod Serverless
 
-การใช้ RunPod Serverless จะช่วยประหยัดค่าใช้จ่ายได้มาก เพราะจ่ายตามการใช้งานจริง (GPU Seconds)
-
 ### ก. การเตรียม Docker Image (Build on GCP):
-เราจะใช้ **Google Cloud Build** ในการสร้างและเก็บ Image ไว้บน **Artifact Registry** ของคุณโดยตรง
-
-1.  ตรวจสอบว่าคุณได้สร้าง Repository แล้ว (ตามขั้นตอนในข้อ 3 ข)
-2.  รันคำสั่งเพื่อเริ่มการ Build บน Cloud:
-    ```bash
-    gcloud builds submit --config cloudbuild.yaml .
-    ```
-3.  เมื่อ Build เสร็จสิ้น Image ของคุณจะอยู่ที่:
-    `asia-southeast1-docker.pkg.dev/[PROJECT_ID]/3d-scan-repo/worker:latest`
+เรารันการ Build บน Cloud โดยใช้คำสั่งเดียว:
+```bash
+gcloud builds submit --config cloudbuild.yaml .
+```
 
 ### ข. การตั้งค่าใน RunPod เพื่อดึง Image จาก GCP:
-เนื่องจาก Artifact Registry เป็นแบบส่วนตัว คุณต้องอนุญาตให้ RunPod เข้าถึงได้:
+เพื่อให้ RunPod ดึง Image จาก Registry ส่วนตัวของคุณได้:
 
 1.  **สร้าง Service Account ใน GCP:**
-    *   ไปที่ IAM & Admin > Service Accounts
-    *   สร้างใหม่ชื่อ `runpod-puller`
+    *   ไปที่ IAM & Admin > Service Accounts > สร้างใหม่ชื่อ `runpod-puller`
     *   ให้สิทธิ์ (Role): `Artifact Registry Reader`
-    *   ไปที่แท็บ **Keys** > **Add Key** > **Create new key** (เลือกประเภท JSON)
-    *   ดาวน์โหลดไฟล์ JSON เก็บไว้
+    *   สร้าง JSON Key และดาวน์โหลดไว้
 
 2.  **เพิ่ม Registry ใน RunPod Dashboard:**
     *   ไปที่ **User Settings** > **Container Registries** > **Add Registry**
@@ -89,25 +73,33 @@ gcloud artifacts repositories create 3d-scan-repo \
     *   **Password:** (คัดลอกเนื้อหาทั้งหมดในไฟล์ JSON ที่ดาวน์โหลดมาใส่ที่นี่)
 
 3.  **สร้าง Endpoint ใน RunPod:**
-    *   ไปที่ **Serverless** > **Endpoints** > **New Endpoint**
     *   ระบุ Image URL: `asia-southeast1-docker.pkg.dev/[PROJECT_ID]/3d-scan-repo/worker:latest`
     *   เลือก GPU ที่ต้องการ (เช่น **RTX 4090**)
-    *   ตั้งค่า Environment Variables (`SUPABASE_URL`, `SUPABASE_KEY`, ฯลฯ)
-
-### ค. การเรียกใช้งาน (Triggering):
-เมื่อมีงานใหม่ใน Supabase คุณต้องส่ง POST Request ไปยัง RunPod Endpoint URL (สามารถใช้สคริปต์ `scripts/trigger_runpod.py` หรือตั้งค่าใน Supabase Edge Functions ได้)
+    *   ตั้งค่า Environment Variables:
+        *   `SUPABASE_URL`
+        *   `SUPABASE_KEY` (แนะนำให้ใช้ Service Role Key)
 
 ---
 
-## 5. สรุป Environment Variables ที่สำคัญ
+## 5. การจัดการผลลัพธ์ (Retention Policy)
+
+เพื่อให้เป็นไปตามนโยบายการเก็บข้อมูล 24 ชั่วโมง แนะนำให้ตั้งค่าใน **Supabase Storage**:
+
+1.  ไปที่ **Storage** > **Buckets**
+2.  เลือก Bucket `scans`
+3.  ไปที่ **Policies** (หรือ Bucket Settings ขึ้นอยู่กับเวอร์ชัน Dashboard)
+4.  ตั้งค่า **Auto-deletion** (ถ้ามี) หรือใช้ **Supabase Edge Functions** ที่ตั้งเวลา (Cron) ไว้ให้ลบไฟล์ที่มี `created_at` เกิน 24 ชั่วโมง
+
+---
+
+## 6. สรุป Environment Variables ที่สำคัญ
 
 | ส่วนงาน | ชื่อตัวแปร | รายละเอียด |
 | :--- | :--- | :--- |
 | **Frontend** | `NEXT_PUBLIC_SUPABASE_URL` | URL ของ Supabase Project |
 | | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | API Key (Anon) ของ Supabase |
-| **Backend** | `SUPABASE_URL` | เหมือนด้านบน (ใช้เชื่อมต่อจาก Worker) |
-| | `SUPABASE_KEY` | แนะนำให้ใช้ Service Role Key เพื่อสิทธิ์ในการเขียน Table |
-| | `GDRIVE_SERVICE_ACCOUNT` | เนื้อหาในไฟล์ JSON Key ของ GCP Service Account |
+| **Backend** | `SUPABASE_URL` | เหมือนด้านบน |
+| | `SUPABASE_KEY` | **Service Role Key** เพื่อสิทธิ์ในการเขียนไฟล์ลง Storage |
 
 ---
 

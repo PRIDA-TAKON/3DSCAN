@@ -28,8 +28,7 @@ RUN python -m pip install --upgrade pip
 RUN pip install numpy pandas opencv-python plyfile pyyaml \
     torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 \
     taichi dataclass-wizard pytorch-msssim \
-    supabase requests gdown google-api-python-client google-auth-httplib2 google-auth-oauthlib \
-    runpod
+    supabase requests runpod
 
 # Copy source code (scripts, GLOMAP fallback)
 COPY . /app
