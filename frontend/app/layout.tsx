@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Medical 3DGS Pipeline",
-  description: "Automated 3D Gaussian Splatting for Medical Exams",
+  title: "3D Scan & Splatting Pipeline",
+  description: "Automated 3D Gaussian Splatting from Video",
 };
 
 export default function RootLayout({

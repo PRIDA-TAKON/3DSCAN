@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="th">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>3DScan Cloud - Pitch Deck</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/black.min.css">
+
+    <style>
+        .reveal h1, .reveal h2, .reveal h3 {
+            color: #42a5f5;
+            text-transform: none;
+        }
+        .highlight {
+            color: #ffca28;
+            font-weight: bold;
+        }
+        .comparison-table {
+            font-size: 0.6em !important;
+            width: 100%;
+        }
+        .comparison-table th {
+            background: #1565c0;
+            color: white;
+        }
+        .comparison-table td, .comparison-table th {
+            border: 1px solid #444 !important;
+            padding: 10px !important;
+        }
+        .advantage-box {
+            background: rgba(66, 165, 245, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #42a5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+            
+            <!-- Slide 1: Title -->
+            <section data-background-gradient="linear-gradient(to bottom, #0d47a1, #000000)">
+                <h1>3DScan Cloud</h1>
+                <h3>The Future of 3D Reconstruction</h3>
+                <p>High-Fidelity 3D Models from Any Video</p>
+                <p style="font-size: 0.8em; opacity: 0.7;">Powered by <span class="highlight">Google Cloud GPU L4</span> & <span class="highlight">Taichi 3DGS</span></p>
+            </section>
+
+            <!-- Slide 2: Problem -->
+            <section>
+                <h2>The Problem</h2>
+                <ul>
+                    <li class="fragment">ความต้องการคอนเทนต์ 3D สูงขึ้น (E-commerce, AR/VR)</li>
+                    <li class="fragment">การสแกนแบบเดิม <span class="highlight">ใช้อุปกรณ์แพง</span> (LiDAR) หรือประมวลผลช้ามาก</li>
+                    <li class="fragment">ซอฟต์แวร์ใช้งานยากและต้องมีเครื่องแรง</li>
+                </ul>
+            </section>
+
+            <!-- Slide 3: Solution -->
+            <section>
+                <h2>Our Solution</h2>
+                <div class="advantage-box">
+                    <p><strong>"3DScan Cloud Platform"</strong></p>
+                    <ul>
+                        <li>อัปโหลดวิดีโอผ่าน Web Browser ได้ทันที</li>
+                        <li>ประมวลผลบน Cloud GPU แรงสูง (L4)</li>
+                        <li>ได้ไฟล์ 3D ที่สมจริงระดับภาพถ่าย (Photorealistic)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Slide 4: Technology -->
+            <section>
+                <h2>Core Technology</h2>
+                <div style="display: flex; align-items: center;">
+                    <div style="flex: 1; font-size: 0.8em;">
+                        <h3>3D Gaussian Splatting</h3>
+                        <ul>
+                            <li>เรนเดอร์เร็วกว่า NeRF ถึง <span class="highlight">100 เท่า</span></li>
+                            <li>ใช้พารามิเตอร์ 3D Gaussians ล้านจุด</li>
+                            <li>เก็บแสงสะท้อน (Specular) ได้สมจริง</li>
+                        </ul>
+                    </div>
+                    <div style="flex: 1; font-size: 0.8em;">
+                        <h3>Taichi Implementation</h3>
+                        <ul>
+                            <li>ใช้จุดน้อยลง <span class="highlight">75%</span> แต่ชัดเท่าเดิม</li>
+                            <li>ประหยัด Bandwidth และ Storage</li>
+                            <li>รันบนระบบ Serverless Cloud Run</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 5: Comparison (LiDAR) -->
+            <section>
+                <h3>3DGS vs. LiDAR Point Cloud</h3>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>คุณสมบัติ</th>
+                            <th>LiDAR Point Cloud</th>
+                            <th>3DGS (ของเรา)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ความสมจริง (Fidelity)</td>
+                            <td>ต่ำ (เห็นเป็นจุดแยกกัน)</td>
+                            <td class="highlight">สูงมาก (เหมือนภาพถ่าย)</td>
+                        </tr>
+                        <tr>
+                            <td>แสงสะท้อน / โลหะ</td>
+                            <td>ทำไม่ได้</td>
+                            <td class="highlight">ทำได้สมจริงมาก</td>
+                        </tr>
+                        <tr>
+                            <td>อุปกรณ์ (Hardware)</td>
+                            <td>ต้องมีเซนเซอร์ LiDAR (แพง)</td>
+                            <td class="highlight">มือถือธรรมดาอะไรก็ได้</td>
+                        </tr>
+                        <tr>
+                            <td>การเข้าถึง (Access)</td>
+                            <td>จำกัดรุ่นเครื่อง</td>
+                            <td class="highlight">ทุกคนที่มีกล้องวิดีโอ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Slide 6: System Design -->
+            <section>
+                <h2>Production-Ready Architecture</h2>
+                <ul>
+                    <li><strong>Google Cloud Run GPU:</strong> รันเมื่อมีงาน ไม่เสียค่าเช่ารายเดือน</li>
+                    <li><strong>GPU L4 (24GB VRAM):</strong> ประมวลผล AI รุ่นล่าสุด</li>
+                    <li><strong>One-Pot Execution:</strong> ทุกขั้นตอนจบใน Pipeline เดียว</li>
+                </ul>
+            </section>
+
+            <!-- Slide 7: Business Use Cases -->
+            <section>
+                <h2>Business Opportunity</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.7em;">
+                    <div class="advantage-box">
+                        <h4>E-Commerce</h4>
+                        <p>หมุนดูสินค้า 3D จริงบนเว็บ</p>
+                    </div>
+                    <div class="advantage-box">
+                        <h4>Real Estate</h4>
+                        <p>Virtual Tour จากวิดีโอเดินถ่าย</p>
+                    </div>
+                    <div class="advantage-box">
+                        <h4>Digital Twin</h4>
+                        <p>เก็บข้อมูลโบราณสถาน/สถานที่</p>
+                    </div>
+                    <div class="advantage-box">
+                        <h4>Gaming / VFX</h4>
+                        <p>สร้าง Asset 3D จากของจริง</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Slide 8: Conclusion -->
+            <section data-background-gradient="linear-gradient(to top, #0d47a1, #000000)">
+                <h2>Ready for Scaling</h2>
+                <p>เราพร้อมเปลี่ยนโลกแห่งความจริงให้เป็นดิจิทัล 3 มิติ</p>
+                <br>
+                <div class="advantage-box">
+                    <p><strong>"Empowering Everyone to Create the 3D World"</strong></p>
+                </div>
+                <p style="margin-top: 50px;">ขอบคุณครับ</p>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: 'c/t',
+            transition: 'convex', // none/fade/slide/convex/concave/zoom
+            controls: true,
+            progress: true,
+            center: true
+        });
+    </script>
+</body>
+</html>

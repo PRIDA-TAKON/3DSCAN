@@ -12,6 +12,13 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Check file size (50MB limit)
+        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+        if (file.size > MAX_SIZE) {
+            alert('File is too large! Maximum size allowed is 50MB.');
+            return;
+        }
+
         setIsUploading(true);
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
@@ -34,7 +41,7 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
             const { error: dbError } = await supabase.from('jobs').insert({
                 video_url: publicUrl,
                 status: 'PENDING',
-                message: 'Awaiting Kaggle worker...'
+                message: 'Awaiting worker...'
             });
 
             if (dbError) throw dbError;
@@ -54,8 +61,8 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
                 {isUploading ? <Loader2 className="animate-spin text-primary" /> : <Upload className="text-primary" />}
             </div>
 
-            <h3 className="text-xl font-semibold mb-2">New Medical Scan</h3>
-            <p className="text-gray-400 text-sm mb-6">Upload patient examination video (MP4/MOV)</p>
+            <h3 className="text-xl font-semibold mb-2">New 3D Scan</h3>
+            <p className="text-gray-400 text-sm mb-6">Upload video file to start reconstruction (MP4/MOV)</p>
 
             <label className="w-full">
                 <input

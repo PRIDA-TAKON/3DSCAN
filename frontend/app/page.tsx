@@ -41,8 +41,8 @@ export default function Home() {
     <main className="min-h-screen p-8 max-w-6xl mx-auto">
       <header className="flex justify-between items-center mb-12">
         <div>
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Medical 3DGS Pipeline</h1>
-          <p className="text-gray-400">Convert Patient Scans to High-Precision 3D Gaussian Splatting</p>
+          <h1 className="text-4xl font-bold mb-2 gradient-text">3D Scan & Gaussian Splatting</h1>
+          <p className="text-gray-400">Convert Videos to High-Precision 3D Models</p>
         </div>
         <div className="flex gap-4">
           <div className="glass px-4 py-2 rounded-xl flex items-center gap-2">
@@ -51,7 +51,7 @@ export default function Home() {
           </div>
           <div className="glass px-4 py-2 rounded-xl flex items-center gap-2">
             <Sparkles size={18} className="text-yellow-400" />
-            <span className="text-sm font-medium">Kaggle Worker Ready</span>
+            <span className="text-sm font-medium">Cloud Run Ready</span>
           </div>
         </div>
       </header>

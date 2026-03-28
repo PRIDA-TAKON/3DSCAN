@@ -1,51 +1,73 @@
-# Credentials & Secrets
-.env
-.env.*
-*.json
-!package.json
-!package-lock.json
-!tsconfig.json
-!next.config.ts
-!kernel-metadata.json
-!kernels/**/kernel-metadata.json
-
-# Google Drive Service Account (specific patterns)
-# Ensure sensitive keys are ignored
-*-abc12345.json
-
-
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
-venv/
 .venv/
-.python-version
-
-# Temporary & Work Directories
-work_dir/
-input/
-output/
-temp/
-*.zip
-*.ply
-*.parquet
-
-# Logs
-*.log
-logs/
-
-# MacOS
-.DS_Store
-
-# Frontend
-node_modules/
-.next/
-out/
+venv/
+ENV/
+env/
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Kaggle / Notebook artifacts
-.ipynb_checkpoints/
+# Node.js (Frontend)
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+out/
+frontend/out/
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-job_d4aaf85b-fccc-4df4-b226-2812f6666200/
+# Environment Variables (Security)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.json
+!package.json
+!package-lock.json
+!frontend/package.json
+!frontend/package-lock.json
+!cloudbuild.yaml
+!supabase_schema.sql
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Project Specific (Large/Temp Files)
+*.mp4
+*.zip
+*.png
+*.jpg
+*.jpeg
+results/
+frames/
+colmap/
+output/
+tmp/
+-tree -r master
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

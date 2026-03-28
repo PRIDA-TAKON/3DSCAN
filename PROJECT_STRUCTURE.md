@@ -1,52 +1,37 @@
-# โครงสร้างโปรเจค 3DSCAN สำหรับ Kaggle
+# โครงสร้างโปรเจค 3DSCAN (Cloud Edition)
 
-โปรเจคนี้ถูกออกแบบมาเพื่อ rันกระบวนการ **3D Gaussian Splatting** บน **Kaggle** โดยแบ่งการทำงานออกเป็น 2 ส่วน (Parts) เพื่อแก้ปัญหา Environment Conflict (NumPy version) และเพิ่มความเสถียร
+โปรเจคนี้ถูกออกแบบมาเพื่อรันกระบวนการ **3D Gaussian Splatting** บน **Google Cloud Run** โดยใช้สถาปัตยกรรมแบบ Worker-based ที่ทำงานครบวงจรในตัวเดียว
 
 ## 📁 โครงสร้างไฟล์ (File Structure)
 
 | ไฟล์/โฟลเดอร์ (File/Folder) | หน้าที่ (Description) |
 | :--- | :--- |
-| **`3d-scan-part1-data-prep.ipynb`** | **ส่วนที่ 1 (เตรียมข้อมูล):** รันบน Kaggle เพื่อแปลงวิดีโอเป็นภาพ และทำ Sparse Reconstruction (COLMAP) ส่งออกเป็นไฟล์ Zip |
-| **`3d-scan-part2-training.ipynb`** | **ส่วนที่ 2 (เทรนโมเดล):** รันบน Kaggle โดยรับไฟล์ Zip จากส่วนที่ 1 มาเทรนโมเดลด้วย Taichi Splatting และส่งออกไฟล์ `.splat` |
-| **`taichi-splatting-kaggle/`** | **ไลบรารีเสริม (Submodule):** Fork ของ `taichi_3d_gaussian_splatting` ที่ถูกแก้บั๊ก (Fixed) แล้ว สำหรับใช้ใน Part 2 |
-| `scripts/` | **สคริปต์หลัก (Core Scripts):** โฟลเดอร์เก็บไฟล์ Python (`step1` ถึง `step4`) ที่ถูกเรียกใช้โดย Notebooks |
-| `LICENSE` | ไลเซนส์ของโปรเจค (MIT License) |
+| **`cloud_run_worker.py`** | **หัวใจหลัก:** สคริปต์ที่รันบน Cloud รับหน้าที่ดึงงานจาก Supabase, ดาวน์โหลดวิดีโอ, และรัน 4 ขั้นตอนการประมวลผลจนจบ |
+| **`Dockerfile`** | **Container Config:** สำหรับสร้างสถาพแวดล้อม Ubuntu + CUDA ที่ติดตั้ง COLMAP และ Taichi เรียบร้อยแล้ว |
+| **`frontend/`** | **Dashboard:** หน้าเว็บ Next.js สำหรับให้ผู้ใช้ส่งงาน (Upload) และรอรับลิงก์ดาวน์โหลดผลลัพธ์ |
+| **`scripts/`** | **Processing Scripts:** ไฟล์ Python ย่อยสำหรับงานเฉพาะทาง เช่น `step1_extract_frames.py` หรือ `run_glomap.py` |
+| **`taichi-splatting-kaggle/`** | **Core Library:** ตัวเทรน 3D Gaussian Splatting ที่ใช้ภาษา Taichi เพื่อความรวดเร็ว |
+| `supabase_schema.sql` | **Database:** โครงสร้างตาราง `jobs` สำหรับใช้ใน Supabase |
 
 ---
 
-## ⚙️ การทำงานบน Kaggle (Workflow)
+## ⚙️ ขั้นตอนการรันงาน (Workflow)
 
-การทำงานถูกแบ่งเป็น 2 ขั่นตอน เพื่อแยก Environment ออกจากกันอย่างชัดเจน:
+ระบบเปลี่ยนจากแบบ Manual บน Kaggle มาเป็นแบบอัตโนมัติ (Automated):
 
-### 1. `3d-scan-part1-data-prep.ipynb` (Data Preparation)
-
-* **Environment:** Kaggle Default (รองรับ NumPy 2.x)
-* **Input:** วิดีโอ (`.mp4`) หรือ ภาพถ่าย
-* **Process:**
-    1. Extract Frames (แปลงวิดีโอเป็นภาพ)
-    2. COLMAP SfM (สร้าง Sparse Point Cloud)
-* **Output:** ไฟล์ `3d_scan_data_part1.zip` (ต้องดาวน์โหลดเก็บไว้)
-
-### 2. `3d-scan-part2-training.ipynb` (Training)
-
-* **Environment:** Custom (Strict NumPy < 2.0, Taichi)
-* **Input:** ไฟล์ `3d_scan_data_part1.zip` (จากขั้นตอนที่ 1)
-* **Process:**
-    1. Install Dependencies (จาก `taichi-splatting-kaggle` fork)
-    2. Train Taichi Splatting (เทรนโมเดล)
-    3. Export to .splat
-* **Output:** ไฟล์ `3d_splat_model.zip` (โมเดล 3D พร้อมใช้งาน)
+1. **User Action:** อัปโหลดวิดีโอผ่านหน้าเว็บ (จำกัด 50MB) -> ข้อมูลบันทึกลง Supabase
+2. **Cloud Trigger:** เมื่อมีการสร้าง Job ใหม่ (สามารถใช้ Supabase Edge Function หรือ Trigger ภายนอก) สั่งรัน Cloud Run Job
+3. **Worker Process:**
+    - `Step 1:` แปลงวิดีโอเป็นเฟรมภาพ
+    - `Step 2:` ทำ Sparse Reconstruction (SfM) เพื่อหาตำแหน่งกล้อง
+    - `Step 3:` เทรนโมเดลด้วย Taichi 3DGS (30,000 Iterations)
+    - `Step 4:` ส่งออกไฟล์ `.splat` และ Zip ผลลัพธ์
+4. **Result Delivery:** อัปโหลดไฟล์ Zip ขึ้น **Google Drive** และส่งลิงก์กลับไปที่ Supabase
+5. **Realtime Update:** หน้าเว็บของผู้ใช้เปลี่ยนสถานะเป็น `Ready` พร้อมปุ่มดาวน์โหลด
 
 ---
 
-## 🚀 วิธีการใช้งาน (Step-by-Step)
-
-1. **รัน Part 1:**
-    * สร้าง Notebook ใหม่ -> Import `3d-scan-part1-data-prep.ipynb`
-    * รันจนจบ -> ดาวน์โหลด `output/3d_scan_data_part1.zip`
-
-2. **รัน Part 2:**
-    * สร้าง Notebook ใหม่ -> Import `3d-scan-part2-training.ipynb`
-    * สร้าง **New Dataset** ใน Kaggle โดยอัปโหลดไฟล์ `3d_scan_data_part1.zip` ที่ได้มา
-    * เพิ่ม Dataset นี้เข้าใน Notebook
-    * รันจนจบ -> ดาวน์โหลด `3d_splat_model.zip`
+## 🚀 ข้อดีของการใช้ Cloud Run
+- **No Idle Cost:** เสียเงินเฉพาะวินาทีที่รันงานประมวลผลจริง
+- **GPU Power:** เข้าถึง GPU L4 ที่ประสิทธิภาพสูงกว่า Kaggle รุ่นฟรี
+- **Clean Architecture:** แยกส่วนประมวลผล (Worker) ออกจากส่วนแสดงผล (Frontend) อย่างชัดเจน

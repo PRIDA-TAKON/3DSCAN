@@ -1,0 +1,702 @@
+2026-02-21 09:25:45.070061: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1771665945.241393     242 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1771665945.295717     242 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1771665945.703855     242 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771665945.703908     242 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771665945.703911     242 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1771665945.703913     242 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+/usr/local/lib/python3.12/dist-packages/nerfstudio/field_components/activations.py:32: FutureWarning: `torch.cuda.amp.custom_fwd(args...)` is deprecated. Please use `torch.amp.custom_fwd(args..., device_type='cuda')` instead.
+  @custom_fwd(cast_inputs=torch.float32)
+/usr/local/lib/python3.12/dist-packages/nerfstudio/field_components/activations.py:38: FutureWarning: `torch.cuda.amp.custom_bwd(args...)` is deprecated. Please use `torch.amp.custom_bwd(args..., device_type='cuda')` instead.
+  @custom_bwd
+[09:26:07] Using --data alias for --data.pipeline.datamanager.data                                          train.py:236
+──────────────────────────────────────────────────────── Config ────────────────────────────────────────────────────────
+TrainerConfig(
+    _target=<class 'nerfstudio.engine.trainer.Trainer'>,
+    output_dir=PosixPath('/kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output'),
+    method_name='splatfacto',
+    experiment_name=None,
+    project_name='nerfstudio-project',
+    timestamp='2026-02-21_092607',
+    machine=MachineConfig(seed=42, num_devices=1, num_machines=1, machine_rank=0, dist_url='auto', device_type='cuda'),
+    logging=LoggingConfig(
+        relative_log_dir=PosixPath('.'),
+        steps_per_log=10,
+        max_buffer_size=20,
+        local_writer=LocalWriterConfig(
+            _target=<class 'nerfstudio.utils.writer.LocalWriter'>,
+            enable=True,
+            stats_to_track=(
+                <EventName.ITER_TRAIN_TIME: 'Train Iter (time)'>,
+                <EventName.TRAIN_RAYS_PER_SEC: 'Train Rays / Sec'>,
+                <EventName.CURR_TEST_PSNR: 'Test PSNR'>,
+                <EventName.VIS_RAYS_PER_SEC: 'Vis Rays / Sec'>,
+                <EventName.TEST_RAYS_PER_SEC: 'Test Rays / Sec'>,
+                <EventName.ETA: 'ETA (time)'>
+            ),
+            max_log_size=10
+        ),
+        profiler='basic'
+    ),
+    viewer=ViewerConfig(
+        relative_log_filename='viewer_log_filename.txt',
+        websocket_port=None,
+        websocket_port_default=7007,
+        websocket_host='0.0.0.0',
+        num_rays_per_chunk=32768,
+        max_num_display_images=512,
+        quit_on_train_completion=False,
+        image_format='jpeg',
+        jpeg_quality=75,
+        make_share_url=False,
+        camera_frustum_scale=0.1,
+        default_composite_depth=True
+    ),
+    pipeline=VanillaPipelineConfig(
+        _target=<class 'nerfstudio.pipelines.base_pipeline.VanillaPipeline'>,
+        datamanager=FullImageDatamanagerConfig(
+            _target=<class 'nerfstudio.data.datamanagers.full_images_datamanager.FullImageDatamanager'>,
+            data=PosixPath('/kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project'),
+            masks_on_gpu=False,
+            images_on_gpu=False,
+            dataparser=ColmapDataParserConfig(
+                _target=<class 'nerfstudio.data.dataparsers.colmap_dataparser.ColmapDataParser'>,
+                data=PosixPath('.'),
+                scale_factor=1.0,
+                downscale_factor=None,
+                downscale_rounding_mode='floor',
+                scene_scale=1.0,
+                orientation_method='up',
+                center_method='poses',
+                auto_scale_poses=True,
+                assume_colmap_world_coordinate_convention=True,
+                eval_mode='interval',
+                train_split_fraction=0.9,
+                eval_interval=8,
+                depth_unit_scale_factor=0.001,
+                images_path=PosixPath('images'),
+                masks_path=None,
+                depths_path=None,
+                colmap_path=PosixPath('sparse/0'),
+                load_3D_points=True,
+                max_2D_matches_per_3D_point=0
+            ),
+            camera_res_scale_factor=1.0,
+            eval_num_images_to_sample_from=-1,
+            eval_num_times_to_repeat_images=-1,
+            eval_image_indices=(0,),
+            cache_images='gpu',
+            cache_images_type='uint8',
+            max_thread_workers=None,
+            train_cameras_sampling_strategy='random',
+            train_cameras_sampling_seed=42,
+            fps_reset_every=100
+        ),
+        model=SplatfactoModelConfig(
+            _target=<class 'nerfstudio.models.splatfacto.SplatfactoModel'>,
+            enable_collider=True,
+            collider_params={'near_plane': 2.0, 'far_plane': 6.0},
+            loss_coefficients={'rgb_loss_coarse': 1.0, 'rgb_loss_fine': 1.0},
+            eval_num_rays_per_chunk=4096,
+            prompt=None,
+            warmup_length=500,
+            refine_every=100,
+            resolution_schedule=3000,
+            background_color='random',
+            num_downscales=2,
+            cull_alpha_thresh=0.1,
+            cull_scale_thresh=0.5,
+            reset_alpha_every=30,
+            densify_grad_thresh=0.0008,
+            use_absgrad=True,
+            densify_size_thresh=0.01,
+            n_split_samples=2,
+            sh_degree_interval=1000,
+            cull_screen_size=0.15,
+            split_screen_size=0.05,
+            stop_screen_size_at=4000,
+            random_init=False,
+            num_random=50000,
+            random_scale=10.0,
+            ssim_lambda=0.2,
+            stop_split_at=15000,
+            sh_degree=3,
+            use_scale_regularization=False,
+            max_gauss_ratio=10.0,
+            output_depth_during_training=False,
+            rasterize_mode='classic',
+            camera_optimizer=CameraOptimizerConfig(
+                _target=<class 'nerfstudio.cameras.camera_optimizers.CameraOptimizer'>,
+                mode='off',
+                trans_l2_penalty=0.01,
+                rot_l2_penalty=0.001,
+                optimizer=None,
+                scheduler=None
+            ),
+            use_bilateral_grid=False,
+            grid_shape=(16, 16, 8),
+            color_corrected_metrics=False
+        )
+    ),
+    optimizers={
+        'means': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.00016,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': ExponentialDecaySchedulerConfig(
+                _target=<class 'nerfstudio.engine.schedulers.ExponentialDecayScheduler'>,
+                lr_pre_warmup=1e-08,
+                lr_final=1.6e-06,
+                warmup_steps=0,
+                max_steps=30000,
+                ramp='cosine'
+            )
+        },
+        'features_dc': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.0025,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': None
+        },
+        'features_rest': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.000125,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': None
+        },
+        'opacities': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.05,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': None
+        },
+        'scales': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.005,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': None
+        },
+        'quats': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.001,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': None
+        },
+        'camera_opt': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.0001,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': ExponentialDecaySchedulerConfig(
+                _target=<class 'nerfstudio.engine.schedulers.ExponentialDecayScheduler'>,
+                lr_pre_warmup=0,
+                lr_final=5e-07,
+                warmup_steps=1000,
+                max_steps=30000,
+                ramp='cosine'
+            )
+        },
+        'bilateral_grid': {
+            'optimizer': AdamOptimizerConfig(
+                _target=<class 'torch.optim.adam.Adam'>,
+                lr=0.002,
+                eps=1e-15,
+                max_norm=None,
+                weight_decay=0
+            ),
+            'scheduler': ExponentialDecaySchedulerConfig(
+                _target=<class 'nerfstudio.engine.schedulers.ExponentialDecayScheduler'>,
+                lr_pre_warmup=0,
+                lr_final=0.0001,
+                warmup_steps=1000,
+                max_steps=30000,
+                ramp='cosine'
+            )
+        }
+    },
+    vis='tensorboard',
+    data=PosixPath('/kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project'),
+    prompt=None,
+    relative_model_dir=PosixPath('nerfstudio_models'),
+    load_scheduler=True,
+    steps_per_save=2000,
+    steps_per_eval_batch=0,
+    steps_per_eval_image=100,
+    steps_per_eval_all_images=1000,
+    max_num_iterations=7000,
+    mixed_precision=False,
+    use_grad_scaler=False,
+    save_only_latest_checkpoint=True,
+    load_dir=None,
+    load_step=None,
+    load_config=None,
+    load_checkpoint=None,
+    log_gradients=False,
+    gradient_accumulation_steps={},
+    start_paused=False
+)
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+           Saving config to:                                                                    experiment_config.py:136
+           /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output/project/splatf                         
+           acto/2026-02-21_092607/config.yml                                                                            
+/usr/local/lib/python3.12/dist-packages/nerfstudio/engine/trainer.py:137: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self.grad_scaler = GradScaler(enabled=self.use_grad_scaler)
+           Saving checkpoints to:                                                                         trainer.py:142
+           /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output/project/splatfacto/2026-               
+           02-21_092607/nerfstudio_models                                                                               
+[09:26:08] Using image downscale factor of 1                                                    colmap_dataparser.py:533
+Downloading: "https://download.pytorch.org/models/alexnet-owt-7be5be79.pth" to /root/.cache/torch/hub/checkpoints/alexnet-owt-7be5be79.pth
+
+  0%|          | 0.00/233M [00:00<?, ?B/s]
+  7%|▋         | 15.2M/233M [00:00<00:01, 160MB/s]
+ 16%|█▋        | 38.2M/233M [00:00<00:00, 207MB/s]
+ 26%|██▋       | 61.6M/233M [00:00<00:00, 224MB/s]
+ 37%|███▋      | 85.4M/233M [00:00<00:00, 234MB/s]
+ 47%|████▋     | 109M/233M [00:00<00:00, 239MB/s] 
+ 57%|█████▋    | 133M/233M [00:00<00:00, 242MB/s]
+ 67%|██████▋   | 157M/233M [00:00<00:00, 244MB/s]
+ 78%|███████▊  | 181M/233M [00:00<00:00, 246MB/s]
+ 88%|████████▊ | 205M/233M [00:00<00:00, 249MB/s]
+ 98%|█████████▊| 229M/233M [00:01<00:00, 249MB/s]
+100%|██████████| 233M/233M [00:01<00:00, 239MB/s]
+No Nerfstudio checkpoint to load, so training from scratch.
+logging events to: 
+/kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output/project/splatfacto/2026-02-21_092607
+[09:26:16] Caching / undistorting train images                                            full_images_datamanager.py:230
+
+W0221 09:26:19.858000 242 torch/_inductor/utils.py:1436] [0/0] Not enough SMs to use max_autotune_gemm mode
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] WON'T CONVERT get_viewmat /usr/local/lib/python3.12/dist-packages/nerfstudio/models/splatfacto.py line 127 
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] due to: 
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] Traceback (most recent call last):
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1272, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     result = self._inner_convert(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]              ^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 629, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return _compile(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1111, in _compile
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     guarded_code = compile_inner(code, one_graph, hooks, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_utils_internal.py", line 97, in wrapper_function
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return function(*args, **kwargs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 793, in compile_inner
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return _compile_inner(code, one_graph, hooks, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 832, in _compile_inner
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     out_code = transform_code_object(code, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/bytecode_transformation.py", line 1424, in transform_code_object
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     transformations(instructions, code_options)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 267, in _fn
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return fn(*args, **kwargs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 753, in transform
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     tracer.run()
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3497, in run
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     super().run()
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     while self.step():
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]           ^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self.dispatch_table[inst.opcode](self, inst)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3672, in RETURN_VALUE
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self._return(inst)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3653, in _return
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     all_stack_locals_metadata = self.output.compile_subgraph(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1422, in compile_subgraph
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self.compile_and_call_fx_graph(tx, pass2.graph_output_vars(), root)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1696, in compile_and_call_fx_graph
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_fn = self.call_user_compiler(gm, self.example_inputs())
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1811, in call_user_compiler
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return self._call_user_compiler(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1846, in _call_user_compiler
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_fn = compiler_fn(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/repro/after_dynamo.py", line 150, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_gm = compiler_fn(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/__init__.py", line 2380, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return compile_fx(model_, inputs_, config_patches=self.config)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_inductor/compile_fx.py", line 2432, in compile_fx
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_inductor/scheduler.py", line 4040, in create_backend
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     raise GPUTooOldForTriton(device_props, inspect.currentframe())
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] torch._inductor.exc.GPUTooOldForTriton: Found Tesla P100-PCIE-16GB which is too old to be supported by the triton GPU compiler, which is used as the backend. Triton only supports devices of CUDA Capability >= 7.0, but your device is of CUDA capability 6.0
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] 
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] 
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] Traceback (most recent call last):
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1272, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     result = self._inner_convert(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]              ^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 629, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return _compile(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 1111, in _compile
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     guarded_code = compile_inner(code, one_graph, hooks, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_utils_internal.py", line 97, in wrapper_function
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return function(*args, **kwargs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 793, in compile_inner
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return _compile_inner(code, one_graph, hooks, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 832, in _compile_inner
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     out_code = transform_code_object(code, transform)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/bytecode_transformation.py", line 1424, in transform_code_object
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     transformations(instructions, code_options)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 267, in _fn
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return fn(*args, **kwargs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/convert_frame.py", line 753, in transform
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     tracer.run()
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3497, in run
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     super().run()
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1363, in run
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     while self.step():
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]           ^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 1267, in step
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self.dispatch_table[inst.opcode](self, inst)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3672, in RETURN_VALUE
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self._return(inst)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/symbolic_convert.py", line 3653, in _return
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     all_stack_locals_metadata = self.output.compile_subgraph(
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1422, in compile_subgraph
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     self.compile_and_call_fx_graph(tx, pass2.graph_output_vars(), root)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1696, in compile_and_call_fx_graph
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_fn = self.call_user_compiler(gm, self.example_inputs())
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1811, in call_user_compiler
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return self._call_user_compiler(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/output_graph.py", line 1846, in _call_user_compiler
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_fn = compiler_fn(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_dynamo/repro/after_dynamo.py", line 150, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     compiled_gm = compiler_fn(gm, example_inputs)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/__init__.py", line 2380, in __call__
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     return compile_fx(model_, inputs_, config_patches=self.config)
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_inductor/compile_fx.py", line 2432, in compile_fx
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     raise e.remove_dynamo_frames() from None  # see TORCHDYNAMO_VERBOSE=1
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]   File "/usr/local/lib/python3.12/dist-packages/torch/_inductor/scheduler.py", line 4040, in create_backend
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339]     raise GPUTooOldForTriton(device_props, inspect.currentframe())
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] torch._inductor.exc.GPUTooOldForTriton: Found Tesla P100-PCIE-16GB which is too old to be supported by the triton GPU compiler, which is used as the backend. Triton only supports devices of CUDA Capability >= 7.0, but your device is of CUDA capability 6.0
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] 
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+W0221 09:26:19.898000 242 torch/_dynamo/convert_frame.py:1339] 
+W0221 09:26:20.132000 242 torch/utils/cpp_extension.py:2425] TORCH_CUDA_ARCH_LIST is not set, all archs for visible cards are included for compilation. 
+W0221 09:26:20.132000 242 torch/utils/cpp_extension.py:2425] If this is not desired, please set os.environ['TORCH_CUDA_ARCH_LIST'] to specific architectures.
+Printing profiling stats, from longest to shortest duration in seconds
+Trainer.train_iteration: 243.0282            
+VanillaPipeline.get_train_loss_dict: 243.0277            
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_backend.py", line 83, in <module>
+    from gsplat import csrc as _C
+ImportError: cannot import name 'csrc' from 'gsplat' (/usr/local/lib/python3.12/dist-packages/gsplat/__init__.py)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2595, in _run_ninja_build
+    subprocess.run(
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['ninja', '-v', '-j', '1']' returned non-zero exit status 1.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/bin/ns-train", line 8, in <module>
+    sys.exit(entrypoint())
+             ^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/scripts/train.py", line 268, in entrypoint
+    main(
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/scripts/train.py", line 253, in main
+    launch(
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/scripts/train.py", line 195, in launch
+    main_func(local_rank=0, world_size=world_size, config=config)
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/scripts/train.py", line 106, in train_loop
+    trainer.train()
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/engine/trainer.py", line 266, in train
+    loss, loss_dict, metrics_dict = self.train_iteration(step)
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/utils/profiler.py", line 111, in inner
+    out = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/engine/trainer.py", line 502, in train_iteration
+    _, loss_dict, metrics_dict = self.pipeline.get_train_loss_dict(step=step)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/utils/profiler.py", line 111, in inner
+    out = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/pipelines/base_pipeline.py", line 300, in get_train_loss_dict
+    model_outputs = self._model(ray_bundle)  # train distributed data parallel model if world_size > 1
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/models/base_model.py", line 143, in forward
+    return self.get_outputs(ray_bundle)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/nerfstudio/models/splatfacto.py", line 599, in get_outputs
+    render, alpha, self.info = rasterization(
+                               ^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/rendering.py", line 297, in rasterization
+    proj_results = fully_fused_projection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_wrapper.py", line 306, in fully_fused_projection
+    return _FullyFusedProjection.apply(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/autograd/function.py", line 576, in apply
+    return super().apply(*args, **kwargs)  # type: ignore[misc]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_wrapper.py", line 778, in forward
+    camera_model_type = _make_lazy_cuda_obj(
+                        ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_wrapper.py", line 21, in _make_lazy_cuda_obj
+    from ._backend import _C
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_backend.py", line 130, in <module>
+    _C = load_extension(
+         ^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/_backend.py", line 42, in load_extension
+    return load(
+           ^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 1681, in load
+    return _jit_compile(
+           ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2138, in _jit_compile
+    _write_ninja_file_and_build_library(
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2290, in _write_ninja_file_and_build_library
+    _run_ninja_build(
+  File "/usr/local/lib/python3.12/dist-packages/torch/utils/cpp_extension.py", line 2612, in _run_ninja_build
+    raise RuntimeError(message) from e
+RuntimeError: Error building extension 'gsplat_cuda': [1/26] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output fully_fused_projection_fwd.cuda.o.d -DTORCH_EXTENSION_NAME=gsplat_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/third_party/glm -isystem /usr/local/lib/python3.12/dist-packages/torch/include -isystem /usr/local/lib/python3.12/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/cuda/include -isystem /usr/include/python3.12 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_60,code=compute_60 -gencode=arch=compute_60,code=sm_60 --compiler-options '-fPIC' -O3 --use_fast_math -std=c++17 -c /usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/fully_fused_projection_fwd.cu -o fully_fused_projection_fwd.cuda.o 
+[2/26] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output world_to_cam_fwd.cuda.o.d -DTORCH_EXTENSION_NAME=gsplat_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/third_party/glm -isystem /usr/local/lib/python3.12/dist-packages/torch/include -isystem /usr/local/lib/python3.12/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/cuda/include -isystem /usr/include/python3.12 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_60,code=compute_60 -gencode=arch=compute_60,code=sm_60 --compiler-options '-fPIC' -O3 --use_fast_math -std=c++17 -c /usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_fwd.cu -o world_to_cam_fwd.cuda.o 
+[3/26] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output compute_sh_bwd.cuda.o.d -DTORCH_EXTENSION_NAME=gsplat_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/third_party/glm -isystem /usr/local/lib/python3.12/dist-packages/torch/include -isystem /usr/local/lib/python3.12/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/cuda/include -isystem /usr/include/python3.12 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_60,code=compute_60 -gencode=arch=compute_60,code=sm_60 --compiler-options '-fPIC' -O3 --use_fast_math -std=c++17 -c /usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/compute_sh_bwd.cu -o compute_sh_bwd.cuda.o 
+[4/26] /usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output world_to_cam_bwd.cuda.o.d -DTORCH_EXTENSION_NAME=gsplat_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/third_party/glm -isystem /usr/local/lib/python3.12/dist-packages/torch/include -isystem /usr/local/lib/python3.12/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/cuda/include -isystem /usr/include/python3.12 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_60,code=compute_60 -gencode=arch=compute_60,code=sm_60 --compiler-options '-fPIC' -O3 --use_fast_math -std=c++17 -c /usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_bwd.cu -o world_to_cam_bwd.cuda.o 
+FAILED: [code=1] world_to_cam_bwd.cuda.o 
+/usr/local/cuda/bin/nvcc --generate-dependencies-with-compile --dependency-output world_to_cam_bwd.cuda.o.d -DTORCH_EXTENSION_NAME=gsplat_cuda -DTORCH_API_INCLUDE_EXTENSION_H -DPYBIND11_COMPILER_TYPE=\"_gcc\" -DPYBIND11_STDLIB=\"_libstdcpp\" -DPYBIND11_BUILD_ABI=\"_cxxabi1018\" -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc -I/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/third_party/glm -isystem /usr/local/lib/python3.12/dist-packages/torch/include -isystem /usr/local/lib/python3.12/dist-packages/torch/include/torch/csrc/api/include -isystem /usr/local/cuda/include -isystem /usr/include/python3.12 -D__CUDA_NO_HALF_OPERATORS__ -D__CUDA_NO_HALF_CONVERSIONS__ -D__CUDA_NO_BFLOAT16_CONVERSIONS__ -D__CUDA_NO_HALF2_OPERATORS__ --expt-relaxed-constexpr -gencode=arch=compute_60,code=compute_60 -gencode=arch=compute_60,code=sm_60 --compiler-options '-fPIC' -O3 --use_fast_math -std=c++17 -c /usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_bwd.cu -o world_to_cam_bwd.cuda.o 
+/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_bwd.cu(83): error: namespace "cooperative_groups" has no member "labeled_partition"
+      auto warp_group_g = cg::labeled_partition(warp, gid);
+                              ^
+
+/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_bwd.cu(108): error: namespace "cooperative_groups" has no member "labeled_partition"
+          auto warp_group_c = cg::labeled_partition(warp, cid);
+                                  ^
+
+2 errors detected in the compilation of "/usr/local/lib/python3.12/dist-packages/gsplat/cuda/csrc/world_to_cam_bwd.cu".
+ninja: build stopped: subcommand failed.
+
+📂 Project Path: /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project
+📂 Output Path: /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output
+🔍 Inspecting Project Directory: /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project
+project/
+    transforms.json
+    sparse/
+        0/
+            project.ini
+            points3D.bin
+            cameras.bin
+            images.bin
+    images/
+        0086.jpg
+        0113.jpg
+        0083.jpg
+        0102.jpg
+        0015.jpg
+        0135.jpg
+        0136.jpg
+        0111.jpg
+        0039.jpg
+        0118.jpg
+        0051.jpg
+        0067.jpg
+        0073.jpg
+        0108.jpg
+        0030.jpg
+        0134.jpg
+        0057.jpg
+        0122.jpg
+        0095.jpg
+        0026.jpg
+        0119.jpg
+        0100.jpg
+        0130.jpg
+        0082.jpg
+        0117.jpg
+        0045.jpg
+        0006.jpg
+        0120.jpg
+        0076.jpg
+        0023.jpg
+        0063.jpg
+        0075.jpg
+        0024.jpg
+        0054.jpg
+        0126.jpg
+        0003.jpg
+        0035.jpg
+        0060.jpg
+        0087.jpg
+        0105.jpg
+        0066.jpg
+        0115.jpg
+        0049.jpg
+        0081.jpg
+        0058.jpg
+        0004.jpg
+        0025.jpg
+        0143.jpg
+        0037.jpg
+        0065.jpg
+        0121.jpg
+        0019.jpg
+        0028.jpg
+        0079.jpg
+        0116.jpg
+        0048.jpg
+        0127.jpg
+        0041.jpg
+        0007.jpg
+        0036.jpg
+        0078.jpg
+        0088.jpg
+        0096.jpg
+        0109.jpg
+        0124.jpg
+        0112.jpg
+        0044.jpg
+        0129.jpg
+        0046.jpg
+        0090.jpg
+        0050.jpg
+        0034.jpg
+        0040.jpg
+        0002.jpg
+        0014.jpg
+        0056.jpg
+        0094.jpg
+        0055.jpg
+        0029.jpg
+        0080.jpg
+        0053.jpg
+        0128.jpg
+        0114.jpg
+        0085.jpg
+        0099.jpg
+        0107.jpg
+        0084.jpg
+        0016.jpg
+        0141.jpg
+        0123.jpg
+        0033.jpg
+        0017.jpg
+        0018.jpg
+        0027.jpg
+        0139.jpg
+        0131.jpg
+        0062.jpg
+        0101.jpg
+        0020.jpg
+        0009.jpg
+        0059.jpg
+        0098.jpg
+        0042.jpg
+        0008.jpg
+        0052.jpg
+        0064.jpg
+        0103.jpg
+        0010.jpg
+        0013.jpg
+        0072.jpg
+        0071.jpg
+        0069.jpg
+        0001.jpg
+        0077.jpg
+        0137.jpg
+        0047.jpg
+        0093.jpg
+        0068.jpg
+        0140.jpg
+        0021.jpg
+        0074.jpg
+        0106.jpg
+        0104.jpg
+        0061.jpg
+        0032.jpg
+        0043.jpg
+        0142.jpg
+        0038.jpg
+        0031.jpg
+        0097.jpg
+        0091.jpg
+        0022.jpg
+        0110.jpg
+        0125.jpg
+        0005.jpg
+        0012.jpg
+        0138.jpg
+        0070.jpg
+        0089.jpg
+        0132.jpg
+        0133.jpg
+        0011.jpg
+        0092.jpg
+        0144.jpg
+✅ Found transforms.json
+   Content Preview: {
+    "camera_angle_x": 1.1915420937122272,
+    "camera_angle_y": 1.0247789206214755,
+    "fl_x": 755.2219516041292,
+    "fl_y": 512.0,
+    "k1": 288.0,
+    "k2": 0.003291859310737891,
+    "p1": 0,
+  ...
+ℹ️ Found sparse/0 at root, adding --colmap-path sparse/0
+🔥 Starting Nerfstudio Training...
+🚀 Running: ns-train splatfacto --data /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project --output-dir /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output --max-num-iterations 7000 --vis tensorboard colmap --colmap-path sparse/0
+❌ Command failed: ns-train splatfacto --data /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/project --output-dir /kaggle/working/job_3e4e7e31-b42e-44da-9218-1904f0e2578b/train_output --max-num-iterations 7000 --vis tensorboard colmap --colmap-path sparse/0
+❌ Training failed.

@@ -1,0 +1,32 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:latest',
+      '-t', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:$SHORT_SHA',
+      '.'
+    ]
+
+  # 2. Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:latest'
+    ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:$SHORT_SHA'
+    ]
+
+images:
+  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:latest'
+  - '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPO_NAME/worker:$SHORT_SHA'
+
+substitutions:
+  _REGION: asia-southeast1
+  _REPO_NAME: 3d-scan-repo
+
+options:
+  machineType: 'E2_HIGHCPU_8' # ใช้เครื่องแรงขึ้นเพื่อลดเวลา Build (Docker image ค่อนข้างใหญ่)
