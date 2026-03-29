@@ -48,7 +48,7 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
 
             // 4. Trigger RunPod Job
             console.log('🚀 Triggering worker for job:', jobData.id);
-            const runpodRes = await fetch('/api/trigger-job', {
+            const runpodRes = await fetch('/api/run-worker', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
