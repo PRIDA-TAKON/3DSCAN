@@ -26,7 +26,7 @@ RUN python -m pip install --upgrade pip
 # Install required heavy ML/CV python utilities 
 # (dataclass-wizard and pytorch-msssim required by Taichi)
 RUN pip install numpy pandas opencv-python plyfile pyyaml \
-    torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 \
+    torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 \
     taichi dataclass-wizard pytorch-msssim \
     supabase requests runpod
 

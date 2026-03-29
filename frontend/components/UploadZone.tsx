@@ -37,14 +37,29 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
                 .from('3d-scans')
                 .getPublicUrl(filePath);
 
-            // 3. Create DB Record
-            const { error: dbError } = await supabase.from('jobs').insert({
+            // 3. Create DB Record and get the ID
+            const { data: jobData, error: dbError } = await supabase.from('jobs').insert({
                 video_url: publicUrl,
                 status: 'PENDING',
                 message: 'Awaiting worker...'
-            });
+            }).select().single();
 
             if (dbError) throw dbError;
+
+            // 4. Trigger RunPod Job
+            const runpodRes = await fetch('/api/trigger-job', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jobId: jobData.id,
+                    videoUrl: publicUrl
+                })
+            });
+
+            if (!runpodRes.ok) {
+                const errorData = await runpodRes.json();
+                throw new Error(errorData.error || 'Failed to trigger worker');
+            }
 
             onUploadSuccess();
         } catch (error: any) {
