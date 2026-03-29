@@ -73,12 +73,24 @@ def handler(job):
 
     try:
         # 2. Download Video
-        print(f"📥 Downloading video from Supabase...")
+        print(f"📥 Downloading video from: {video_url}")
         import requests
         response = requests.get(video_url, stream=True)
+        
+        if response.status_code != 200:
+            raise Exception(f"Failed to download video. HTTP Status: {response.status_code}. Please check if the bucket is Public.")
+            
         with open(video_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192):
                 f.write(chunk)
+        
+        file_size = video_path.stat().st_size
+        print(f"✅ Video downloaded. Size: {file_size} bytes")
+        if file_size < 1000:
+            # ถ้าไฟล์เล็กเกินไป (เช่น < 1KB) มักจะเป็นไฟล์ Error ของ Supabase
+            with open(video_path, 'r', errors='ignore') as f:
+                content = f.read()
+            raise Exception(f"Downloaded file is too small. Content: {content[:100]}")
 
         # 3. Step 1: Extract Frames
         update_status(job_id, "extracting_frames")
