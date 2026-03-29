@@ -104,8 +104,17 @@ def handler(job):
 
         # 5. Step 3: Train Gaussian Splatting (Taichi)
         update_status(job_id, "training_splatting")
-        # ส่งค่า path ของข้อมูล colmap และ output ที่เราเตรียมไว้ใน /tmp
-        if not run_command(f"python scripts/step3_train_splatting.py --data_dir {colmap_dir} --output_dir {output_dir} --iterations 7000"):
+        # Taichi Splatting ต้องการ config หรือเรียกผ่าน gaussian_point_train.py
+        # เราจะรันโดยชี้ไปที่ข้อมูล COLMAP ที่เราเพิ่งทำเสร็จใน Step 2
+        # หมายเหตุ: เราต้องสร้างไฟล์ config พื้นฐานให้ Taichi ก่อน หรือรันผ่านคำสั่งตรงๆ
+        train_cmd = (
+            f"python taichi-splatting-kaggle/gaussian_point_train.py "
+            f"--data_path {colmap_dir} "
+            f"--output_path {output_dir} "
+            f"--max_iterations 7000"
+        )
+        
+        if not run_command(train_cmd):
             raise Exception("Training failed")
 
         # 6. Step 4: Zip & Upload to Supabase Storage
