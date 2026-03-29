@@ -170,10 +170,10 @@ def run_colmap(images_dir, output_dir):
         pass
 
     print("--- Feature Extraction ---")
-    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV")
+    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 1")
     
     print("--- Matching ---")
-    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path}")
+    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SiftMatching.use_gpu 1")
     
     print("--- Reconstruction (Mapper) ---")
     sparse_dir = colmap_dir / "sparse"
@@ -195,8 +195,8 @@ def run_colmap(images_dir, output_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Step 2: COLMAP SfM Pipeline")
-    parser.add_argument("--images_dir", required=True, help="Directory containing extracted images")
-    parser.add_argument("--output_dir", required=True, help="Project output directory (where transforms.json will be saved)")
+    parser.add_argument("--image_path", "--images_dir", dest="images_dir", required=True, help="Directory containing extracted images")
+    parser.add_argument("--output_path", "--output_dir", dest="output_dir", required=True, help="Project output directory")
     
     args = parser.parse_args()
     
