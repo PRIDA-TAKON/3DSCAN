@@ -92,8 +92,8 @@ def handler(job):
 
         # 5. Step 3: Train Gaussian Splatting (Taichi)
         update_status(job_id, "training_splatting")
-        # แก้ไขชื่อสคริปต์ตามที่โปรเจกต์คุณใช้งานจริง
-        if not run_command(f"python scripts/step3_train_splatting.py --data_dir {colmap_dir} --output_dir {output_dir}"):
+        # ส่งค่า path ของข้อมูล colmap และ output ที่เราเตรียมไว้ใน /tmp
+        if not run_command(f"python scripts/step3_train_splatting.py --data_dir {colmap_dir} --output_dir {output_dir} --iterations 7000"):
             raise Exception("Training failed")
 
         # 6. Step 4: Zip & Upload to Supabase Storage
