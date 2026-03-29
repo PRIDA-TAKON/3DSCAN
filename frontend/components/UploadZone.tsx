@@ -47,6 +47,7 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
             if (dbError) throw dbError;
 
             // 4. Trigger RunPod Job
+            console.log('🚀 Triggering worker for job:', jobData.id);
             const runpodRes = await fetch('/api/trigger-job', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -56,11 +57,14 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
                 })
             });
 
+            const resData = await runpodRes.json();
+
             if (!runpodRes.ok) {
-                const errorData = await runpodRes.json();
-                throw new Error(errorData.error || 'Failed to trigger worker');
+                console.error('❌ Worker trigger failed:', resData);
+                throw new Error(resData.error || 'Failed to trigger worker');
             }
 
+            console.log('✅ Worker triggered successfully:', resData);
             onUploadSuccess();
         } catch (error: any) {
             alert(error.message);
