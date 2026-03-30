@@ -170,7 +170,7 @@ def run_colmap(images_dir, output_dir):
         pass
 
     print("--- Feature Extraction ---")
-    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 1")
+    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model SIMPLE_RADIAL --SiftExtraction.use_gpu 1")
     
     print("--- Matching ---")
     run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SiftMatching.use_gpu 1")
