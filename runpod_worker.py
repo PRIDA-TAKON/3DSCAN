@@ -148,7 +148,7 @@ output_model_dir: {output_dir}
 
         print(f"📤 Uploading result to Supabase Storage...")
         supabase = get_supabase_client()
-        bucket_name = "scans"
+        bucket_name = "3d-scans"
         remote_path = f"results/{job_id}/result.zip"
         
         with open(zip_output, 'rb') as f:
