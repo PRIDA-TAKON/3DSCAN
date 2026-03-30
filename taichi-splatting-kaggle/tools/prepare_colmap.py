@@ -68,23 +68,31 @@ def parse_parameters_dict(row):
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3], 'k2': params[4]}
     elif model == 'PINHOLE':
         return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
+    elif model == 'SIMPLE_PINHOLE':
+        return {'f': params[0], 'cx': params[1], 'cy': params[2]}
+    elif model == 'OPENCV':
+        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
     else:
-        return {'params': params}
+        # Fallback for any other model: assume first parameters are focal and principal point
+        res = {}
+        if len(params) >= 3:
+            res = {'f': params[0], 'cx': params[1], 'cy': params[2]}
+        return res
 
 def get_intrinsic_matrix(params):
-    if 'f' in params:  # For SIMPLE_RADIAL and RADIAL models
-        f = params['f']
-        cx = params['cx']
-        cy = params['cy']
-        return np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
-    elif 'fx' in params:  # For PINHOLE model
-        fx = params['fx']
-        fy = params['fy']
-        cx = params['cx']
-        cy = params['cy']
+    if not params:
+        return np.eye(3) # Safe fallback
+        
+    if 'fx' in params and 'fy' in params:
+        fx, fy = params['fx'], params['fy']
+        cx, cy = params['cx'], params['cy']
         return np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]])
+    elif 'f' in params:
+        f = params['f']
+        cx, cy = params['cx'], params['cy']
+        return np.array([[f, 0, cx], [0, f, cy], [0, 0, 1]])
     else:
-        return None
+        return np.eye(3) # Safe fallback instead of None
 
 def read_cameras_txt(file):
     with open(file, 'r') as f:
