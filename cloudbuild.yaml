@@ -12,7 +12,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '-t', '$_DOCKER_USER/$_REPO_NAME:v1.0.3',
+      '-t', '$_DOCKER_USER/$_REPO_NAME:v1.0.4',
       '.'
     ]
 
@@ -20,7 +20,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push',
-      '$_DOCKER_USER/$_REPO_NAME:v1.0.3'
+      '$_DOCKER_USER/$_REPO_NAME:v1.0.4'
     ]
 
 availableSecrets:

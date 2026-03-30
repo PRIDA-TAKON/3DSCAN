@@ -99,22 +99,40 @@ def handler(job):
 
         # 4. Step 2: COLMAP SFM
         update_status(job_id, "running_sfm")
+        # ล้างโฟลเดอร์ COLMAP เก่าถ้ามี
+        if colmap_dir.exists(): shutil.rmtree(colmap_dir)
         if not run_command(f"python step2_colmap_sfm.py --image_path {frames_dir} --output_path {colmap_dir}"):
             raise Exception("COLMAP SFM failed")
+
+        # 4.5 Step 2.5: Prepare Data for Taichi (NEW)
+        update_status(job_id, "preparing_data", "Converting COLMAP output to Taichi format...")
+        prepared_data_dir = work_dir / "prepared_data"
+        prepared_data_dir.mkdir(parents=True, exist_ok=True)
+        
+        # ค้นหาโฟลเดอร์ text ที่ถูกสร้างโดย step2_colmap_sfm.py
+        # ตามโครงสร้างคือ colmap_dir / "colmap" / "text"
+        colmap_text_dir = colmap_dir / "colmap" / "text"
+        
+        prepare_cmd = f"python taichi-splatting-kaggle/tools/prepare_colmap.py --base_path {colmap_text_dir} --image_path {frames_dir} --output_dir {prepared_data_dir}"
+        if not run_command(prepare_cmd):
+            raise Exception("Data preparation (prepare_colmap) failed")
 
         # 5. Step 3: Train Gaussian Splatting (Taichi)
         update_status(job_id, "training_splatting")
         
-        # สร้างไฟล์คอนฟิกชั่วคราวสำหรับ Taichi
+        # สร้างไฟล์คอนฟิกที่สมบูรณ์สำหรับ Taichi
         config_path = work_dir / "config.yaml"
-        # เราจะเขียน YAML แบบง่ายๆ ให้ชี้ไปยัง Path ที่ถูกต้อง
-        # หมายเหตุ: เราใช้เครื่องหมาย { } ใน f-string ต้องระวัง
+        # ใช้ Path จริงที่ได้จากขั้นตอน Preprocessing
         config_content = f"""
-data_path: {colmap_dir}
-output_path: {output_dir}
-max_iterations: 7000
-log_interval: 100
-checkpoint_interval: 1000
+train_dataset_json_path: {prepared_data_dir}/train.json
+val_dataset_json_path: {prepared_data_dir}/val.json
+pointcloud_parquet_path: {prepared_data_dir}/point_cloud.parquet
+num_iterations: 7000
+val_interval: 1000
+feature_learning_rate: 0.005
+position_learning_rate: 0.00005
+summary_writer_log_dir: {output_dir}
+output_model_dir: {output_dir}
         """
         with open(config_path, "w") as f:
             f.write(config_content)
