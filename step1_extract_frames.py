@@ -41,18 +41,27 @@ def extract_frames(video_path, output_dir, fps=2, max_width=1024):
     ]
     
     try:
+        print(f"Executing: {' '.join(cmd)}")
         subprocess.run(cmd, check=True)
-        num_images = len(list(output_dir.glob("*.jpg")))
+        
+        # ตรวจสอบว่ามีไฟล์ภาพเกิดขึ้นจริงไหม
+        images = list(output_dir.glob("*.jpg"))
+        num_images = len(images)
+        if num_images == 0:
+            print("❌ No images were extracted. ffmpeg might have failed silently.")
+            return False
+            
         print(f"✅ Successfully extracted {num_images} images to {output_dir}")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ ffmpeg failed: {e}")
+        print(f"❌ ffmpeg failed with return code {e.returncode}")
         return False
     except FileNotFoundError:
         print("❌ ffmpeg not found. Please install ffmpeg.")
         return False
 
 if __name__ == "__main__":
+    import sys
     parser = argparse.ArgumentParser(description="Step 1: Extract Frames from Video")
     parser.add_argument("--input_video", required=True, help="Path to input .mp4 video")
     parser.add_argument("--output_dir", required=True, help="Directory to save extracted images")
@@ -61,4 +70,5 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    extract_frames(args.input_video, args.output_dir, args.fps, args.max_width)
+    if not extract_frames(args.input_video, args.output_dir, args.fps, args.max_width):
+        sys.exit(1) # คืนค่า error ให้ระบบภายนอกรู้
