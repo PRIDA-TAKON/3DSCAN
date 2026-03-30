@@ -104,15 +104,22 @@ def handler(job):
 
         # 5. Step 3: Train Gaussian Splatting (Taichi)
         update_status(job_id, "training_splatting")
-        # Taichi Splatting ต้องการ config หรือเรียกผ่าน gaussian_point_train.py
-        # เราจะรันโดยชี้ไปที่ข้อมูล COLMAP ที่เราเพิ่งทำเสร็จใน Step 2
-        # หมายเหตุ: เราต้องสร้างไฟล์ config พื้นฐานให้ Taichi ก่อน หรือรันผ่านคำสั่งตรงๆ
-        train_cmd = (
-            f"python taichi-splatting-kaggle/gaussian_point_train.py "
-            f"--data_path {colmap_dir} "
-            f"--output_path {output_dir} "
-            f"--max_iterations 7000"
-        )
+        
+        # สร้างไฟล์คอนฟิกชั่วคราวสำหรับ Taichi
+        config_path = work_dir / "config.yaml"
+        # เราจะเขียน YAML แบบง่ายๆ ให้ชี้ไปยัง Path ที่ถูกต้อง
+        # หมายเหตุ: เราใช้เครื่องหมาย { } ใน f-string ต้องระวัง
+        config_content = f"""
+data_path: {colmap_dir}
+output_path: {output_dir}
+max_iterations: 7000
+log_interval: 100
+checkpoint_interval: 1000
+        """
+        with open(config_path, "w") as f:
+            f.write(config_content)
+
+        train_cmd = f"python taichi-splatting-kaggle/gaussian_point_train.py --train_config {config_path}"
         
         if not run_command(train_cmd):
             raise Exception("Training failed")
