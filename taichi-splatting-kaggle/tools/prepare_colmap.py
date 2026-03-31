@@ -62,25 +62,28 @@ def read_images_binary(path_to_model_file):
 def parse_parameters_dict(row):
     params = row['params']
     model = row['model']
-    if model == 'SIMPLE_RADIAL':
-        return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3]}
-    elif model == 'RADIAL':
-        return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3], 'k2': params[4]}
-    elif model == 'PINHOLE':
-        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
-    elif model == 'SIMPLE_PINHOLE':
-        return {'f': params[0], 'cx': params[1], 'cy': params[2]}
-    elif model == 'OPENCV':
-        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
-    else:
-        # Fallback for any other model: assume first parameters are focal and principal point
-        res = {}
-        if len(params) >= 3:
-            res = {'f': params[0], 'cx': params[1], 'cy': params[2]}
-        return res
+    try:
+        if model == 'SIMPLE_RADIAL':
+            return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3]}
+        elif model == 'RADIAL':
+            return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3], 'k2': params[4]}
+        elif model == 'PINHOLE':
+            return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
+        elif model == 'SIMPLE_PINHOLE':
+            return {'f': params[0], 'cx': params[1], 'cy': params[2]}
+        elif model == 'OPENCV':
+            return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
+        else:
+            # Fallback for any other model: assume first parameters are focal and principal point
+            res = {}
+            if len(params) >= 3:
+                res = {'f': params[0], 'cx': params[1], 'cy': params[2]}
+            return res
+    except Exception:
+        return {}
 
 def get_intrinsic_matrix(params):
-    if not params:
+    if not params or not isinstance(params, dict):
         return np.eye(3) # Safe fallback
         
     if 'fx' in params and 'fy' in params:
@@ -275,12 +278,15 @@ for name, image in images.items():
     R[3, 3] = 1.0
     T_pointcloud_camera = np.linalg.inv(R)
     K = camera['K']
+    if K is None:
+        K = np.eye(3)
+        
     # Construct the JSON data
     image_full_path = os.path.join(image_path, name)
     data.append({
         'image_path': image_full_path,
         'T_pointcloud_camera': T_pointcloud_camera.tolist(),
-        'camera_intrinsics': camera['K'].tolist(),
+        'camera_intrinsics': K.tolist(),
         'camera_height': camera['height'],
         'camera_width': camera['width'],
         'camera_id': camera.name,

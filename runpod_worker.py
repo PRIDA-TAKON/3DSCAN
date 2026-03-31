@@ -75,23 +75,35 @@ def handler(job):
         with open(video_path, 'wb') as f:
             for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
 
-        # 3. Step 1: Extract Frames
-        update_status(job_id, "extracting_frames")
-        success, err = run_command(f"python3 step1_extract_frames.py --input_video {video_path} --output_dir {frames_dir}")
-        if not success: raise Exception(f"Step 1 Failed: {err}")
+        # 3. Step 1: Process Video with Nerfstudio (Extract + COLMAP)
+        update_status(job_id, "running_sfm", "Extracting frames and running COLMAP with Nerfstudio...")
+        
+        # ns-process-data video จะสกัดเฟรมและรัน COLMAP ให้เสร็จในคำสั่งเดียว
+        # --num-frames-target 300 คือเป้าหมายจำนวนเฟรมที่ต้องการ
+        # --colmap-model-path 0 คือใช้โมเดลแรกที่ COLMAP สร้างได้
+        process_cmd = (
+            f"ns-process-data video "
+            f"--data {video_path} "
+            f"--output-dir {colmap_dir} "
+            f"--num-frames-target 300 "
+            f"--use-gpu-sift-extraction True "
+            f"--use-gpu-sift-matching True"
+        )
+        
+        # ตรวจสอบว่ามี xvfb ไหม ถ้ามีให้รันผ่าน xvfb-run เพื่อความปลอดภัยในการรันบน Server ไร้จอ
+        try:
+            subprocess.run(["which", "xvfb-run"], check=True, stdout=subprocess.DEVNULL)
+            process_cmd = f"xvfb-run -a {process_cmd}"
+        except:
+            pass
 
-        # 4. Step 2: COLMAP SFM
-        update_status(job_id, "running_sfm")
-        # Nerfstudio ชอบโครงสร้าง COLMAP แบบมาตรฐาน
-        success, err = run_command(f"python3 step2_colmap_sfm.py --image_path {frames_dir} --output_path {colmap_dir}")
-        if not success: raise Exception(f"Step 2 Failed: {err}")
+        success, err = run_command(process_cmd)
+        if not success: raise Exception(f"Processing Data Failed: {err}")
 
-        # 5. Step 3: Train Nerfstudio (Splatfacto)
-        # ข้ามขั้นตอน Prepare Data ไปได้เลย เพราะ Nerfstudio อ่านโฟลเดอร์ COLMAP ได้ตรงๆ
+        # 4. Step 2: Train Nerfstudio (Splatfacto)
         update_status(job_id, "training_splatting", "Training with Nerfstudio Splatfacto (7k iterations)...")
         
         # คำสั่งเทรนแบบ Headless และรันบน GPU
-        # หมายเหตุ: --vis none ปิด UI และ Logger ทั้งหมดเพื่อความเสถียร
         train_cmd = (
             f"ns-train splatfacto "
             f"--data {colmap_dir} "
@@ -103,7 +115,7 @@ def handler(job):
         )
         
         success, err = run_command(train_cmd)
-        if not success: raise Exception(f"Step 3 Training Failed: {err}")
+        if not success: raise Exception(f"Step 2 Training Failed: {err}")
 
         # 6. Step 4: Zip & Upload
         update_status(job_id, "exporting", "Zipping results...")

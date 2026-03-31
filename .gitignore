@@ -54,6 +54,7 @@ yarn-error.log*
 Thumbs.db
 
 # Project Specific (Large/Temp Files)
+GPU_HOSTING_PLAN.md
 *.temp
 .temp/
 *.mp4
