@@ -1,4 +1,4 @@
-# Layer 1: OS & CUDA Base
+# Layer 1: OS & CUDA Base (ใช้ 11.8 พื่อความเสถียรกับ Nerfstudio รุ่นปัจจุบัน)
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 # Avoid prompts from apt during build
@@ -14,16 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: Python Base Tools
-RUN python3 -m pip install --upgrade pip setuptools wheel
+# Layer 3: Python Base Tools (Fix setuptools for tiny-cuda-nn)
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install setuptools==69.5.1 wheel
 
-# Layer 4: PyTorch & Dependencies (Nerfstudio requires specific versions)
+# Layer 4: PyTorch (Compatible with CUDA 11.8)
 RUN pip3 install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 
-# Layer 5: Tiny-cuda-nn (Crucial for Nerfstudio)
-# We use the pre-built wheels to save build time
+# Layer 5: Tiny-cuda-nn (Compiling for 4090/5090 and A100)
 RUN pip install ninja
-RUN pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+RUN TCNN_CUDA_ARCHITECTURES="80;86;89" pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
 
 # Layer 6: Nerfstudio & gsplat
 RUN pip install nerfstudio gsplat
@@ -35,5 +35,4 @@ RUN pip install -r requirements.txt
 # Layer 8: Application Code
 COPY . .
 
-# Set entrypoint to our worker
 ENTRYPOINT ["python3", "runpod_worker.py"]

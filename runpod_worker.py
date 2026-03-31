@@ -3,7 +3,6 @@ import shutil
 import time
 import subprocess
 import zipfile
-import glob
 from pathlib import Path
 import runpod
 from supabase import create_client
@@ -29,7 +28,6 @@ def update_status(job_id, status, message="", result_url=None):
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}")
     try:
-        # เก็บทั้ง stdout และ stderr เพื่อเอาไป debug
         result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True, cwd=cwd)
         if result.stdout: print(result.stdout)
         return True, ""
@@ -55,7 +53,7 @@ def handler(job):
         return {"error": "Missing job_id or video_url"}
 
     print(f"📦 Starting Nerfstudio Job: {job_id}")
-    update_status(job_id, "processing", "Worker started on RunPod (Nerfstudio v1.1.0)")
+    update_status(job_id, "processing", "Worker started on RunPod (Nerfstudio v1.1.1)")
 
     # 1. Setup Working Directory
     work_dir = Path(f"/tmp/job_{job_id}")
@@ -84,14 +82,16 @@ def handler(job):
 
         # 4. Step 2: COLMAP SFM
         update_status(job_id, "running_sfm")
+        # Nerfstudio ชอบโครงสร้าง COLMAP แบบมาตรฐาน
         success, err = run_command(f"python3 step2_colmap_sfm.py --image_path {frames_dir} --output_path {colmap_dir}")
         if not success: raise Exception(f"Step 2 Failed: {err}")
 
-        # 5. Step 3: Train Splatfacto (Nerfstudio)
-        # Nerfstudio can read COLMAP output directly from the colmap directory
-        update_status(job_id, "training_splatting", "Training with Nerfstudio Splatfacto...")
+        # 5. Step 3: Train Nerfstudio (Splatfacto)
+        # ข้ามขั้นตอน Prepare Data ไปได้เลย เพราะ Nerfstudio อ่านโฟลเดอร์ COLMAP ได้ตรงๆ
+        update_status(job_id, "training_splatting", "Training with Nerfstudio Splatfacto (7k iterations)...")
         
-        # คำสั่งเทรนแบบ Headless (ปิด UI ทั้งหมด)
+        # คำสั่งเทรนแบบ Headless และรันบน GPU
+        # หมายเหตุ: --vis none ปิด UI และ Logger ทั้งหมดเพื่อความเสถียร
         train_cmd = (
             f"ns-train splatfacto "
             f"--data {colmap_dir} "
@@ -99,22 +99,18 @@ def handler(job):
             f"--max-num-iterations 7000 "
             f"--vis none "
             f"--viewer.launch-viewer False "
-            f"--viewer.quit-on-train-completion True "
             f"colmap"
         )
         
         success, err = run_command(train_cmd)
-        if not success: raise Exception(f"Step 3 Failed: {err}")
+        if not success: raise Exception(f"Step 3 Training Failed: {err}")
 
         # 6. Step 4: Zip & Upload
         update_status(job_id, "exporting", "Zipping results...")
-        
-        # ค้นหาไฟล์ .splat หรือโมเดลที่เทรนเสร็จแล้ว
-        # Nerfstudio มักจะเก็บไว้ใน output/nerfstudio_models/...
         zip_output = work_dir / f"result_{job_id}.zip"
         zip_folder(output_dir, zip_output)
 
-        print(f"📤 Uploading to Supabase Storage...")
+        print(f"📤 Uploading result to Supabase...")
         supabase = get_supabase_client()
         bucket_name = "3d-scans"
         remote_path = f"results/{job_id}/result.zip"
@@ -127,13 +123,13 @@ def handler(job):
             )
         
         res_url = supabase.storage.from_(bucket_name).get_public_url(remote_path)
-        update_status(job_id, "completed", "Job finished successfully with Nerfstudio", result_url=res_url)
+        update_status(job_id, "completed", "Success! 3D model generated with Nerfstudio", result_url=res_url)
         return {"status": "success", "job_id": job_id, "result_url": res_url}
 
     except Exception as e:
         error_msg = str(e)
         update_status(job_id, "failed", error_msg)
-        return {"status": "error", "message": error_detail if 'error_detail' in locals() else error_msg}
+        return {"status": "error", "message": error_msg}
     finally:
         if work_dir.exists(): shutil.rmtree(work_dir)
 
