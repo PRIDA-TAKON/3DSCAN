@@ -1,38 +1,32 @@
-# Layer 1: OS & CUDA Base (ใช้ 11.8 พื่อความเสถียรกับ Nerfstudio รุ่นปัจจุบัน)
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+# === Zone 1: Nerfstudio Base (Official & Optimized) ===
+FROM nerfstudio/nerfstudio:latest
 
-# Avoid prompts from apt during build
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONIOENCODING=utf-8
-ENV QT_QPA_PLATFORM=offscreen
+USER root
 
-# Layer 2: OS Libraries
+# === Zone 2: COLMAP & OS Binaries (Fixed Layer) ===
+# เลเยอร์นี้จะถูก Cache ไว้ ไม่ต้องโหลดใหม่ถ้าไม่เพิ่มโปรแกรม OS
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 python3-pip python3.10-venv python3.10-dev \
-    git wget curl unzip build-essential \
-    colmap xvfb \
-    ffmpeg libsm6 libxext6 libgl1-mesa-glx \
+    colmap xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-# Layer 3: Python Base Tools (Fix setuptools for tiny-cuda-nn)
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install setuptools==69.5.1 wheel
+# === Zone 3: Python Dependencies (Worker Core) ===
+# ติดตั้ง Library ที่จำเป็นสำหรับการสื่อสารกับระบบภายนอก
+# แยกออกมาเพื่อให้ไม่ต้องติดตั้งใหม่เวลาแก้โค้ดประมวลผล
+RUN pip install --no-cache-dir supabase runpod requests
 
-# Layer 4: PyTorch (Compatible with CUDA 11.8)
-RUN pip3 install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+# === Zone 4: Your Application Logic (Fast Iteration Layer) ===
+# โซนนี้คือส่วนที่คุณจะแก้ "หลายสิบรอบ" 
+# เราจะ Copy เฉพาะไฟล์ที่จำเป็น เพื่อให้ Docker Cache ทำงานได้ดีที่สุด
+WORKDIR /app
 
-# Layer 5: Tiny-cuda-nn (Compiling for 4090/5090 and A100)
-RUN pip install ninja
-RUN TCNN_CUDA_ARCHITECTURES="80;86;89" pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
+# หากคุณมีการใช้ไฟล์จากโฟลเดอร์ taichi ใน nerfstudio (เผื่อกรณีดึงโค้ดบางส่วนมาใช้)
+# แต่ถ้าจะย้ายไป nerfstudio เต็มตัว เราจะเน้นที่สคริปต์หลักของเรา
+COPY step1_extract_frames.py .
+COPY step2_colmap_sfm.py .
+COPY runpod_worker.py .
+# COPY scripts/ ./scripts/ 
 
-# Layer 6: Nerfstudio & gsplat
-RUN pip install nerfstudio gsplat
-
-# Layer 7: Project Dependencies
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-# Layer 8: Application Code
-COPY . .
+# ทุกครั้งที่คุณแก้สคริปต์ด้านบน Docker จะเริ่มรันใหม่ตั้งแต่บรรทัด COPY นี้ลงมาเท่านั้น
+# ซึ่งใช้เวลาเพียง 1-2 วินาทีในการประกอบร่างครับ
 
 ENTRYPOINT ["python3", "runpod_worker.py"]

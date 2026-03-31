@@ -17,8 +17,8 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'build',
-      '--cache-from', '$_DOCKER_USER/$_REPO_NAME:v1.0.8',
-      '-t', '$_DOCKER_USER/$_REPO_NAME:v1.1.1',
+      '--cache-from', '$_DOCKER_USER/$_REPO_NAME:v1.1.1',
+      '-t', '$_DOCKER_USER/$_REPO_NAME:v1.1.2',
       '.'
     ]
 
@@ -26,8 +26,9 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push',
-      '$_DOCKER_USER/$_REPO_NAME:v1.1.1'
+      '$_DOCKER_USER/$_REPO_NAME:v1.1.2'
     ]
+
 
 availableSecrets:
   secretManager:
