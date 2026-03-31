@@ -26,7 +26,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
       'push',
-      '$_DOCKER_USER/$_REPO_NAME:v1.0.7'
+      '$_DOCKER_USER/$_REPO_NAME:v1.0.8'
     ]
 
 availableSecrets:
@@ -39,5 +39,4 @@ substitutions:
   _REPO_NAME: worker-3d-scan
 
 options:
-  machineType: 'E2_HIGHCPU_8'
   logging: CLOUD_LOGGING_ONLY
