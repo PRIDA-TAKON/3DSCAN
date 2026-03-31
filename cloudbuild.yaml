@@ -8,10 +8,10 @@ steps:
         echo "$$DOCKER_HUB_PASS" | docker login --username=$_DOCKER_USER --password-stdin
     secretEnv: ['DOCKER_HUB_PASS']
 
-  # 1.5 Pull the previous image to use as cache
+  # 1.5 Pull the previous image to use as cache (v1.0.8 คือตัวล่าสุดที่มีใน hub)
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
-    args: ['-c', 'docker pull $_DOCKER_USER/$_REPO_NAME:v1.0.7 || exit 0']
+    args: ['-c', 'docker pull $_DOCKER_USER/$_REPO_NAME:v1.0.8 || exit 0']
 
   # 2. Build the container image using cache-from
   - name: 'gcr.io/cloud-builders/docker'
@@ -29,17 +29,15 @@ steps:
       '$_DOCKER_USER/$_REPO_NAME:v1.1.1'
     ]
 
-  availableSecrets:
+availableSecrets:
   secretManager:
     - versionName: projects/$PROJECT_ID/secrets/docker-hub-pass/versions/latest
       env: 'DOCKER_HUB_PASS'
 
-  substitutions:
+substitutions:
   _DOCKER_USER: ramayana4
   _REPO_NAME: worker-3d-scan
 
-  options:
+options:
   machineType: 'E2_HIGHCPU_8'
-  logging: CLOUD_LOGGING_ONLY
-
   logging: CLOUD_LOGGING_ONLY
