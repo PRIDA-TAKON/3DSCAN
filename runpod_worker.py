@@ -3,6 +3,7 @@ import shutil
 import time
 import subprocess
 import zipfile
+import glob
 from pathlib import Path
 import runpod
 from supabase import create_client
@@ -11,8 +12,7 @@ from supabase import create_client
 def get_supabase_client():
     url = os.environ.get("SUPABASE_URL")
     key = os.environ.get("SUPABASE_KEY")
-    if not url or not key:
-        return None
+    if not url or not key: return None
     return create_client(url, key)
 
 def update_status(job_id, status, message="", result_url=None):
@@ -20,14 +20,8 @@ def update_status(job_id, status, message="", result_url=None):
     supabase = get_supabase_client()
     if not supabase: return
     try:
-        data = {
-            "status": status,
-            "message": message,
-            "updated_at": "now()"
-        }
-        if result_url:
-            data["result_url"] = result_url
-            
+        data = {"status": status, "message": message, "updated_at": "now()"}
+        if result_url: data["result_url"] = result_url
         supabase.table("jobs").update(data).eq("id", job_id).execute()
     except Exception as e:
         print(f"⚠️ Supabase update failed: {e}")
@@ -35,6 +29,7 @@ def update_status(job_id, status, message="", result_url=None):
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}")
     try:
+        # เก็บทั้ง stdout และ stderr เพื่อเอาไป debug
         result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True, cwd=cwd)
         if result.stdout: print(result.stdout)
         return True, ""
@@ -44,7 +39,6 @@ def run_command(cmd, cwd=None):
         return False, error_detail
 
 def zip_folder(folder_path, output_path):
-    """บีบอัดโฟลเดอร์เป็นไฟล์ ZIP"""
     with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(folder_path):
             for file in files:
@@ -60,8 +54,8 @@ def handler(job):
     if not job_id or not video_url:
         return {"error": "Missing job_id or video_url"}
 
-    print(f"📦 Starting Job: {job_id}")
-    update_status(job_id, "processing", "Worker started on RunPod Serverless (v1.0.8)")
+    print(f"📦 Starting Nerfstudio Job: {job_id}")
+    update_status(job_id, "processing", "Worker started on RunPod (Nerfstudio v1.1.0)")
 
     # 1. Setup Working Directory
     work_dir = Path(f"/tmp/job_{job_id}")
@@ -72,68 +66,52 @@ def handler(job):
     frames_dir = work_dir / "frames"
     colmap_dir = work_dir / "colmap"
     output_dir = work_dir / "output"
-    zip_output = work_dir / f"result_{job_id}.zip"
-
+    
     try:
         # 2. Download Video
-        print(f"📥 Downloading video from: {video_url}")
+        print(f"📥 Downloading video...")
         import requests
         response = requests.get(video_url, stream=True)
         if response.status_code != 200:
-            raise Exception(f"Failed to download video. Status: {response.status_code}")
-            
+            raise Exception(f"Download failed: {response.status_code}")
         with open(video_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                f.write(chunk)
-        
-        print(f"✅ Video downloaded. Size: {video_path.stat().st_size} bytes")
+            for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
 
         # 3. Step 1: Extract Frames
         update_status(job_id, "extracting_frames")
         success, err = run_command(f"python3 step1_extract_frames.py --input_video {video_path} --output_dir {frames_dir}")
         if not success: raise Exception(f"Step 1 Failed: {err}")
 
-        # 4. Step 2: COLMAP SFM (Using PINHOLE model)
+        # 4. Step 2: COLMAP SFM
         update_status(job_id, "running_sfm")
         success, err = run_command(f"python3 step2_colmap_sfm.py --image_path {frames_dir} --output_path {colmap_dir}")
         if not success: raise Exception(f"Step 2 Failed: {err}")
 
-        # 4.5 Step 2.5: Prepare Data for Taichi (Formal)
-        update_status(job_id, "preparing_data", "Converting COLMAP to Taichi format...")
-        prepared_data_dir = work_dir / "prepared_data"
-        prepared_data_dir.mkdir(parents=True, exist_ok=True)
+        # 5. Step 3: Train Splatfacto (Nerfstudio)
+        # Nerfstudio can read COLMAP output directly from the colmap directory
+        update_status(job_id, "training_splatting", "Training with Nerfstudio Splatfacto...")
         
-        colmap_text_dir = colmap_dir / "colmap" / "text"
-        # ใช้คำสั่งที่ตรงตามสถาปัตยกรรมของโปรเจกต์
-        prepare_cmd = f"python3 taichi-splatting-kaggle/tools/prepare_colmap.py --base_path {colmap_text_dir} --image_path {frames_dir} --output_dir {prepared_data_dir}"
-        success, err = run_command(prepare_cmd)
-        if not success: raise Exception(f"Step 2.5 Failed: {err}")
-
-        # 5. Step 3: Train Gaussian Splatting (Taichi Official Config)
-        update_status(job_id, "training_splatting")
+        # คำสั่งเทรนแบบ Headless (ปิด UI ทั้งหมด)
+        train_cmd = (
+            f"ns-train splatfacto "
+            f"--data {colmap_dir} "
+            f"--output-dir {output_dir} "
+            f"--max-num-iterations 7000 "
+            f"--vis none "
+            f"--viewer.launch-viewer False "
+            f"--viewer.quit-on-train-completion True "
+            f"colmap"
+        )
         
-        config_path = work_dir / "config.yaml"
-        # ใช้ Key Names ตามเอกสาร GitHub (Kebab-case)
-        config_content = f"""
-train-dataset-json-path: {prepared_data_dir}/train.json
-val-dataset-json-path: {prepared_data_dir}/val.json
-pointcloud-parquet-path: {prepared_data_dir}/point_cloud.parquet
-num-iterations: 7000
-val-interval: 1000
-feature_learning_rate: 0.005
-position_learning_rate: 0.00005
-summary-writer-log-dir: {output_dir}
-output-model-dir: {output_dir}
-        """
-        with open(config_path, "w") as f:
-            f.write(config_content)
-
-        # รันสคริปต์เทรนตัวหลัก
-        success, err = run_command(f"python3 taichi-splatting-kaggle/gaussian_point_train.py --train_config {config_path}")
+        success, err = run_command(train_cmd)
         if not success: raise Exception(f"Step 3 Failed: {err}")
 
         # 6. Step 4: Zip & Upload
         update_status(job_id, "exporting", "Zipping results...")
+        
+        # ค้นหาไฟล์ .splat หรือโมเดลที่เทรนเสร็จแล้ว
+        # Nerfstudio มักจะเก็บไว้ใน output/nerfstudio_models/...
+        zip_output = work_dir / f"result_{job_id}.zip"
         zip_folder(output_dir, zip_output)
 
         print(f"📤 Uploading to Supabase Storage...")
@@ -149,13 +127,13 @@ output-model-dir: {output_dir}
             )
         
         res_url = supabase.storage.from_(bucket_name).get_public_url(remote_path)
-        update_status(job_id, "completed", "Job finished successfully", result_url=res_url)
+        update_status(job_id, "completed", "Job finished successfully with Nerfstudio", result_url=res_url)
         return {"status": "success", "job_id": job_id, "result_url": res_url}
 
     except Exception as e:
         error_msg = str(e)
         update_status(job_id, "failed", error_msg)
-        return {"status": "error", "message": error_msg}
+        return {"status": "error", "message": error_detail if 'error_detail' in locals() else error_msg}
     finally:
         if work_dir.exists(): shutil.rmtree(work_dir)
 

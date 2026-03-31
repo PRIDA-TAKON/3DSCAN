@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONIOENCODING=utf-8
 ENV QT_QPA_PLATFORM=offscreen
 
-# Layer 2: OS Libraries (Rarely changes)
+# Layer 2: OS Libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.10 python3-pip python3.10-venv python3.10-dev \
     git wget curl unzip build-essential \
@@ -14,29 +14,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python3.10 -m pip install --upgrade pip
+# Layer 3: Python Base Tools
+RUN python3 -m pip install --upgrade pip setuptools wheel
 
-# Layer 3: Python Dependencies (Changes occasionally)
-# Install heavy libraries first to cache them
-RUN pip install numpy pandas opencv-python plyfile pyyaml \
-    torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu118 \
-    taichi dataclass-wizard pytorch-msssim \
-    supabase requests runpod
+# Layer 4: PyTorch & Dependencies (Nerfstudio requires specific versions)
+RUN pip3 install torch==2.1.2+cu118 torchvision==0.16.2+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
 
-# Layer 4: Specific Tooling Dependencies (e.g. for taichi-splatting)
-# We copy only requirements first to keep this layer cached
-WORKDIR /app
-COPY taichi-splatting-kaggle/requirements.txt ./taichi-requirements.txt
-RUN if [ -f "./taichi-requirements.txt" ]; then pip install -r ./taichi-requirements.txt; fi
+# Layer 5: Tiny-cuda-nn (Crucial for Nerfstudio)
+# We use the pre-built wheels to save build time
+RUN pip install ninja
+RUN pip install git+https://github.com/NVlabs/tiny-cuda-nn/#subdirectory=bindings/torch
 
-# Layer 5: Application Code (Changes FREQUENTLY)
-# Copy the rest of the app code
+# Layer 6: Nerfstudio & gsplat
+RUN pip install nerfstudio gsplat
+
+# Layer 7: Project Dependencies
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+# Layer 8: Application Code
 COPY . .
 
-# Setup Taichi 3DGS local package (since it's in editable mode or needs setup)
-RUN if [ -d "taichi-splatting-kaggle" ]; then \
-    cd taichi-splatting-kaggle && pip install -e .; \
-    fi
-
-# Set the entrypoint to the RunPod worker script
+# Set entrypoint to our worker
 ENTRYPOINT ["python3", "runpod_worker.py"]
