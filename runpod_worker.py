@@ -79,15 +79,11 @@ def handler(job):
         update_status(job_id, "running_sfm", "Extracting frames and running COLMAP with Nerfstudio...")
         
         # ns-process-data video จะสกัดเฟรมและรัน COLMAP ให้เสร็จในคำสั่งเดียว
-        # --num-frames-target 300 คือเป้าหมายจำนวนเฟรมที่ต้องการ
-        # --colmap-model-path 0 คือใช้โมเดลแรกที่ COLMAP สร้างได้
         process_cmd = (
             f"ns-process-data video "
             f"--data {video_path} "
             f"--output-dir {colmap_dir} "
-            f"--num-frames-target 300 "
-            f"--use-gpu-sift-extraction True "
-            f"--use-gpu-sift-matching True"
+            f"--num-frames-target 300"
         )
         
         # ตรวจสอบว่ามี xvfb ไหม ถ้ามีให้รันผ่าน xvfb-run เพื่อความปลอดภัยในการรันบน Server ไร้จอ
@@ -109,7 +105,7 @@ def handler(job):
             f"--data {colmap_dir} "
             f"--output-dir {output_dir} "
             f"--max-num-iterations 7000 "
-            f"--vis none "
+            f"--vis tensorboard "
             f"--viewer.launch-viewer False "
             f"colmap"
         )

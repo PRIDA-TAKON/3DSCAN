@@ -28,56 +28,40 @@
 
 ---
 
-## 3. การเตรียม Google Cloud สำหรับ Backend (Build Worker)
+## 3. การเตรียม GitHub สำหรับ Backend (Auto-Build)
 
-ระบบประมวลผล 3D ต้องใช้ GPU ดังนั้นเราจะใช้ GCP สำหรับการ Build เท่านั้น:
+เราจะใช้ **GitHub Actions** ในการบิ้ว Docker Image โดยอัตโนมัติทุกครั้งที่มีการ Push โค้ด:
 
-### ก. เปิดใช้งาน API ที่จำเป็น
-ใช้คำสั่งผ่าน Google Cloud SDK (gcloud CLI):
-```bash
-gcloud services enable artifactregistry.googleapis.com \
-                       cloudbuild.googleapis.com
-```
-
-### ข. สร้าง Artifact Registry
-เพื่อเก็บ Docker Image ของ Worker:
-```bash
-gcloud artifacts repositories create 3d-scan-repo \
-    --repository-format=docker \
-    --location=asia-southeast1 \
-    --description="Docker repository for 3D Scan Worker"
-```
+1.  ไปที่ GitHub Repository ของคุณ > **Settings** > **Secrets and variables** > **Actions**
+2.  เพิ่ม **Repository secrets** ใหม่ 2 ตัวดังนี้:
+    *   `DOCKER_HUB_USERNAME`: (ชื่อผู้ใช้ Docker Hub ของคุณ เช่น `ramayana4`)
+    *   `DOCKER_HUB_TOKEN`: (Access Token จาก Docker Hub > Account Settings > Security)
+3.  ทุกครั้งที่คุณ `git push` ขึ้นกิ่ง `main` ระบบจะเริ่มบิ้ว Image และส่งขึ้น Docker Hub ให้ทันที
 
 ---
 
 ## 4. การ Deploy Backend Worker ไปยัง RunPod Serverless
 
-### ก. การเตรียม Docker Image (Build on GCP):
-เรารันการ Build บน Cloud โดยใช้คำสั่งเดียว:
-```bash
-gcloud builds submit --config cloudbuild.yaml .
-```
+### ก. การเตรียม Docker Image:
+ระบบจะทำงานผ่าน GitHub Actions อัตโนมัติ (ตรวจสอบสถานะได้ที่เมนู **Actions** ใน GitHub)
 
-### ข. การตั้งค่าใน RunPod เพื่อดึง Image จาก GCP:
-เพื่อให้ RunPod ดึง Image จาก Registry ส่วนตัวของคุณได้:
+### ข. การตั้งค่าใน RunPod เพื่อดึง Image จาก Docker Hub:
+เนื่องจากเราเก็บ Image ไว้ที่ Docker Hub เราสามารถตั้งค่าใน RunPod ได้ดังนี้:
 
-1.  **สร้าง Service Account ใน GCP:**
-    *   ไปที่ IAM & Admin > Service Accounts > สร้างใหม่ชื่อ `runpod-puller`
-    *   ให้สิทธิ์ (Role): `Artifact Registry Reader`
-    *   สร้าง JSON Key และดาวน์โหลดไว้
-
-2.  **เพิ่ม Registry ใน RunPod Dashboard:**
+1.  **ถ้า Image เป็น Public:**
+    *   ไม่ต้องตั้งค่า Container Registry ใน RunPod
+2.  **ถ้า Image เป็น Private:**
     *   ไปที่ **User Settings** > **Container Registries** > **Add Registry**
-    *   **Registry Domain Name:** `asia-southeast1-docker.pkg.dev`
-    *   **Username:** `_json_key`
-    *   **Password:** (คัดลอกเนื้อหาทั้งหมดในไฟล์ JSON ที่ดาวน์โหลดมาใส่ที่นี่)
+    *   **Registry Domain Name:** `index.docker.io`
+    *   **Username:** (ชื่อผู้ใช้ Docker Hub)
+    *   **Password:** (Access Token หรือรหัสผ่าน)
 
 3.  **สร้าง Endpoint ใน RunPod:**
-    *   ระบุ Image URL: `asia-southeast1-docker.pkg.dev/[PROJECT_ID]/3d-scan-repo/worker:latest`
-    *   เลือก GPU ที่ต้องการ (เช่น **RTX 4090**)
+    *   ระบุ Image URL: `ramayana4/worker-3d-scan:latest`
+    *   เลือก GPU ที่ต้องการ (แนะนำ **RTX 3090** หรือ **4090**)
     *   ตั้งค่า Environment Variables:
         *   `SUPABASE_URL`
-        *   `SUPABASE_KEY` (แนะนำให้ใช้ Service Role Key)
+        *   `SUPABASE_KEY` (Service Role Key)
 
 ---
 
@@ -107,4 +91,4 @@ gcloud builds submit --config cloudbuild.yaml .
 1.  เข้าหน้าเว็บ Frontend ที่ Deploy แล้ว
 2.  ลองอัปโหลดวิดีโอทดสอบ
 3.  ตรวจสอบใน Supabase Table `jobs` ว่ามีข้อมูลเข้าหรือไม่
-4.  ตรวจสอบ Log ใน Cloud Run เพื่อดูการทำงานของ Worker
+4.  ตรวจสอบ Log ใน RunPod เพื่อดูการทำงานของ Worker
