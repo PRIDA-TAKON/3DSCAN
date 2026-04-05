@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir --user --upgrade pip && \
 # Note: They will be owned by 'user'
 COPY --chown=user:user step1_extract_frames.py .
 COPY --chown=user:user step2_colmap_sfm.py .
-COPY --chown=user:user runpod_worker.py .
+COPY --chown=user:user takon_3d_worker.py .
 
 # Setup cache directory in a writable place for 'user'
 ENV NERFSTUDIO_CACHE=/home/user/.cache/nerfstudio
@@ -33,4 +33,4 @@ RUN mkdir -p $NERFSTUDIO_CACHE
 # Final verification before completion
 RUN python3 -c "import nerfstudio; print('✅ SUCCESS: Nerfstudio is working!'); import runpod; print('✅ SUCCESS: RunPod is working!')"
 
-ENTRYPOINT ["python3", "runpod_worker.py"]
+ENTRYPOINT ["python3", "/app/takon_3d_worker.py"]
