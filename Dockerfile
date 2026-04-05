@@ -1,26 +1,25 @@
 # === Zone 1: Nerfstudio Base (Official & Optimized) ===
 FROM nerfstudio/nerfstudio:latest
 
+# We use root only for OS package installation
 USER root
-
-# Fix: Path for nerfstudio binaries and libraries (based on standard nerfstudio image)
-ENV PATH="/home/user/.local/bin:${PATH}"
-# Link the user's packages to root's site-packages to ensure accessibility
-RUN ln -s /home/user/.local/lib/python3.10/site-packages/* /usr/local/lib/python3.10/dist-packages/ || true
-
-# === Zone 2: COLMAP & OS Binaries (Fixed Layer) ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
     colmap xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-# === Zone 3: Python Dependencies (Worker Core) ===
+# Switch back to the 'user' that comes with the base image
+# This ensures all paths for nerfstudio are correct automatically
+USER user
+WORKDIR /app
+
+# Install additional python dependencies into the user's environment
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir supabase runpod requests opencv-python-headless
 
-# === Zone 4: Your Application Logic (Fast Iteration Layer) ===
-WORKDIR /app
+# Copy our scripts
 COPY step1_extract_frames.py .
 COPY step2_colmap_sfm.py .
 COPY runpod_worker.py .
 
+# Use python3 to run the worker (already in path for user)
 ENTRYPOINT ["python3", "runpod_worker.py"]
