@@ -3,9 +3,10 @@ FROM nerfstudio/nerfstudio:latest
 
 USER root
 
-# Fix: Use dynamic paths for python and binaries
+# Fix: Path for nerfstudio binaries and libraries (based on standard nerfstudio image)
 ENV PATH="/home/user/.local/bin:${PATH}"
-ENV PYTHONPATH="/home/user/.local/lib/python$(python3 --version | cut -d' ' -f2 | cut -d. -f1,2)/site-packages:${PYTHONPATH}"
+# Link the user's packages to root's site-packages to ensure accessibility
+RUN ln -s /home/user/.local/lib/python3.10/site-packages/* /usr/local/lib/python3.10/dist-packages/ || true
 
 # === Zone 2: COLMAP & OS Binaries (Fixed Layer) ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
