@@ -57,8 +57,13 @@ def handler(job):
             sys.path.insert(0, path)
             print(f"DEBUG: Injected path: {path}")
             
-    import subprocess
-    # --- End Path Injection ---
+    # --- Diagnostic: Peek into the command script ---
+    try:
+        with open('/home/user/.local/bin/ns-process-data', 'r') as f:
+            print(f"DEBUG: ns-process-data content:\n{f.read()}")
+    except Exception as e:
+        print(f"DEBUG: Could not read ns-process-data: {e}")
+    # --- End Diagnostic ---
 
     job_input = job["input"]
     job_id = job_input.get("id")
