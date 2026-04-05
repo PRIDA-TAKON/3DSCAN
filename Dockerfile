@@ -1,5 +1,5 @@
-# === Zone 1: PyTorch Base (Already has CUDA 11.8 & PyTorch) ===
-FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-runtime
+# === Zone 1: PyTorch Devel (Has CUDA 11.8, PyTorch & Dev Headers) ===
+FROM pytorch/pytorch:2.1.2-cuda11.8-cudnn8-devel
 
 # Avoid interactive prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -20,11 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # === Zone 3: Nerfstudio & Splatting Stack ===
 # Install dependencies for gsplat/nerfstudio build
+# We MUST use --no-cache-dir to save space on GitHub Runner
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir gsplat==1.0.0 nerfstudio==1.1.1
-
-# Install Worker core dependencies
-RUN pip install --no-cache-dir supabase runpod requests opencv-python-headless
+    pip install --no-cache-dir gsplat==1.0.0 nerfstudio==1.1.1 && \
+    pip install --no-cache-dir supabase runpod requests opencv-python-headless
 
 # === Zone 4: Application Logic ===
 WORKDIR /app
