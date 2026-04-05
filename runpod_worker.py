@@ -48,13 +48,9 @@ def handler(job):
     # --- Debug Environment ---
     import sys
     import subprocess
+    import pkg_resources
     print(f"DEBUG: Python Executable: {sys.executable}")
-    print(f"DEBUG: Python Path: {sys.path}")
-    print(f"DEBUG: PATH env: {os.environ.get('PATH')}")
-    try:
-        print(f"DEBUG: which ns-train: {subprocess.check_output(['which', 'ns-train'], text=True)}")
-    except:
-        print(f"DEBUG: ns-train not found in PATH")
+    print(f"DEBUG: Installed Packages: {[d.project_name for d in pkg_resources.working_set]}")
     # --- End Debug ---
 
     job_input = job["input"]
@@ -65,7 +61,7 @@ def handler(job):
         return {"error": "Missing job_id or video_url"}
 
     print(f"📦 Starting Nerfstudio Job: {job_id}")
-    update_status(job_id, "processing", "Worker started on RunPod (Nerfstudio v1.1.1)")
+    update_status(job_id, "processing", "Worker started on RunPod (Nerfstudio Optimized Image)")
 
     # 1. Setup Working Directory
     work_dir = Path(f"/tmp/job_{job_id}")
@@ -73,7 +69,6 @@ def handler(job):
     work_dir.mkdir(parents=True, exist_ok=True)
     
     video_path = work_dir / "input_video.mp4"
-    frames_dir = work_dir / "frames"
     colmap_dir = work_dir / "colmap"
     output_dir = work_dir / "output"
     
@@ -90,15 +85,15 @@ def handler(job):
         # 3. Step 1: Process Video with Nerfstudio (Extract + COLMAP)
         update_status(job_id, "running_sfm", "Extracting frames and running COLMAP with Nerfstudio...")
         
-        # ns-process-data video จะสกัดเฟรมและรัน COLMAP ให้เสร็จในคำสั่งเดียว
+        # ลองเรียกแบบตรงๆ หรือผ่าน python -m
         process_cmd = (
-            f"ns-process-data video "
+            f"python -m nerfstudio.scripts.process_data video "
             f"--data {video_path} "
             f"--output-dir {colmap_dir} "
             f"--num-frames-target 300"
         )
         
-        # ตรวจสอบว่ามี xvfb ไหม ถ้ามีให้รันผ่าน xvfb-run เพื่อความปลอดภัยในการรันบน Server ไร้จอ
+        # ตรวจสอบความพร้อมของ xvfb
         try:
             subprocess.run(["which", "xvfb-run"], check=True, stdout=subprocess.DEVNULL)
             process_cmd = f"xvfb-run -a {process_cmd}"
@@ -106,14 +101,18 @@ def handler(job):
             pass
 
         success, err = run_command(process_cmd)
-        if not success: raise Exception(f"Processing Data Failed: {err}")
+        if not success:
+            # ลองท่าสำรอง (Fallback to ns-process-data)
+            print("⚠️ python -m failed, trying ns-process-data directly...")
+            process_cmd_alt = process_cmd.replace("python -m nerfstudio.scripts.process_data", "ns-process-data")
+            success, err = run_command(process_cmd_alt)
+            if not success: raise Exception(f"Processing Data Failed: {err}")
 
         # 4. Step 2: Train Nerfstudio (Splatfacto)
         update_status(job_id, "training_splatting", "Training with Nerfstudio Splatfacto (7k iterations)...")
         
-        # คำสั่งเทรนแบบ Headless และรันบน GPU
         train_cmd = (
-            f"ns-train splatfacto "
+            f"python -m nerfstudio.scripts.train splatfacto "
             f"--data {colmap_dir} "
             f"--output-dir {output_dir} "
             f"--max-num-iterations 7000 "
@@ -123,7 +122,11 @@ def handler(job):
         )
         
         success, err = run_command(train_cmd)
-        if not success: raise Exception(f"Step 2 Training Failed: {err}")
+        if not success:
+            # Fallback to ns-train
+            train_cmd_alt = train_cmd.replace("python -m nerfstudio.scripts.train", "ns-train")
+            success, err = run_command(train_cmd_alt)
+            if not success: raise Exception(f"Step 2 Training Failed: {err}")
 
         # 6. Step 4: Zip & Upload
         update_status(job_id, "exporting", "Zipping results...")
