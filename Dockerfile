@@ -3,9 +3,9 @@ FROM nerfstudio/nerfstudio:latest
 
 USER root
 
-# Fix: Ensure nerfstudio is in the PATH for root
+# Fix: Use dynamic paths for python and binaries
 ENV PATH="/home/user/.local/bin:${PATH}"
-ENV PYTHONPATH="/home/user/.local/lib/python3.10/site-packages:${PYTHONPATH}"
+ENV PYTHONPATH="/home/user/.local/lib/python$(python3 --version | cut -d' ' -f2 | cut -d. -f1,2)/site-packages:${PYTHONPATH}"
 
 # === Zone 2: COLMAP & OS Binaries (Fixed Layer) ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -13,9 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # === Zone 3: Python Dependencies (Worker Core) ===
-# ติดตั้ง Library ที่จำเป็นสำหรับการสื่อสารกับระบบภายนอก
-# เพิ่ม opencv-python-headless เพื่อใช้จัดการวิดีโอ/เฟรม
-RUN pip install --no-cache-dir supabase runpod requests opencv-python-headless
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir supabase runpod requests opencv-python-headless
 
 # === Zone 4: Your Application Logic (Fast Iteration Layer) ===
 WORKDIR /app
