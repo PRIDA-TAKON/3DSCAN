@@ -1,25 +1,25 @@
-# === Zone 1: Nerfstudio Base (Official & Optimized) ===
+# === Zone 1: Nerfstudio Base ===
 FROM nerfstudio/nerfstudio:latest
 
-# We use root only for OS package installation
 USER root
+
+# === Zone 2: OS Packages ===
 RUN apt-get update && apt-get install -y --no-install-recommends \
     colmap xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
 
-# Switch back to the 'user' that comes with the base image
-# This ensures all paths for nerfstudio are correct automatically
-USER user
-WORKDIR /app
-
-# Install additional python dependencies into the user's environment
+# === Zone 3: Python Packages (Force Install to ensure Root access) ===
+# เราจะติดตั้ง nerfstudio ทับอีกรอบเพื่อให้มั่นใจว่า Root เรียกใช้ได้ง่ายๆ
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir supabase runpod requests opencv-python-headless
+    pip install --no-cache-dir supabase runpod requests opencv-python-headless nerfstudio
 
-# Copy our scripts
+# === Zone 4: Application Logic ===
+WORKDIR /app
 COPY step1_extract_frames.py .
 COPY step2_colmap_sfm.py .
 COPY runpod_worker.py .
 
-# Use python3 to run the worker (already in path for user)
+# Ensure scripts are executable
+RUN chmod +x *.py
+
 ENTRYPOINT ["python3", "runpod_worker.py"]
