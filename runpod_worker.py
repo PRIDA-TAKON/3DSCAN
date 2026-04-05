@@ -45,6 +45,18 @@ def zip_folder(folder_path, output_path):
 
 # --- Main Handler for RunPod ---
 def handler(job):
+    # --- Debug Environment ---
+    import sys
+    import subprocess
+    print(f"DEBUG: Python Executable: {sys.executable}")
+    print(f"DEBUG: Python Path: {sys.path}")
+    print(f"DEBUG: PATH env: {os.environ.get('PATH')}")
+    try:
+        print(f"DEBUG: which ns-train: {subprocess.check_output(['which', 'ns-train'], text=True)}")
+    except:
+        print(f"DEBUG: ns-train not found in PATH")
+    # --- End Debug ---
+
     job_input = job["input"]
     job_id = job_input.get("id")
     video_url = job_input.get("video_url")
