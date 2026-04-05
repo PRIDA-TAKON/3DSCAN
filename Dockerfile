@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 USER user
 WORKDIR /app
 
-# Add user's local bin to PATH
+# Add user's local bin and site-packages to paths
 ENV PATH="/home/user/.local/bin:${PATH}"
+ENV PYTHONPATH="/home/user/.local/lib/python3.10/site-packages:${PYTHONPATH}"
 
 # Install our worker dependencies into the user space
 # This avoids breaking the system python or nerfstudio installation

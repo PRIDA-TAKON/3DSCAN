@@ -45,13 +45,20 @@ def zip_folder(folder_path, output_path):
 
 # --- Main Handler for RunPod ---
 def handler(job):
-    # --- Debug Environment ---
+    # --- Dynamic Path Injection ---
     import sys
+    import os
+    import glob
+    
+    # พยายามหาโฟลเดอร์ site-packages ของ user (เช่น /home/user/.local/lib/python3.x/site-packages)
+    user_site_packages = glob.glob('/home/user/.local/lib/python*/site-packages')
+    for path in user_site_packages:
+        if path not in sys.path:
+            sys.path.insert(0, path)
+            print(f"DEBUG: Injected path: {path}")
+            
     import subprocess
-    import pkg_resources
-    print(f"DEBUG: Python Executable: {sys.executable}")
-    print(f"DEBUG: Installed Packages: {[d.project_name for d in pkg_resources.working_set]}")
-    # --- End Debug ---
+    # --- End Path Injection ---
 
     job_input = job["input"]
     job_id = job_input.get("id")
