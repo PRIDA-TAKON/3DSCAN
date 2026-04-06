@@ -13,7 +13,7 @@ RUNPOD_API_KEY = os.getenv('RUNPOD_API_KEY')
 RUNPOD_ENDPOINT_ID = os.getenv('RUNPOD_ENDPOINT_ID')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 REPO_NAME = "PRIDA-TAKON/3DSCAN" 
-DOCKER_IMAGE_BASE = "ramayana4/worker-3d-scan"
+DOCKER_IMAGE_BASE = "ramayana4/3d-scan-test"
 
 headers_supabase = {
     'apikey': SUPABASE_KEY,

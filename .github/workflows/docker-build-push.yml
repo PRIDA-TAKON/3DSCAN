@@ -44,6 +44,6 @@ jobs:
         context: .
         push: true
         tags: |
-          ramayana4/worker-3d-scan:latest
+          ramayana4/3d-scan-test:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
