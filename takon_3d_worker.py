@@ -45,25 +45,19 @@ def zip_folder(folder_path, output_path):
 
 # --- Main Handler for RunPod ---
 def handler(job):
-    # --- Dynamic Path Injection ---
+    # --- Extreme Debug ---
     import sys
     import os
-    import glob
-    
-    # พยายามหาโฟลเดอร์ site-packages ของ user (เช่น /home/user/.local/lib/python3.x/site-packages)
-    user_site_packages = glob.glob('/home/user/.local/lib/python*/site-packages')
-    for path in user_site_packages:
-        if path not in sys.path:
-            sys.path.insert(0, path)
-            print(f"DEBUG: Injected path: {path}")
-            
-    # --- Diagnostic: Peek into the command script ---
+    import subprocess
+    print(f"DEBUG: sys.executable = {sys.executable}")
+    print(f"DEBUG: sys.path = {sys.path}")
+    print(f"DEBUG: PATH = {os.environ.get('PATH')}")
     try:
-        with open('/home/user/.local/bin/ns-process-data', 'r') as f:
-            print(f"DEBUG: ns-process-data content:\n{f.read()}")
+        import nerfstudio
+        print(f"✅ SUCCESS: nerfstudio found at {nerfstudio.__file__}")
     except Exception as e:
-        print(f"DEBUG: Could not read ns-process-data: {e}")
-    # --- End Diagnostic ---
+        print(f"❌ FAIL: nerfstudio NOT FOUND. Error: {e}")
+    # --- End Extreme Debug ---
 
     job_input = job["input"]
     job_id = job_input.get("id")
