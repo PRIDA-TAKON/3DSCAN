@@ -44,6 +44,7 @@ jobs:
         context: .
         push: true
         tags: |
-          ramayana4/3d-scan-test:latest
+          ramayana4/worker-3d-scan:latest
+          ramayana4/worker-3d-scan:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max

@@ -13,7 +13,7 @@ RUNPOD_API_KEY = os.getenv('RUNPOD_API_KEY')
 RUNPOD_ENDPOINT_ID = os.getenv('RUNPOD_ENDPOINT_ID')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
 REPO_NAME = "PRIDA-TAKON/3DSCAN" 
-DOCKER_IMAGE_BASE = "ramayana4/3d-scan-test"
+DOCKER_IMAGE_BASE = "ramayana4/worker-3d-scan"
 
 headers_supabase = {
     'apikey': SUPABASE_KEY,
@@ -32,10 +32,10 @@ def get_latest_job():
     return None
 
 def wait_for_github_action():
-    """รอจนกว่า GitHub Action จะบิลด์เสร็จ"""
+    """รอจนกว่า GitHub Action จะบิลด์เสร็จ และคืนค่า SHA"""
     if not GITHUB_TOKEN:
-        print("⚠️ GITHUB_TOKEN is empty. Skipping build check.")
-        return True
+        print("⚠️ GITHUB_TOKEN is empty. Using 'latest' tag.")
+        return "latest"
     
     print(f"⏳ Waiting for GitHub Action build on {REPO_NAME}...")
     url = f"https://api.github.com/repos/{REPO_NAME}/actions/runs?per_page=5"
@@ -56,28 +56,29 @@ def wait_for_github_action():
             run = runs[0]
             status = run['status']
             conclusion = run['conclusion']
+            sha = run['head_sha']
             commit_msg = run.get('head_commit', {}).get('message', 'No msg')
             
-            print(f"   - Found latest build: '{commit_msg}' | Status: {status}")
+            print(f"   - Found latest build: '{commit_msg}' | SHA: {sha[:7]} | Status: {status}")
             
             if status == "completed":
                 if conclusion == "success":
-                    print(f"✅ Build SUCCESS!")
-                    return True
+                    print(f"✅ Build SUCCESS! SHA: {sha}")
+                    return sha
                 else:
                     print(f"❌ Build FAILED (conclusion: {conclusion})")
-                    return False
+                    return None
             
             print(f"   - Still in progress... (waiting 30s)")
             time.sleep(30)
         except Exception as e:
             print(f"⚠️ GitHub API Exception: {e}")
-            return True
+            return "latest"
 
-def update_runpod_endpoint_image():
-    """สั่ง RunPod ให้รีเฟรชภาพล่าสุด"""
-    full_image_name = f"{DOCKER_IMAGE_BASE}:latest"
-    print(f"🔄 Forcing RunPod Endpoint to refresh image: {full_image_name}")
+def update_runpod_endpoint_image(tag):
+    """สั่ง RunPod ให้เปลี่ยน Image เป็น Tag ใหม่ (SHA)"""
+    full_image_name = f"{DOCKER_IMAGE_BASE}:{tag}"
+    print(f"🔄 Updating RunPod Endpoint Image to: {full_image_name}")
     
     url = "https://api.runpod.io/graphql"
     headers = {
@@ -85,6 +86,7 @@ def update_runpod_endpoint_image():
         "Authorization": f"Bearer {RUNPOD_API_KEY}"
     }
     
+    # GraphQL Mutation ที่ถูกต้องตามคำแนะนำของ RunPod
     mutation = """
     mutation SaveEndpoint($input: EndpointInput!) {
       saveEndpoint(input: $input) {
@@ -96,8 +98,8 @@ def update_runpod_endpoint_image():
     variables = {
         "input": {
             "id": RUNPOD_ENDPOINT_ID,
-            "name": "3d-scan-worker", 
-            "modelName": full_image_name,
+            "name": "worker-3d-scan", # ชื่อ Endpoint
+            "modelName": full_image_name, # Image URL
             "gpuIds": "3090,4090",
             "idleTimeout": 10,
             "locations": "CA-MTL-1,EU-RO-1,US-GA-1,US-TX-1"
@@ -111,8 +113,9 @@ def update_runpod_endpoint_image():
             print(f"❌ GraphQL Errors: {json.dumps(result['errors'], indent=2)}")
             return False
             
-        print(f"✅ RunPod Endpoint refreshed successfully!")
-        time.sleep(15) # ให้เวลามันล้างคิวเก่า
+        print(f"✅ RunPod Endpoint updated successfully! Tag: {tag[:7]}")
+        # ให้เวลามัน Refresh สักพักเพื่อให้แน่ใจว่า Worker ใหม่พร้อมใช้
+        time.sleep(20)
         return True
     except Exception as e:
         print(f"⚠️ RunPod Update Exception: {e}")
@@ -170,7 +173,7 @@ def monitor_job(runpod_job_id):
         time.sleep(10)
 
 if __name__ == "__main__":
-    print("🚀 Starting Automated Test Cycle (Advanced Version)...")
+    print("🚀 Starting Automated Test Cycle (SHA-Tagging Version)...")
     
     # 1. ดึงข้อมูล Job เดิม
     job_info = get_latest_job()
@@ -181,10 +184,11 @@ if __name__ == "__main__":
         video_url = job_info['video_url']
         print(f"✅ Found latest job: {job_id}")
         
-        # 2. รอ Build
-        if wait_for_github_action():
-            # 3. อัปเดต RunPod Endpoint ให้รีเฟรชภาพ :latest
-            if update_runpod_endpoint_image():
+        # 2. รอ Build และดึงเลข SHA
+        sha = wait_for_github_action()
+        if sha:
+            # 3. อัปเดต RunPod Endpoint ให้ใช้ภาพตามเลข SHA
+            if update_runpod_endpoint_image(sha):
                 # 4. รันใหม่บน RunPod
                 runpod_job_id = trigger_runpod(job_id, video_url)
                 if runpod_job_id:
