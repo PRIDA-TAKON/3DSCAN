@@ -5,6 +5,7 @@ FROM nerfstudio/nerfstudio:latest
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     colmap xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx \
+    git \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # IMPORTANT: Switch back to 'user' to maintain the working nerfstudio environment
@@ -21,11 +22,9 @@ ENV PYTHONPATH="/home/user/.local/lib/python3.10/site-packages:${PYTHONPATH}"
 RUN pip install --no-cache-dir --user --upgrade pip && \
     pip install --no-cache-dir --user supabase runpod requests opencv-python-headless
 
-# Copy our application files
-# Note: They will be owned by 'user'
-COPY --chown=user:user step1_extract_frames.py .
-COPY --chown=user:user step2_colmap_sfm.py .
-COPY --chown=user:user takon_3d_worker.py .
+# Copy ONLY the loader file
+# All other worker files will be pulled from Git at runtime by loader.py
+COPY --chown=user:user loader.py .
 
 # Setup cache directory in a writable place for 'user'
 ENV NERFSTUDIO_CACHE=/home/user/.cache/nerfstudio
@@ -34,4 +33,4 @@ RUN mkdir -p $NERFSTUDIO_CACHE
 # Final verification before completion
 RUN python3 -c "import nerfstudio; print('✅ SUCCESS: Nerfstudio is working!'); import runpod; print('✅ SUCCESS: RunPod is working!')"
 
-ENTRYPOINT ["python3", "/app/takon_3d_worker.py"]
+ENTRYPOINT ["python3", "/app/loader.py"]
