@@ -7,7 +7,7 @@ on:
       - 'Dockerfile'
       - 'step1_extract_frames.py'
       - 'step2_colmap_sfm.py'
-      - 'runpod_worker.py'
+      - 'takon_3d_worker.py'
       - '.github/workflows/docker-build-push.yml'
   pull_request:
     branches: [ "main" ]
@@ -15,7 +15,7 @@ on:
       - 'Dockerfile'
       - 'step1_extract_frames.py'
       - 'step2_colmap_sfm.py'
-      - 'runpod_worker.py'
+      - 'takon_3d_worker.py'
       - '.github/workflows/docker-build-push.yml'
 
 env:
