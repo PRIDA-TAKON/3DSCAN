@@ -1,47 +1,39 @@
-# โปรเจกต์ 02_3DSCAN: รายงานสถานะและการดำเนินการต่อ
+# โปรเจกต์ 02_3DSCAN: รายงานสถานะและระบบการทำงานปัจจุบัน
 
-## 📅 ข้อมูลล่าสุด: 25 มีนาคม 2569
-
----
-
-### ✅ สิ่งที่ทำไปแล้ว (Completed)
-
-#### 1. สภาพแวดล้อมและโปรเจกต์ (Local Setup)
-- [x] ติดตั้ง Node.js Dependencies (Root & Frontend)
-- [x] สร้าง Python 3.11 Virtual Environment
-- [x] ติดตั้ง Libraries สำคัญ (Taichi, Torch+CUDA, Supabase, RunPod, OpenCV)
-- [x] ตั้งค่า `taichi-splatting-kaggle` เป็น editable mode
-
-#### 2. ส่วนงานหลังบ้าน (Backend / Worker)
-- [x] สร้าง `runpod_worker.py`: รองรับ RunPod Serverless + Supabase Storage
-- [x] ปรับปรุง `Dockerfile`: เตรียมพร้อมสำหรับการ Deploy ขึ้น Cloud
-- [x] สร้าง `scripts/trigger_runpod.py`: สคริปต์สำหรับสั่งงานผ่าน API
-
-#### 3. ส่วนงานฐานข้อมูล (Database)
-- [x] สร้างตาราง `jobs` ใน Supabase
-- [x] ตั้งค่า Storage Bucket `scans` และสิทธิ์การเข้าถึง (Policies)
+## 📅 ข้อมูลล่าสุด: 8 เมษายน 2569 (อัปเดต Workflow)
 
 ---
 
-### 📋 สิ่งที่ผู้ใช้ต้องทำ (User Actions Needed)
+### 🚀 ระบบการทำงานปัจจุบัน (Current Workflow)
 
-#### 1. Docker (ที่เครื่องผู้ใช้)
-- [ ] รันคำสั่ง `docker build` เพื่อสร้าง Image
-- [ ] รันคำสั่ง `docker push` เพื่อส่ง Image ขึ้น Docker Hub
+เพื่อให้ระบบทำงานแบบอัตโนมัติและตรวจสอบได้ เราใช้กระบวนการดังนี้:
 
-#### 2. RunPod Dashboard (ตั้งค่าผ่านเว็บ)
-- [ ] สร้าง Serverless Endpoint ใหม่
-- [ ] เลือก GPU (RTX 4090)
-- [ ] ตั้งค่า Environment Variables:
-    - `SUPABASE_URL`
-    - `SUPABASE_KEY` (ใช้ Service Role Key)
-
-#### 3. การตั้งค่าใน Env Local (เพื่อทดสอบ)
-- [ ] ใส่ค่า `RUNPOD_API_KEY` และ `RUNPOD_ENDPOINT_ID` ในเครื่องเพื่อใช้ทดสอบการ Trigger
+1.  **Code Deployment**: อัปเดตโค้ดและส่งขึ้น Git Repository (GitHub)
+2.  **Continuous Integration (CI)**: 
+    -   GitHub Actions ทำการบิวด์ Docker Image อัตโนมัติ
+    -   ส่ง Docker Image ขึ้นไปยัง **Docker Hub**
+3.  **RunPod Serverless**:
+    -   RunPod ดึงอิมเมจล่าสุดจาก Docker Hub ไปรัน
+    -   ทดสอบการประมวลผล Colmap และ Nerfstudio
+4.  **Monitoring & Logging**:
+    -   ระบบส่งสถานะ (Status) และข้อผิดพลาด (Crash Logs) ไปบันทึกที่ **Supabase Database** (ตาราง `jobs` และ `runpod_logs`)
+    -   ช่วยให้สามารถวิเคราะห์ปัญหาได้จากส่วนกลาง
 
 ---
 
-### 🛠️ ขั้นตอนถัดไป (Future Tasks)
-1. แก้ไข Frontend ให้เรียกใช้ RunPod API อัตโนมัติ
-2. สร้างหน้า Dashboard สำหรับดูสถานะงานและดาวน์โหลดผลลัพธ์
-3. ตั้งค่าระบบลบไฟล์อัตโนมัติ (Cleanup Script)
+### 🛠️ สถานะล่าสุด (Current Issue)
+
+*   **ปัญหาหลัก**: พบว่า RunPod รันล้มเหลวเนื่องจาก `ModuleNotFoundError: No module named 'nerfstudio'`
+*   **สาเหตุที่คาดไว้**: Docker Image บิวด์ไม่สมบูรณ์ หรือ PATH ของ Python ใน Image ไม่ครอบคลุม Library ที่ติดตั้ง
+*   **แผนการแก้ไข**: 
+    -   ตรวจสอบและแก้ไข `Dockerfile` เพื่อให้ติดตั้ง Nerfstudio อย่างถูกต้อง
+    -   ตรวจสอบ GitHub Actions Workflow ให้มั่นใจว่าบิวด์ผ่านจริง
+
+---
+
+### 🗺️ แผนการในอนาคต (Roadmap)
+
+*   **GCP Transition**: ย้ายระบบจาก RunPod ไปยัง **Google Cloud Platform (GCP)**
+    -   ใช้ Cloud Run หรือ Vertex AI สำหรับการประมวลผล
+    -   ใช้ Artifact Registry แทน Docker Hub
+*   **Full Automation**: พัฒนาให้ระบบแก้บั๊กตัวเอง (Autonomous Loop) ได้สมบูรณ์ขึ้นผ่านการวิเคราะห์ Log ใน DB
