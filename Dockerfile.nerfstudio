@@ -1,21 +1,18 @@
-# === Image B: The Trainer (Nerfstudio Official) ===
 FROM nerfstudio/nerfstudio:latest
 
 USER root
-# ลง Git และ Library เชื่อมต่อเพิ่มแค่นิดเดียว
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    colmap xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx git \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER user
 WORKDIR /app
 
-# ติดตั้งเฉพาะตัวจัดการฐานข้อมูลใน User Space
-RUN pip install --no-cache-dir --user supabase runpod requests
+# เพิ่ม websockets==12.0 เพื่อแก้ปัญหา supabase asyncio
+RUN pip install --no-cache-dir --user supabase runpod requests websockets==12.0
 
-# ใช้ loader.py ตัวเดิมดึงโค้ด Git
 COPY --chown=user:user loader.py .
 
-# ตั้งค่า PATH ให้เรียกใช้เครื่องมือใน .local ได้
 ENV PATH="/home/user/.local/bin:${PATH}"
 ENV WORKER_MODE="TRAIN"
 
