@@ -15,8 +15,8 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       # --- Step 1: Build & Push Processor (COLMAP) ---
       - name: Build and Push Processor
@@ -25,7 +25,7 @@ jobs:
           context: .
           file: ./Dockerfile.colmap
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/3dscan-worker:processor
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/3dscan-worker:processor
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -36,11 +36,11 @@ jobs:
           context: .
           file: ./Dockerfile.nerfstudio
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/3dscan-worker:trainer
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/3dscan-worker:trainer
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Summary
         run: |
-          echo "✅ Processor Image: ${{ secrets.DOCKERHUB_USERNAME }}/3dscan-worker:processor"
-          echo "✅ Trainer Image: ${{ secrets.DOCKERHUB_USERNAME }}/3dscan-worker:trainer"
+          echo "✅ Processor Image: ${{ secrets.DOCKER_HUB_USERNAME }}/3dscan-worker:processor"
+          echo "✅ Trainer Image: ${{ secrets.DOCKER_HUB_USERNAME }}/3dscan-worker:trainer"
