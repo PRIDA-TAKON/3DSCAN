@@ -76,7 +76,7 @@ def run_process_mode(job_id, video_url, work_dir):
     # 2. Extract & COLMAP (If nerfstudio is not here, we use raw colmap)
     # Note: In the colmap image, we might need to use ns-process-data if we installed it, 
     # or manual colmap commands. Let's assume we use ns-process-data for consistency.
-    cmd = f"ns-process-data video --data {video_path} --output-dir {output_dir} --num-frames-target 300"
+    cmd = f"ns-process-data video --data {video_path} --output-dir {output_dir} --num-frames-target 200 --verbose"
     success, err = run_command(cmd)
     if not success: raise Exception(f"COLMAP Failed: {err}")
 
