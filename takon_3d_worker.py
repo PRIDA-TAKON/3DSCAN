@@ -62,25 +62,34 @@ def download_file(url, dest_path):
         for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
     print(f"✅ Downloaded to {dest_path}", flush=True)
 
-# --- Sub-Task: PROCESS (COLMAP) ---
+# --- Sub-Task: PROCESS (GLOMAP/COLMAP) ---
 def run_process_mode(job_id, video_url, work_dir):
-    update_status(job_id, "processing", "Step 1: Extracting frames & COLMAP (Processor Image)")
+    update_status(job_id, "processing", "Step 1: Extracting frames & GLOMAP SfM (GPU Accelerated)")
     
     video_path = work_dir / "input_video.mp4"
+    images_dir = work_dir / "images"
     output_dir = work_dir / "processed_data"
+    images_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Download
     download_file(video_url, video_path)
 
-    # 2. Extract & COLMAP (If nerfstudio is not here, we use raw colmap)
-    # Note: In the colmap image, we might need to use ns-process-data if we installed it, 
-    # or manual colmap commands. Let's assume we use ns-process-data for consistency.
-    cmd = f"ns-process-data video --data {video_path} --output-dir {output_dir} --num-frames-target 200 --verbose"
-    success, err = run_command(cmd)
-    if not success: raise Exception(f"COLMAP Failed: {err}")
+    # 2. Extract Frames using ffmpeg (simple & fast)
+    print("🎞️ Extracting frames with ffmpeg...", flush=True)
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=2\" {images_dir}/frame_%04d.jpg")
 
-    # 3. Zip and Upload to Temp
+    # 3. Run GLOMAP SfM Script
+    # This script handles Feature Extraction, Matching, and GLOMAP Mapping
+    cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
+    success, err = run_command(cmd)
+    if not success: 
+        print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data...", flush=True)
+        cmd_fallback = f"ns-process-data video --data {video_path} --output-dir {output_dir} --num-frames-target 200"
+        success, err = run_command(cmd_fallback)
+        if not success: raise Exception(f"All SfM methods failed: {err}")
+
+    # 4. Zip and Upload to Temp
     update_status(job_id, "uploading_temp", "Uploading processed data to Supabase (Temp)...")
     zip_path = work_dir / "temp_data.zip"
     zip_folder(output_dir, zip_path)
