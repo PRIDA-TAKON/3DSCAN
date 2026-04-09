@@ -75,17 +75,18 @@ def run_process_mode(job_id, video_url, work_dir):
     # 1. Download
     download_file(video_url, video_path)
 
-    # 2. Extract Frames using ffmpeg (simple, fast, and resized to 1080p for stability)
-    print("🎞️ Extracting frames with ffmpeg (Downscaling to 1080p)...", flush=True)
-    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=3,scale=-1:1080\" {images_dir}/frame_%04d.jpg")
+    # 2. Extract Frames using ffmpeg (simple, fast, and resized to 720p for maximum stability)
+    print("🎞️ Extracting frames with ffmpeg (Downscaling to 720p)...", flush=True)
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=3,scale=-1:720\" {images_dir}/frame_%04d.jpg")
 
     # 3. Run GLOMAP SfM Script
     # This script handles Feature Extraction, Matching, and GLOMAP Mapping
     cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
     success, err = run_command(cmd)
     if not success: 
-        print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data...", flush=True)
-        cmd_fallback = f"ns-process-data video --data {video_path} --output-dir {output_dir} --num-frames-target 100"
+        print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data images...", flush=True)
+        # Use 'images' mode to reuse our downscaled frames instead of re-extracting from video
+        cmd_fallback = f"ns-process-data images --data {images_dir} --output-dir {output_dir}"
         success, err = run_command(cmd_fallback)
         if not success: raise Exception(f"All SfM methods failed: {err}")
 
