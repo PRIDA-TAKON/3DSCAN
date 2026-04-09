@@ -89,16 +89,30 @@ def run_process_mode(job_id, video_url, work_dir):
         success, err = run_command(cmd_fallback)
         if not success: raise Exception(f"All SfM methods failed: {err}")
 
-    # 4. Zip and Upload to Temp
+    # 3. Zip and Upload to Temp
     update_status(job_id, "uploading_temp", "Uploading processed data to Supabase (Temp)...")
     zip_path = work_dir / "temp_data.zip"
     zip_folder(output_dir, zip_path)
-    
+
+    file_size = zip_path.stat().st_size / (1024 * 1024)
+    print(f"📦 Uploading {zip_path.name} ({file_size:.2f} MB) to Supabase...", flush=True)
+
     supabase = get_supabase_client()
     remote_path = f"temp/{job_id}/processed.zip"
-    with open(zip_path, 'rb') as f:
-        supabase.storage.from_(BUCKET_NAME).upload(path=remote_path, file=f, file_options={"x-upsert": "true"})
-    
+
+    try:
+        with open(zip_path, 'rb') as f:
+            res = supabase.storage.from_(BUCKET_NAME).upload(
+                path=remote_path, 
+                file=f, 
+                file_options={"x-upsert": "true", "content-type": "application/zip"}
+            )
+        print(f"✅ Upload successful: {remote_path}", flush=True)
+    except Exception as e:
+        print(f"❌ Upload failed: {e}", flush=True)
+        # If upload fails, we don't want to lose the job, keep trying or fail gracefully
+        raise Exception(f"Failed to upload temp data: {str(e)}")
+
     update_status(job_id, "ready_to_train", "Processor finished. Ready for Training.")
     return {"status": "success", "step": "process"}
 
