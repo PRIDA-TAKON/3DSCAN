@@ -19,7 +19,7 @@ def get_supabase_client():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def update_status(job_id, status, message="", result_url=None):
-    print(f"🔔 [{job_id}] {status}: {message}")
+    print(f"🔔 [{job_id}] {status}: {message}", flush=True)
     supabase = get_supabase_client()
     if not supabase: return
     try:
@@ -27,20 +27,26 @@ def update_status(job_id, status, message="", result_url=None):
         if result_url: data["result_url"] = result_url
         supabase.table("jobs").update(data).eq("id", job_id).execute()
     except Exception as e:
-        print(f"⚠️ Supabase update failed: {e}")
+        print(f"⚠️ Supabase update failed: {e}", flush=True)
 
 def run_command(cmd, cwd=None):
-    print(f"🚀 Running: {cmd}")
+    print(f"🚀 Running: {cmd}", flush=True)
     try:
-        result = subprocess.run(cmd, shell=True, check=True, text=True, capture_output=True, cwd=cwd)
-        if result.stdout: print(result.stdout)
+        # Stream output in real-time instead of capturing at the end
+        with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd) as sp:
+            for line in sp.stdout:
+                print(line, end="", flush=True)
+        
+        if sp.returncode != 0:
+            return False, f"Command exited with code {sp.returncode}"
         return True, ""
-    except subprocess.CalledProcessError as e:
-        error_detail = f"Error: {e.stderr if e.stderr else e.stdout}"
-        print(f"❌ {error_detail}")
+    except Exception as e:
+        error_detail = f"Execution failed: {str(e)}"
+        print(f"❌ {error_detail}", flush=True)
         return False, error_detail
 
 def zip_folder(folder_path, output_path):
+    print(f"📦 Zipping {folder_path}...", flush=True)
     with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(folder_path):
             for file in files:
@@ -48,11 +54,13 @@ def zip_folder(folder_path, output_path):
                            os.path.relpath(os.path.join(root, file), folder_path))
 
 def download_file(url, dest_path):
-    response = requests.get(url, stream=True)
+    print(f"📥 Downloading: {url}", flush=True)
+    response = requests.get(url, stream=True, timeout=60)
     if response.status_code != 200:
         raise Exception(f"Download failed: {response.status_code}")
     with open(dest_path, 'wb') as f:
         for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
+    print(f"✅ Downloaded to {dest_path}", flush=True)
 
 # --- Sub-Task: PROCESS (COLMAP) ---
 def run_process_mode(job_id, video_url, work_dir):
