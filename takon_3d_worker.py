@@ -51,6 +51,20 @@ def update_status(job_id, status, message="", result_url=None):
     except Exception as e:
         print(f"⚠️ Supabase update failed: {e}", flush=True)
 
+def report_crash_log(job_id, error_msg, stack_trace):
+    print(f"📋 Reporting crash log to Supabase...", flush=True)
+    supabase = get_supabase_client()
+    if not supabase: return
+    try:
+        supabase.table("runpod_logs").insert({
+            "job_id": job_id,
+            "log_content": f"ERROR: {error_msg}\n\n{stack_trace}",
+            "is_processed": False
+        }).execute()
+        print("✅ Crash log saved.", flush=True)
+    except Exception as e:
+        print(f"⚠️ Failed to save crash log: {e}", flush=True)
+
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}", flush=True)
     try:
@@ -196,8 +210,11 @@ def handler(job):
         else:
             return run_train_mode(job_id, work_dir)
     except Exception as e:
+        import traceback
         error_msg = str(e)
+        stack_trace = traceback.format_exc()
         update_status(job_id, "failed", error_msg)
+        report_crash_log(job_id, error_msg, stack_trace)
         return {"status": "error", "message": error_msg}
     finally:
         if work_dir.exists(): shutil.rmtree(work_dir)
