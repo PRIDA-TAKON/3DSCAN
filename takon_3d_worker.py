@@ -96,9 +96,9 @@ def run_process_mode(job_id, video_url, work_dir):
     download_file(video_url, video_path)
 
     # 2. Extract Frames
-    print("🎞️ Extracting frames with ffmpeg (1 fps, 720p, max 50 frames)...", flush=True)
-    # Reverting to proven 50 frames at 1 fps
-    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=1,scale=-1:720\" -frames:v 50 {images_dir}/frame_%04d.jpg")
+    print("🎞️ Extracting frames with ffmpeg (4 fps, 720p, max 60 frames)...", flush=True)
+    # Using 4 fps for a 13s video will give us ~52 frames, which is perfect.
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=4,scale=-1:720\" -frames:v 60 {images_dir}/frame_%04d.jpg")
 
     # 3. SfM
     cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
