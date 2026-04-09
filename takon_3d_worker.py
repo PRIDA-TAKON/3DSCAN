@@ -96,16 +96,16 @@ def run_process_mode(job_id, video_url, work_dir):
     download_file(video_url, video_path)
 
     # 2. Extract Frames
-    print("🎞️ Extracting frames with ffmpeg (0.5 fps, 720p, max 30 frames)...", flush=True)
-    # Use 0.5 fps (1 frame every 2 sec) and limit to 30 frames total
-    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=0.5,scale=-1:720\" -frames:v 30 {images_dir}/frame_%04d.jpg")
+    print("🎞️ Extracting frames with ffmpeg (1 fps, 720p, max 50 frames)...", flush=True)
+    # Reverting to proven 50 frames at 1 fps
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=1,scale=-1:720\" -frames:v 50 {images_dir}/frame_%04d.jpg")
 
     # 3. SfM
     cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
     success, err = run_command(cmd)
     if not success: 
-        print(f"⚠️ GLOMAP Script failed, attempting ultra-safe fallback (30 frames)...", flush=True)
-        # Use 'images' mode with already extracted frames
+        print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data images...", flush=True)
+        # Use 'images' mode with 50 frames
         cmd_fallback = f"ns-process-data images --data {images_dir} --output-dir {output_dir}"
         success, err = run_command(cmd_fallback)
         if not success: raise Exception(f"All SfM methods failed: {err}")
