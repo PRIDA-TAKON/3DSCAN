@@ -36,7 +36,8 @@ def get_s3_client():
         endpoint_url=S3_ENDPOINT,
         aws_access_key_id=S3_ACCESS_KEY,
         aws_secret_access_key=S3_SECRET_KEY,
-        config=s3_config
+        config=s3_config,
+        region_name='us-il-1'
     )
 
 def update_status(job_id, status, message="", result_url=None):
