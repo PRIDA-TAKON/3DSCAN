@@ -7,16 +7,37 @@ import requests
 from pathlib import Path
 import runpod
 from supabase import create_client
+import boto3
+from botocore.config import Config
 
 # --- Configuration ---
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS") # PROCESS or TRAIN
-BUCKET_NAME = "3d-scans"
+
+# S3 Configuration
+S3_ACCESS_KEY = os.environ.get("RUNPOD_S3_ACCESS_KEY")
+S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY")
+S3_ENDPOINT = "https://s3api-us-il-1.runpod.io"
+S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME", "3d-scans")
 
 def get_supabase_client():
     if not SUPABASE_URL or not SUPABASE_KEY: return None
     return create_client(SUPABASE_URL, SUPABASE_KEY)
+
+def get_s3_client():
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
+    s3_config = Config(
+        signature_version='s3v4',
+        retries={'max_attempts': 3}
+    )
+    return boto3.client(
+        's3',
+        endpoint_url=S3_ENDPOINT,
+        aws_access_key_id=S3_ACCESS_KEY,
+        aws_secret_access_key=S3_SECRET_KEY,
+        config=s3_config
+    )
 
 def update_status(job_id, status, message="", result_url=None):
     print(f"🔔 [{job_id}] {status}: {message}", flush=True)
@@ -32,7 +53,6 @@ def update_status(job_id, status, message="", result_url=None):
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}", flush=True)
     try:
-        # Stream output in real-time instead of capturing at the end
         with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd) as sp:
             for line in sp.stdout:
                 print(line, end="", flush=True)
@@ -75,62 +95,58 @@ def run_process_mode(job_id, video_url, work_dir):
     # 1. Download
     download_file(video_url, video_path)
 
-    # 2. Extract Frames using ffmpeg (Strictly limited to 50 frames for guaranteed stability)
+    # 2. Extract Frames
     print("🎞️ Extracting frames with ffmpeg (1 fps, 720p)...", flush=True)
-    # Use 1 fps and limit to 50 frames total
     run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=1,scale=-1:720\" -frames:v 50 {images_dir}/frame_%04d.jpg")
 
-    # 3. Run GLOMAP SfM Script
+    # 3. SfM
     cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
     success, err = run_command(cmd)
     if not success: 
         print(f"⚠️ GLOMAP Script failed, attempting ultra-safe fallback...", flush=True)
-        # Ultra-safe fallback with very low image count
         cmd_fallback = f"ns-process-data images --data {images_dir} --output-dir {output_dir} --num-frames-target 40"
         success, err = run_command(cmd_fallback)
         if not success: raise Exception(f"All SfM methods failed: {err}")
 
-    # 3. Zip and Upload to Temp
-    update_status(job_id, "uploading_temp", "Uploading processed data to Supabase (Temp)...")
+    # 4. Zip and Upload to S3
+    update_status(job_id, "uploading_temp", "Uploading processed data to RunPod S3...")
     zip_path = work_dir / "temp_data.zip"
     zip_folder(output_dir, zip_path)
 
-    file_size = zip_path.stat().st_size / (1024 * 1024)
-    print(f"📦 Uploading {zip_path.name} ({file_size:.2f} MB) to Supabase...", flush=True)
-
-    supabase = get_supabase_client()
+    s3 = get_s3_client()
+    if not s3: raise Exception("S3 credentials not found!")
+    
     remote_path = f"temp/{job_id}/processed.zip"
-
-    try:
-        with open(zip_path, 'rb') as f:
-            res = supabase.storage.from_(BUCKET_NAME).upload(
-                path=remote_path, 
-                file=f, 
-                file_options={"x-upsert": "true", "content-type": "application/zip"}
-            )
-        print(f"✅ Upload successful: {remote_path}", flush=True)
-    except Exception as e:
-        print(f"❌ Upload failed: {e}", flush=True)
-        # If upload fails, we don't want to lose the job, keep trying or fail gracefully
-        raise Exception(f"Failed to upload temp data: {str(e)}")
-
-    update_status(job_id, "ready_to_train", "Processor finished. Ready for Training.")
-    return {"status": "success", "step": "process"}
+    file_size = zip_path.stat().st_size / (1024 * 1024)
+    print(f"📦 Uploading {zip_path.name} ({file_size:.2f} MB) to S3: {remote_path}...", flush=True)
+    
+    s3.upload_file(str(zip_path), S3_BUCKET, remote_path)
+    print(f"✅ S3 Upload successful.", flush=True)
+    
+    update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")
+    return {"status": "success", "step": "process", "s3_path": remote_path}
 
 # --- Sub-Task: TRAIN (Nerfstudio) ---
 def run_train_mode(job_id, work_dir):
     update_status(job_id, "training", "Step 2: Training Gaussian Splatting (Trainer Image)")
     
     supabase = get_supabase_client()
-    temp_remote_path = f"temp/{job_id}/processed.zip"
-    temp_zip_url = supabase.storage.from_(BUCKET_NAME).get_public_url(temp_remote_path)
+    job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
+    msg = job_data.data.get("message", "")
     
+    if "S3_PATH:" not in msg:
+        raise Exception(f"S3 path not found in message: {msg}")
+    
+    remote_temp_path = msg.split("S3_PATH:")[1]
     zip_path = work_dir / "processed.zip"
     data_dir = work_dir / "data"
     train_out = work_dir / "train_output"
 
-    # 1. Download Temp Data
-    download_file(temp_zip_url, zip_path)
+    # 1. Download from S3
+    print(f"📥 Downloading temp data from S3: {remote_temp_path}...", flush=True)
+    s3 = get_s3_client()
+    s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+    
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(data_dir)
 
@@ -139,24 +155,26 @@ def run_train_mode(job_id, work_dir):
     success, err = run_command(cmd)
     if not success: raise Exception(f"Training Failed: {err}")
 
-    # 3. Export & Upload Result
+    # 3. Export & Upload Result to S3
     config_file = list(train_out.glob("**/config.yml"))[0]
     ply_path = work_dir / "result.ply"
     run_command(f"ns-export gaussian-splat --load-config {config_file} --output-path {ply_path}")
     
     final_path = f"results/{job_id}/model.ply"
-    with open(ply_path, 'rb') as f:
-        supabase.storage.from_(BUCKET_NAME).upload(path=final_path, file=f, file_options={"x-upsert": "true"})
+    print(f"📦 Uploading final model to S3: {final_path}...", flush=True)
+    s3.upload_file(str(ply_path), S3_BUCKET, final_path)
     
-    res_url = supabase.storage.from_(BUCKET_NAME).get_public_url(final_path)
+    # Generate public URL (assuming bucket/endpoint allows it or using a signed URL)
+    # For now, let's store the final result path
+    res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
-    # 4. Cleanup Supabase Temp
-    print(f"🧹 Cleaning up temp data for job {job_id}...")
+    # 4. Cleanup S3 Temp
+    print(f"🧹 Cleaning up temp data in S3 for job {job_id}...")
     try:
-        supabase.storage.from_(BUCKET_NAME).remove([temp_remote_path])
+        s3.delete_object(Bucket=S3_BUCKET, Key=remote_temp_path)
     except: pass
 
-    update_status(job_id, "completed", "Job Finished! Model ready.", result_url=res_url)
+    update_status(job_id, "completed", "Job Finished! Model ready on S3.", result_url=res_url)
     return {"status": "success", "result_url": res_url}
 
 # --- Main Handler ---

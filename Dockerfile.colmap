@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 USER user
 WORKDIR /app
 
-# เพิ่ม websockets>=13.0 เพื่อรองรับ supabase-py (asyncio) และ pandas/pyarrow สำหรับ glomap script
-RUN pip install --no-cache-dir --user supabase runpod requests "websockets>=13.0" pandas pyarrow
+# เพิ่ม websockets>=13.0, pandas/pyarrow และ boto3 สำหรับ S3 storage
+RUN pip install --no-cache-dir --user supabase runpod requests "websockets>=13.0" pandas pyarrow boto3
 
 COPY --chown=user:user loader.py .
 
