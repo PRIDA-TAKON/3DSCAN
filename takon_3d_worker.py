@@ -15,21 +15,22 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS") # PROCESS or TRAIN
 
-# S3 Configuration
+# S3 Configuration (Flexible key names)
 S3_ACCESS_KEY = os.environ.get("RUNPOD_S3_ACCESS_KEY") or os.environ.get("S3_ACCESS_KEY") or os.environ.get("ACCESS_KEY")
 S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY") or os.environ.get("S3_SECRET_KEY") or os.environ.get("SECRET_KEY")
 S3_ENDPOINT = os.environ.get("RUNPOD_S3_ENDPOINT") or "https://s3api-us-il-1.runpod.io"
 S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME") or os.environ.get("S3_BUCKET_NAME") or os.environ.get("BUCKET_NAME") or "3d-scans"
 
-def get_s3_client():
-    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
-        print("❌ Error: S3 Credentials missing in environment variables!", flush=True)
+def get_supabase_client():
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("⚠️ Supabase credentials missing!", flush=True)
         return None
-
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_s3_client():
-    if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
+        print("❌ Error: S3 Credentials missing!", flush=True)
+        return None
     s3_config = Config(
         signature_version='s3v4',
         retries={'max_attempts': 3}
@@ -115,7 +116,6 @@ def run_process_mode(job_id, video_url, work_dir):
 
     # 2. Extract Frames
     print("🎞️ Extracting frames with ffmpeg (4 fps, 720p, max 60 frames)...", flush=True)
-    # Using 4 fps for a 13s video will give us ~52 frames, which is perfect.
     run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=4,scale=-1:720\" -frames:v 60 {images_dir}/frame_%04d.jpg")
 
     # 3. SfM
@@ -123,7 +123,6 @@ def run_process_mode(job_id, video_url, work_dir):
     success, err = run_command(cmd)
     if not success: 
         print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data images...", flush=True)
-        # Use 'images' mode with 50 frames
         cmd_fallback = f"ns-process-data images --data {images_dir} --output-dir {output_dir}"
         success, err = run_command(cmd_fallback)
         if not success: raise Exception(f"All SfM methods failed: {err}")
@@ -182,10 +181,9 @@ def run_train_mode(job_id, work_dir):
     
     final_path = f"results/{job_id}/model.ply"
     print(f"📦 Uploading final model to S3: {final_path}...", flush=True)
+    s3 = get_s3_client()
     s3.upload_file(str(ply_path), S3_BUCKET, final_path)
     
-    # Generate public URL (assuming bucket/endpoint allows it or using a signed URL)
-    # For now, let's store the final result path
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
     # 4. Cleanup S3 Temp
