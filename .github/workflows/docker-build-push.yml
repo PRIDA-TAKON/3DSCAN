@@ -32,8 +32,8 @@ jobs:
           context: .
           file: ./Dockerfile.colmap
           push: true
-          # ใช้ชื่อ Image ใน GHCR: ghcr.io/username/repo-name/processor
-          tags: ghcr.io/${{ github.repository_owner }}/3dscan-worker:processor
+          # ใช้ชื่อ Image แบบ lowercase (บังคับโดย Docker/GHCR)
+          tags: ghcr.io/prida-takon/3dscan-worker:processor
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
