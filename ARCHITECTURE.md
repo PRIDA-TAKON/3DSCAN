@@ -1,28 +1,43 @@
-# สถาปัตยกรรมระบบ 02_3DSCAN (Modular & Lean)
+# สถาปัตยกรรมระบบ 02_3DSCAN (Ultralight S3-Hybrid Architecture)
 
-## 🏗️ แนวคิดหลัก
-เพื่อแก้ปัญหาการบิวด์อิมเมจล้มเหลวเนื่องจากซอฟต์แวร์ตีกัน (Dependency Conflicts) เราจึงใช้กลยุทธ์แยกส่วนการประมวลผลและการเก็บรักษาข้อมูล:
+## 🏗️ การเปลี่ยนแปลงสถาปัตยกรรม (Architecture Evolution)
+เราได้ทำการปรับปรุงระบบจาก "Heavy Modular" (อิมเมจรวมศูนย์) มาเป็น **"Ultralight S3-Hybrid"** เพื่อประสิทธิภาพสูงสุดในระบบ Cloud GPU
 
-1.  **Isolation (แยกส่วนประมวลผล)**: ใช้ Docker Image ของ `nerfstudio` เป็นฐานหลักโดยไม่ติดตั้ง Library ที่ไม่จำเป็นทับ เพื่อให้เครื่องมือไม่ตีกันพัง
-2.  **Data Orchestration (Supabase as Buffer)**: ใช้ Supabase Storage เป็นพื้นที่พักข้อมูลชั่วคราว (Temporary Buffer) ระหว่างขั้นตอนประมวลผล (Frames, COLMAP sparse data)
-3.  **Small Results (ผลลัพธ์สุดท้ายขนาดเล็ก)**: เก็บเฉพาะไฟล์ Gaussian Splat (.ply, .splat) ที่ผ่านการประมวลผลจนจบลงในที่เก็บข้อมูลถาวร
-4.  **Automatic Cleanup (ระบบล้างไฟล์ขยะ)**: ระบบจะสั่งลบไฟล์ชั่วคราวที่มีขนาดใหญ่ (วิดีโอต้นฉบับ, Frames ทั้งหมด) ใน Supabase ทันทีที่ได้ผลลัพธ์สุดท้าย
-
----
-
-## 🔄 ลำดับขั้นตอน (Pipeline Flow)
-
-1.  **Frontend**: อัปโหลดวิดีโอ -> Supabase
-2.  **RunPod (Worker)**:
-    *   ดึงวิดีโอ -> แปลงเป็นภาพ (Frames)
-    *   รัน COLMAP (Reconstruction) -> บันทึก Sparse Data
-    *   รัน Nerfstudio (Training) -> จนครบจำนวนรอบ
-3.  **Export & Clean**:
-    *   ส่งออกไฟล์โมเดลขนาดเล็ก (.ply) -> Supabase
-    *   **คำสั่งลบโฟลเดอร์ชั่วคราว** ใน Supabase Storage ทิ้งทั้งหมด (เพื่อลดภาระค่าใช้จ่ายพื้นที่)
+### 🔍 ทำไมต้องเปลี่ยน? (The "Why")
+จากการทดสอบพบว่าสถาปัตยกรรมแบบเดิมมีข้อจำกัดร้ายแรง 3 ประการ:
+1.  **Cold Start Time**: การโหลด Docker Image ขนาด 10GB+ ใช้เวลา 5-15 นาทีต่อการรันครั้งแรกบนเครื่องใหม่
+2.  **Registry Bottlenecks**: การดึงข้อมูลขนาดใหญ่ซ้ำๆ จาก Docker Hub มักติดปัญหา Rate Limit และความไม่เสถียรของเครือข่ายข้าม Data Center
+3.  **Inflexible Development**: การแก้ไขโค้ดเพียงบรรทัดเดียวอาจไปกระตุ้นให้ต้องบิลด์และพุชอิมเมจ 10GB ใหม่ทั้งหมด ทำให้การพัฒนล่าช้า
 
 ---
 
-## 🎯 แผนการย้ายสู่ GCP (Future Roadmap)
-*   เปลี่ยน **RunPod** เป็น **Google Cloud Run (GPU)** หรือ **Vertex AI**
-*   เปลี่ยน **Supabase Storage** เป็น **Google Cloud Storage (GCS)** พร้อมตั้งค่า **Lifecycle Rules** (ลบไฟล์อัตโนมัติเมื่อครบกำหนด 1 วัน)
+## 🛠️ สถาปัตยกรรมใหม่: แยกส่วนประกอบ 3 ชั้น
+เราแยกสภาพแวดล้อมออกจากกันเพื่อให้แต่ละส่วนทำงานได้เร็วที่สุด:
+
+### 1. The Shell (Minimal Docker Image - GHCR)
+- **หน้าที่**: เป็นตัวจุดชนวน (Starter) และตัวจัดการทรัพยากร
+- **ขนาด**: ~200MB (ลดลงจาก 10,000MB)
+- **ผลลัพธ์**: RunPod ดึงอิมเมจเสร็จใน **< 10 วินาที** เพราะมีขนาดเล็กมาก
+
+### 2. The Engine (Heavy Environment - RunPod S3 Store)
+- **หน้าที่**: เก็บ Libs หนักๆ (COLMAP, Nerfstudio, CUDA) ในรูปแบบ `engine.tar.gz`
+- **การทำงาน**: ถูกจัดเก็บไว้ใน **RunPod Store (S3)** ในโซนเดียวกับ GPU
+- **ผลลัพธ์**: ดึงข้อมูลผ่านเครือข่ายภายใน (Internal Network) ด้วยความเร็วสูงและ **ไม่มีค่า Egress**
+
+### 3. The Brain (Latest Logic - Git Sync)
+- **หน้าที่**: เก็บสคริปต์การประมวลผลทั้งหมด (`takon_3d_worker.py`)
+- **การทำงาน**: `loader.py` จะดึงโค้ดล่าสุดจาก GitHub ทุกครั้งที่รัน
+- **ผลลัพธ์**: แก้ไขโค้ดแล้วใช้งานได้ทันที **ไม่ต้องบิลด์อิมเมจใหม่**
+
+---
+
+## 🔄 ลำดับขั้นตอนการทำงานใหม่ (Optimized Flow)
+1.  **RunPod Pull**: ดึง "Shell Image" (200MB) -> สำเร็จในพริบตา
+2.  **Engine Load**: `loader.py` เช็ค S3 Store -> โหลดและแตกไฟล์ `engine.tar.gz` (ถ้ายังไม่มีในแคช)
+3.  **Logic Sync**: ดึงสคริปต์ล่าสุดจาก GitHub
+4.  **Execution**: เริ่มประมวลผล 3D Scan ทันที
+
+## ✅ ประโยชน์ที่ได้รับ
+- **Speed**: ลดเวลาการเริ่มเครื่องจาก 10 นาที เหลือเพียงไม่กี่วินาที
+- **Stability**: ลดการพึ่งพา Docker Hub และปัญหา Image Pulling Loop
+- **Cost-Effective**: ประหยัดเครดิต RunPod เพราะไม่ต้องจ่ายค่าเครื่องรอระหว่างโหลดอิมเมจนานๆ
