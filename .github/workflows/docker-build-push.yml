@@ -37,6 +37,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Build and Push Trainer
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.nerfstudio
+          push: true
+          # ใช้ชื่อ Image แบบ lowercase สำหรับ Trainer
+          tags: ghcr.io/prida-takon/3dscan-worker:trainer
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
   # --- Stage 2: Deploy Logic to S3 (Fast Backup) ---
   deploy-logic:
     runs-on: ubuntu-latest
