@@ -140,8 +140,8 @@ def run_glomap_sfm(images_dir, output_dir):
     db_path = colmap_dir / "database.db"
     
     # 1. Feature Extraction
-    # Use xvfb-run to provide a virtual display for OpenGL, or fallback to CPU if it fails
-    feat_cmd = f"colmap feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV"
+    # Use SIMPLE_PINHOLE for faster and more stable convergence on difficult videos
+    feat_cmd = f"colmap feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model SIMPLE_PINHOLE"
     headless_feat_cmd = f"xvfb-run -a {feat_cmd}"
     
     print("🔥 Starting Feature Extraction (with Virtual Display)...")

@@ -16,13 +16,16 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS") # PROCESS or TRAIN
 
 # S3 Configuration
-S3_ACCESS_KEY = os.environ.get("RUNPOD_S3_ACCESS_KEY")
-S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY")
-S3_ENDPOINT = "https://s3api-us-il-1.runpod.io"
-S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME", "3d-scans")
+S3_ACCESS_KEY = os.environ.get("RUNPOD_S3_ACCESS_KEY") or os.environ.get("S3_ACCESS_KEY") or os.environ.get("ACCESS_KEY")
+S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY") or os.environ.get("S3_SECRET_KEY") or os.environ.get("SECRET_KEY")
+S3_ENDPOINT = os.environ.get("RUNPOD_S3_ENDPOINT") or "https://s3api-us-il-1.runpod.io"
+S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME") or os.environ.get("S3_BUCKET_NAME") or os.environ.get("BUCKET_NAME") or "3d-scans"
 
-def get_supabase_client():
-    if not SUPABASE_URL or not SUPABASE_KEY: return None
+def get_s3_client():
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
+        print("❌ Error: S3 Credentials missing in environment variables!", flush=True)
+        return None
+
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_s3_client():
