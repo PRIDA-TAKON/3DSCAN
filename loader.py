@@ -2,64 +2,47 @@ import os
 import subprocess
 import sys
 import shutil
+import zipfile
+import requests
 from pathlib import Path
 
-def run_command(cmd, cwd=None):
-    print(f"🚀 Running: {cmd}")
-    try:
-        # Use subprocess.run with capture_output to see what's happening
-        result = subprocess.run(cmd, shell=True, text=True, cwd=cwd)
-        return result.returncode == 0
-    except Exception as e:
-        print(f"❌ Command failed: {e}")
-        return False
+def download_file(url, dest_path):
+    print(f"📥 Downloading: {url}")
+    response = requests.get(url, stream=True, timeout=60)
+    if response.status_code != 200:
+        raise Exception(f"Download failed: {response.status_code}")
+    with open(dest_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
 
 def main():
-    repo_url = os.environ.get("GIT_REPO_URL")
-    git_token = os.environ.get("GIT_TOKEN")
-    branch = os.environ.get("GIT_BRANCH", "main")
+    s3_logic_url = os.environ.get("RUNPOD_S3_LOGIC_URL") # ตัวอย่าง: https://s3api-us-il-1.runpod.io/3d-scans/deploy/worker_logic.zip
     worker_script = os.environ.get("WORKER_SCRIPT", "takon_3d_worker.py")
+    
+    print("--- 🛠️ RunPod S3 Logic Loader ---")
 
-    print("--- 🛠️ Git Code Loader ---")
-
-    if not repo_url:
-        print("⚠️ GIT_REPO_URL not set. Skipping git sync.")
+    if s3_logic_url:
+        try:
+            tmp_zip = Path("/tmp/logic.zip")
+            download_file(s3_logic_url, tmp_zip)
+            print("📦 Extracting logic from S3 Store...")
+            with zipfile.ZipFile(tmp_zip, 'r') as zip_ref:
+                zip_ref.extractall(".")
+            print("✅ Logic updated from S3 Store.")
+        except Exception as e:
+            print(f"⚠️ Failed to load logic from S3: {e}. Falling back to existing code.")
     else:
-        # Inject token into URL for private repos
-        auth_url = repo_url
-        if git_token and "https://" in repo_url:
-            auth_url = repo_url.replace("https://", f"https://{git_token}@")
-
-        # Check if we are already in a git repo
-        if Path(".git").exists():
-            print("🔄 Updating existing repository...")
-            run_command(f"git fetch origin {branch}")
-            run_command(f"git reset --hard origin/{branch}")
-        else:
-            print(f"📥 Cloning repository: {repo_url} (branch: {branch})...")
-            # Clone to a temporary folder then move files to avoid 'directory not empty' errors
-            if run_command(f"git clone -b {branch} {auth_url} .tmp_repo"):
-                print("🚚 Moving files to workspace...")
-                tmp_path = Path(".tmp_repo")
-                for item in tmp_path.iterdir():
-                    dest = Path(".") / item.name
-                    if dest.exists():
-                        if dest.is_dir(): shutil.rmtree(dest)
-                        else: dest.unlink()
-                    shutil.move(str(item), str(dest))
-                shutil.rmtree(".tmp_repo")
-            else:
-                print("❌ Failed to clone repository.")
+        print("ℹ️ No S3 Logic URL provided. Using local files.")
 
     # Execute the worker script
     if Path(worker_script).exists():
         print(f"🎬 Starting Worker: {worker_script}")
-        # Use execv to replace the current process with the worker
+        # Flush outputs for RunPod logs
+        sys.stdout.flush()
+        sys.stderr.flush()
         os.execv(sys.executable, [sys.executable, worker_script])
     else:
         print(f"❌ ERROR: Worker script '{worker_script}' not found!")
-        # Keep container alive for debugging if it fails
-        print("😴 Sleeping for 1 hour to allow debugging...")
+        print("😴 Sleeping for 1 hour for debugging...")
         import time
         time.sleep(3600)
 
