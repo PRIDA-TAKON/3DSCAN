@@ -1,4 +1,4 @@
-name: Deploy Logic to RunPod S3 and Build Images
+name: Build and Push to GHCR and Deploy Logic
 
 on:
   push:
@@ -6,45 +6,22 @@ on:
   workflow_dispatch:
 
 jobs:
-  # --- Stage 1: Deploy Logic (Fast) ---
-  deploy-logic:
+  # --- Stage 1: Build & Push to GHCR (Base Environment) ---
+  build-base:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Boto3
-        run: pip install boto3
-
-      - name: Deploy to RunPod S3
-        env:
-          S3_ACCESS_KEY: ${{ secrets.RUNPOD_S3_ACCESS_KEY }}
-          S3_SECRET_KEY: ${{ secrets.RUNPOD_S3_SECRET_KEY }}
-          S3_ENDPOINT: "https://s3api-us-il-1.runpod.io"
-          S3_BUCKET: "53kzs49kuf"
-        run: python scripts/deploy_to_s3.py
-
-  # --- Stage 2: Build Docker (Only if needed) ---
-  build-and-push:
-    runs-on: ubuntu-latest
-    # ตั้งค่าให้รันเฉพาะเมื่อไฟล์ Docker หรือ loader เปลี่ยน
-    if: |
-      contains(github.event.head_commit.modified, 'Dockerfile') ||
-      contains(github.event.head_commit.modified, 'loader.py')
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -55,6 +32,28 @@ jobs:
           context: .
           file: ./Dockerfile.colmap
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/3dscan-worker:processor
+          # ใช้ชื่อ Image ใน GHCR: ghcr.io/username/repo-name/processor
+          tags: ghcr.io/${{ github.repository_owner }}/3dscan-worker:processor
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # --- Stage 2: Deploy Logic to S3 (Fast Backup) ---
+  deploy-logic:
+    runs-on: ubuntu-latest
+    needs: build-base
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Boto3
+        run: pip install boto3
+      - name: Deploy to RunPod S3
+        env:
+          S3_ACCESS_KEY: ${{ secrets.RUNPOD_S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.RUNPOD_S3_SECRET_KEY }}
+          S3_ENDPOINT: "https://s3api-us-il-1.runpod.io"
+          S3_BUCKET: "53kzs49kuf"
+        run: python scripts/deploy_to_s3.py
