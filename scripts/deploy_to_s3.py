@@ -29,7 +29,7 @@ def upload_to_s3(file_path):
     access_key = os.environ.get("S3_ACCESS_KEY")
     secret_key = os.environ.get("S3_SECRET_KEY")
     endpoint = os.environ.get("S3_ENDPOINT", "https://s3api-us-il-1.runpod.io")
-    bucket = os.environ.get("S3_BUCKET", "3d-scans")
+    bucket = os.environ.get("S3_BUCKET") or os.environ.get("RUNPOD_BUCKET_NAME")
 
     if not access_key or not secret_key:
         print("❌ Error: S3 Credentials missing in Environment!")
