@@ -35,12 +35,14 @@ def read_next_bytes(fid, num_bytes, format_char_sequence, endian_character="<"):
 def parse_parameters_dict(row):
     params = row['params']
     model = row['model']
-    if model == 'SIMPLE_RADIAL':
+    if model == 'SIMPLE_PINHOLE':
+        return {'f': params[0], 'cx': params[1], 'cy': params[2]}
+    elif model == 'PINHOLE':
+        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
+    elif model == 'SIMPLE_RADIAL':
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3]}
     elif model == 'RADIAL':
         return {'f': params[0], 'cx': params[1], 'cy': params[2], 'k1': params[3], 'k2': params[4]}
-    elif model == 'PINHOLE':
-        return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3]}
     elif model == 'OPENCV':
         return {'fx': params[0], 'fy': params[1], 'cx': params[2], 'cy': params[3], 'k1': params[4], 'k2': params[5], 'p1': params[6], 'p2': params[7]}
     else:
