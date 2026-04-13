@@ -40,7 +40,11 @@ def upload_to_s3(file_path):
         endpoint_url=endpoint,
         aws_access_key_id=access_key,
         aws_secret_access_key=secret_key,
-        config=Config(signature_version='s3v4')
+        region_name='us-il-1',
+        config=Config(
+            signature_version='s3v4',
+            s3={'addressing_style': 'virtual'}
+        )
     )
 
     remote_path = "deploy/worker_logic.zip"
