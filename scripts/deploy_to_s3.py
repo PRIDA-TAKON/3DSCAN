@@ -43,7 +43,7 @@ def upload_to_s3(file_path):
         region_name='us-il-1',
         config=Config(
             signature_version='s3v4',
-            s3={'addressing_style': 'virtual'}
+            s3={'addressing_style': 'path'}
         )
     )
 
