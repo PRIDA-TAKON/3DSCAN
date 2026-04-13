@@ -1,0 +1,46 @@
+name: ONE-TIME - Create Engine Store
+
+on:
+  workflow_dispatch: # รันเมื่อกดปุ่มสั่งเองเท่านั้น
+
+jobs:
+  build-and-archive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build Heavy Environment
+        run: |
+          # บิลด์อิมเมจตัวใหญ่เพื่อดึงเอาไฟล์ข้างใน
+          docker build -t heavy-engine -f Dockerfile.colmap .
+          
+          # สร้างคอนเทนเนอร์ชั่วคราวและบีบอัดไฟล์ระบบ
+          docker run --name builder heavy-engine /bin/sh -c "tar -czf /tmp/engine.tar.gz /usr/local /home/user/.local"
+          
+          # ดึงไฟล์ออกมาที่เครื่อง Runner
+          docker cp builder:/tmp/engine.tar.gz .
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Boto3
+        run: pip install boto3
+
+      - name: Upload Engine to RunPod S3
+        env:
+          S3_ACCESS_KEY: ${{ secrets.RUNPOD_S3_ACCESS_KEY }}
+          S3_SECRET_KEY: ${{ secrets.RUNPOD_S3_SECRET_KEY }}
+          S3_ENDPOINT: "https://s3api-us-il-1.runpod.io"
+          S3_BUCKET: "53kzs49kuf"
+        run: |
+          python -c "
+          import boto3, os
+          from botocore.config import Config
+          s3 = boto3.client('s3', endpoint_url='${{ env.S3_ENDPOINT }}', aws_access_key_id='${{ env.S3_ACCESS_KEY }}', aws_secret_access_key='${{ env.S3_SECRET_KEY }}', region_name='us-il-1', config=Config(signature_version='s3v4', s3={'addressing_style': 'path'}))
+          print('🚀 Uploading engine.tar.gz (This may take a while...)')
+          s3.upload_file('engine.tar.gz', '${{ env.S3_BUCKET }}', 'deploy/engine.tar.gz')
+          print('✅ Engine Store Ready!')
+          "
