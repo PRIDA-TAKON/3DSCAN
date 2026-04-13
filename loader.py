@@ -4,6 +4,7 @@ import sys
 import shutil
 import tarfile
 import requests
+import time
 from pathlib import Path
 
 def download_file(url, dest_path):
@@ -17,7 +18,7 @@ def download_file(url, dest_path):
     print(f"✅ Download complete.")
 
 def main():
-    s3_engine_url = os.environ.get("RUNPOD_S3_ENGINE_URL") # URL ของไฟล์ environment 10GB
+    s3_engine_url = os.environ.get("RUNPOD_S3_ENGINE_URL")
     repo_url = os.environ.get("GIT_REPO_URL")
     git_token = os.environ.get("GIT_TOKEN")
     branch = os.environ.get("GIT_BRANCH", "main")
@@ -25,7 +26,7 @@ def main():
     
     print("--- ⚡ Ultralight RunPod Loader (S3 + Git) ---")
 
-    # 1. Load Heavy Engine from S3 (If provided)
+    # 1. Load Heavy Engine from S3
     if s3_engine_url:
         engine_dir = Path("/app/engine")
         if not engine_dir.exists():
@@ -36,7 +37,6 @@ def main():
                 with tarfile.open(tmp_tar, "r:gz") as tar:
                     tar.extractall(path="/")
                 print("✅ Engine Ready.")
-                # ตั้งค่า PATH ให้เรียกใช้โปรแกรมใน engine ได้
                 os.environ["PATH"] = f"/app/engine/bin:{os.environ.get('PATH', '')}"
                 os.environ["PYTHONPATH"] = f"/app/engine/lib/python3.10/site-packages:{os.environ.get('PYTHONPATH', '')}"
             except Exception as e:

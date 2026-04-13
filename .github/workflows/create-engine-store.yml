@@ -15,8 +15,8 @@ jobs:
           # บิลด์อิมเมจตัวใหญ่เพื่อดึงเอาไฟล์ข้างใน
           docker build -t heavy-engine -f Dockerfile.colmap .
           
-          # สร้างคอนเทนเนอร์ชั่วคราวและบีบอัดไฟล์ระบบ
-          docker run --name builder heavy-engine /bin/sh -c "tar -czf /tmp/engine.tar.gz /usr/local /home/user/.local"
+          # สร้างคอนเทนเนอร์ชั่วคราวและบีบอัดไฟล์ระบบ (Override Entrypoint เพื่อไม่ให้รัน loader.py)
+          docker run --name builder --entrypoint /bin/sh heavy-engine -c "tar -czf /tmp/engine.tar.gz /usr/local /home/user/.local"
           
           # ดึงไฟล์ออกมาที่เครื่อง Runner
           docker cp builder:/tmp/engine.tar.gz .
