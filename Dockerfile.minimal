@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+USER root
+# ติดตั้งเฉพาะ Git และเครื่องมือพื้นฐาน (เล็กมาก)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git requests ffmpeg \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ติดตั้งไลบรารีที่จำเป็นสำหรับตัวจัดการโหลด
+RUN pip install --no-cache-dir requests boto3 runpod supabase
+
+# คัดลอกเฉพาะตัวจัดการโหลด
+COPY loader.py .
+
+# กำหนดจุดเริ่มต้น
+ENTRYPOINT ["python3", "/app/loader.py"]

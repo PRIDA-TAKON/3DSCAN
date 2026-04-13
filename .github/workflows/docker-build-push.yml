@@ -26,25 +26,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and Push Processor
+      - name: Build and Push Loader Image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile.colmap
+          file: ./Dockerfile.minimal
           push: true
-          # ใช้ชื่อ Image แบบ lowercase (บังคับโดย Docker/GHCR)
-          tags: ghcr.io/prida-takon/3dscan-worker:processor
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and Push Trainer
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.nerfstudio
-          push: true
-          # ใช้ชื่อ Image แบบ lowercase สำหรับ Trainer
-          tags: ghcr.io/prida-takon/3dscan-worker:trainer
+          # อิมเมจตัวจิ๋วที่จะเริ่มงานในวินาทีเดียว
+          tags: ghcr.io/prida-takon/3dscan-worker:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
