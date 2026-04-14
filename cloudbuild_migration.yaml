@@ -1,0 +1,9 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["pull", "ramayana4/worker-3d-scan:latest"]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["tag", "ramayana4/worker-3d-scan:latest", "asia-southeast1-docker.pkg.dev/mcp-gantt/worker-3d-scan-repo/worker-3d-scan:latest"]
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "asia-southeast1-docker.pkg.dev/mcp-gantt/worker-3d-scan-repo/worker-3d-scan:latest"]
+images:
+  - "asia-southeast1-docker.pkg.dev/mcp-gantt/worker-3d-scan-repo/worker-3d-scan:latest"

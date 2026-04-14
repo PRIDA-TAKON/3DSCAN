@@ -158,7 +158,7 @@ def run_colmap(images_dir, output_dir):
     
     db_path = colmap_dir / "database.db"
     if db_path.exists():
-        db_path.unlink() # Clean start? Or let colmap handle it
+        db_path.unlink()
 
     # Check for xvfb
     colmap_binary = "colmap"
@@ -170,25 +170,32 @@ def run_colmap(images_dir, output_dir):
         pass
 
     print("--- Feature Extraction ---")
-    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model PINHOLE --SiftExtraction.use_gpu 1")
+    # ปรับปรุง: ใช้ SIMPLE_RADIAL และเพิ่ม max_num_features
+    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model SIMPLE_RADIAL --SiftExtraction.max_num_features 8192 --SiftExtraction.use_gpu 1")
     
     print("--- Matching ---")
-    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SiftMatching.use_gpu 1")
+    # ปรับปรุง: เพิ่ม overlap เป็น 20
+    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SequentialMatching.overlap 20 --SiftMatching.use_gpu 1")
     
     print("--- Reconstruction (Mapper) ---")
-    sparse_dir = colmap_dir / "sparse"
+    sparse_dir = project_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
     run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}")
     
     print("--- Converting to Text ---")
-    text_dir = colmap_dir / "text"
+    text_dir = project_dir / "text"
     text_dir.mkdir(parents=True, exist_ok=True)
     
-    if not (sparse_dir / "0").exists():
-        print("❌ COLMAP reconstruction failed (no model found).")
-        return False
+    model_dir = sparse_dir / "0"
+    if not model_dir.exists():
+        # เช็คว่ามี bin อยู่ที่ root หรือไม่
+        if (sparse_dir / "cameras.bin").exists():
+            model_dir = sparse_dir
+        else:
+            print("❌ COLMAP reconstruction failed (no model found).")
+            return False
 
-    run_step(f"{colmap_binary} model_converter --input_path {sparse_dir}/0 --output_path {text_dir} --output_type TXT")
+    run_step(f"{colmap_binary} model_converter --input_path {model_dir} --output_path {text_dir} --output_type TXT")
     
     transforms_path = project_dir / "transforms.json"
     return convert_colmap_to_transforms(text_dir, images_dir, transforms_path)

@@ -1,0 +1,29 @@
+steps:
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "gcloud"
+    args:
+      [
+        "beta",
+        "run",
+        "deploy",
+        "worker-3d-scan",
+        "--image",
+        "asia-southeast1-docker.pkg.dev/mcp-gantt/worker-3d-scan-repo/worker-3d-scan:latest",
+        "--region",
+        "us-central1",
+        "--gpu",
+        "1",
+        "--gpu-type",
+        "nvidia-l4",
+        "--cpu",
+        "4",
+        "--memory",
+        "16Gi",
+        "--no-allow-unauthenticated",
+        "--max-instances",
+        "1",
+        "--timeout",
+        "3600",
+        "--set-env-vars",
+        "GIT_REPO_URL=https://github.com/PRIDA-TAKON/3DSCAN.git,GIT_BRANCH=main,WORKER_SCRIPT=takon_3d_worker.py",
+      ]
