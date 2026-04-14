@@ -10,7 +10,8 @@ from supabase import create_client
 import boto3
 from botocore.config import Config
 
-# --- Configuration ---
+# --- Configuration (Verified Sync) ---
+# Last Sync: 2026-04-14 15:40
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
