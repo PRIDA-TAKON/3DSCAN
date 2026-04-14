@@ -84,29 +84,32 @@ def run_train_mode(job_id, work_dir):
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(raw_data_dir)
     
-    # 🛠️ Force Restructure
+    # 🛠️ Force Restructure (v2 - Ultra Recursive)
     final_images_dir = final_data_dir / "images"
     final_images_dir.mkdir(parents=True, exist_ok=True)
     colmap_sparse_dir = final_data_dir / "colmap" / "sparse" / "0"
     colmap_sparse_dir.mkdir(parents=True, exist_ok=True)
 
-    # ค้นหาและย้ายรูปภาพ
+    # 1. หาและย้ายรูปภาพ (เน้นค้นหาทุกที่ที่ลงท้ายด้วย .jpg)
+    found_images = 0
     for img_path in Path(raw_data_dir).rglob("*.jpg"):
         shutil.copy(img_path, final_images_dir / img_path.name)
-
-    # ค้นหาและย้ายไฟล์ COLMAP .bin
+        found_images += 1
+    
+    # 2. หาและย้ายไฟล์ COLMAP
     found_bins = 0
     for bin_path in Path(raw_data_dir).rglob("*.bin"):
         shutil.copy(bin_path, colmap_sparse_dir / bin_path.name)
         found_bins += 1
 
-    # ตรวจสอบความถูกต้อง
-    if found_bins == 0:
+    # ตรวจสอบความสมบูรณ์
+    if found_images == 0 or found_bins == 0:
         struct = get_dir_structure(raw_data_dir)
-        raise Exception(f"CRITICAL: No .bin files found in zip! Structure:\n{struct}")
+        raise Exception(f"DATA ERROR: Images={found_images}, Bins={found_bins}. Structure:\n{struct}")
+
+    print(f"✅ Pre-train Sync: {found_images} images and {found_bins} bins ready.")
 
     # 2. Train
-    # รันใน final_data_dir เพื่อความชัวร์
     cmd = f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 colmap"
     success, err = run_command(cmd, cwd=str(final_data_dir))
     
@@ -114,7 +117,21 @@ def run_train_mode(job_id, work_dir):
         struct = get_dir_structure(final_data_dir)
         raise Exception(f"Training Failed. Structure:\n{struct}\nLog: {err}")
 
-    update_status(job_id, "completed", "Training Finished")
+    # 3. Export (เพิ่มการ Export PLY)
+    update_status(job_id, "exporting", "Training Finished, Exporting PLY...")
+    train_out = final_data_dir / "outputs"
+    try:
+        config_file = list(train_out.rglob("config.yml"))[0]
+        ply_path = work_dir / "result.ply"
+        run_command(f"ns-export gaussian-splat --load-config {config_file} --output-path {ply_path}")
+        
+        final_path = f"results/{job_id}/model.ply"
+        s3.upload_file(str(ply_path), S3_BUCKET, final_path)
+        res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
+        update_status(job_id, "completed", "Job Finished!", result_url=res_url)
+    except Exception as e:
+        update_status(job_id, "failed", f"Export failed: {e}")
+
     return {"status": "success"}
 
 def handler(job):
