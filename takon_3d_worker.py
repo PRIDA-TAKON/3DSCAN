@@ -67,7 +67,7 @@ def report_crash_log(job_id, error_msg, stack_trace):
         }).execute()
         print("✅ Crash log saved.", flush=True)
     except Exception as e:
-        print(f"⚠️ Failed to save crash log: {e}", flush=True)
+        print(f"⚠️ Failed to save crash log (Table might be missing): {e}", flush=True)
 
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}", flush=True)
@@ -147,16 +147,19 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN (Nerfstudio) ---
 def run_train_mode(job_id, work_dir):
-    update_status(job_id, "training", "Step 2: Training Gaussian Splatting (Trainer Image)")
-    
+    # แก้ไขจุดที่ 1: ดึงข้อมูลเดิมจาก DB มาเก็บไว้ก่อนที่จะอัปเดตสถานะ (เพื่อไม่ให้ S3_PATH หาย)
     supabase = get_supabase_client()
     job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = job_data.data.get("message", "")
     
     if "S3_PATH:" not in msg:
-        raise Exception(f"S3 path not found in message: {msg}")
+        raise Exception(f"S3 path not found in message (Ensure stage 1 finished): {msg}")
     
     remote_temp_path = msg.split("S3_PATH:")[1]
+    
+    # แจ้งสถานะใหม่
+    update_status(job_id, "training", "Step 2: Training Gaussian Splatting (Trainer Image)")
+    
     zip_path = work_dir / "processed.zip"
     data_dir = work_dir / "data"
     train_out = work_dir / "train_output"
