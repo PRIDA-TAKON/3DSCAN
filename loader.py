@@ -18,6 +18,17 @@ def download_file(url, dest_path):
     print(f"✅ Download complete.")
 
 def main():
+    print("--- ⚡ Ultralight RunPod Loader (S3 + Git) ---", flush=True)
+    
+    # Delay imports to catch missing dependencies early
+    try:
+        import boto3
+        from botocore.config import Config
+    except ImportError as e:
+        print(f"❌ ERROR: Missing dependency: {e}. Please ensure 'boto3' is installed in the image.", flush=True)
+        time.sleep(30)
+        return
+
     s3_engine_url = os.environ.get("RUNPOD_S3_ENGINE_URL")
     repo_url = os.environ.get("GIT_REPO_URL")
     git_token = os.environ.get("GIT_TOKEN")
