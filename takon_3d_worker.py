@@ -13,36 +13,21 @@ from botocore.config import Config
 # --- Configuration ---
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS") # PROCESS or TRAIN
+WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
 
-# S3 Configuration (Flexible key names)
 S3_ACCESS_KEY = os.environ.get("RUNPOD_S3_ACCESS_KEY") or os.environ.get("S3_ACCESS_KEY") or os.environ.get("ACCESS_KEY")
 S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY") or os.environ.get("S3_SECRET_KEY") or os.environ.get("SECRET_KEY")
 S3_ENDPOINT = os.environ.get("RUNPOD_S3_ENDPOINT") or "https://s3api-us-il-1.runpod.io"
-S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME") or os.environ.get("S3_BUCKET_NAME") or os.environ.get("BUCKET_NAME") or "3d-scans"
+S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME") or os.environ.get("S3_BUCKET_NAME") or os.environ.get("BUCKET_NAME")
 
 def get_supabase_client():
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        print("⚠️ Supabase credentials missing!", flush=True)
-        return None
+    if not SUPABASE_URL or not SUPABASE_KEY: return None
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_s3_client():
-    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
-        print("❌ Error: S3 Credentials missing!", flush=True)
-        return None
-    s3_config = Config(
-        signature_version='s3v4',
-        retries={'max_attempts': 3}
-    )
-    return boto3.client(
-        's3',
-        endpoint_url=S3_ENDPOINT,
-        aws_access_key_id=S3_ACCESS_KEY,
-        aws_secret_access_key=S3_SECRET_KEY,
-        config=s3_config,
-        region_name='us-il-1'
-    )
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
+    s3_config = Config(signature_version='s3v4', retries={'max_attempts': 3})
+    return boto3.client('s3', endpoint_url=S3_ENDPOINT, aws_access_key_id=S3_ACCESS_KEY, aws_secret_access_key=S3_SECRET_KEY, config=s3_config, region_name='us-il-1')
 
 def update_status(job_id, status, message="", result_url=None):
     print(f"🔔 [{job_id}] {status}: {message}", flush=True)
@@ -55,56 +40,34 @@ def update_status(job_id, status, message="", result_url=None):
     except Exception as e:
         print(f"⚠️ Supabase update failed: {e}", flush=True)
 
-def report_crash_log(job_id, error_msg, stack_trace):
-    print(f"📋 Reporting crash log to Supabase...", flush=True)
-    supabase = get_supabase_client()
-    if not supabase: return
-    try:
-        supabase.table("runpod_logs").insert({
-            "job_id": job_id,
-            "log_content": f"ERROR: {error_msg}\n\n{stack_trace}",
-            "is_processed": False
-        }).execute()
-        print("✅ Crash log saved.", flush=True)
-    except Exception as e:
-        print(f"⚠️ Failed to save crash log (Table might be missing): {e}", flush=True)
-
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}", flush=True)
+    full_output = []
     try:
         with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd) as sp:
             for line in sp.stdout:
                 print(line, end="", flush=True)
+                full_output.append(line)
         
         if sp.returncode != 0:
-            return False, f"Command exited with code {sp.returncode}"
+            return False, "".join(full_output[-20:]) # ส่ง 20 บรรทัดสุดท้ายกลับไปดู
         return True, ""
     except Exception as e:
-        error_detail = f"Execution failed: {str(e)}"
-        print(f"❌ {error_detail}", flush=True)
-        return False, error_detail
+        return False, str(e)
 
-def zip_folder(folder_path, output_path):
-    print(f"📦 Zipping {folder_path}...", flush=True)
-    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(folder_path):
-            for file in files:
-                zipf.write(os.path.join(root, file), 
-                           os.path.relpath(os.path.join(root, file), folder_path))
+def list_files(startpath):
+    print(f"📁 Listing files in {startpath}:")
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        print(f'{indent}{os.path.basename(root)}/')
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            print(f'{subindent}{f}')
 
-def download_file(url, dest_path):
-    print(f"📥 Downloading: {url}", flush=True)
-    response = requests.get(url, stream=True, timeout=60)
-    if response.status_code != 200:
-        raise Exception(f"Download failed: {response.status_code}")
-    with open(dest_path, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=8192): f.write(chunk)
-    print(f"✅ Downloaded to {dest_path}", flush=True)
-
-# --- Sub-Task: PROCESS (GLOMAP/COLMAP) ---
+# --- Sub-Task: PROCESS (SfM) ---
 def run_process_mode(job_id, video_url, work_dir):
-    update_status(job_id, "processing", "Step 1: Extracting frames & GLOMAP SfM (GPU Accelerated)")
-    
+    update_status(job_id, "processing", "Step 1: SfM Started")
     video_path = work_dir / "input_video.mp4"
     images_dir = work_dir / "images"
     output_dir = work_dir / "processed_data"
@@ -112,114 +75,76 @@ def run_process_mode(job_id, video_url, work_dir):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # 1. Download
-    download_file(video_url, video_path)
+    resp = requests.get(video_url, stream=True)
+    with open(video_path, 'wb') as f:
+        for chunk in resp.iter_content(chunk_size=8192): f.write(chunk)
 
-    # 2. Extract Frames
-    print("🎞️ Extracting frames with ffmpeg (4 fps, 720p, max 60 frames)...", flush=True)
+    # 2. Extract & SfM
     run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=4,scale=-1:720\" -frames:v 60 {images_dir}/frame_%04d.jpg")
-
-    # 3. SfM
     cmd = f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}"
     success, err = run_command(cmd)
-    if not success: 
-        print(f"⚠️ GLOMAP Script failed, attempting fallback with ns-process-data images...", flush=True)
-        cmd_fallback = f"ns-process-data images --data {images_dir} --output-dir {output_dir}"
-        success, err = run_command(cmd_fallback)
-        if not success: raise Exception(f"All SfM methods failed: {err}")
-
-    # 4. Zip and Upload to S3
-    update_status(job_id, "uploading_temp", "Uploading processed data to RunPod S3...")
-    zip_path = work_dir / "temp_data.zip"
-    zip_folder(output_dir, zip_path)
+    
+    # 3. Upload
+    zip_path = work_dir / "processed.zip"
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(output_dir):
+            for file in files: zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), output_dir))
 
     s3 = get_s3_client()
-    if not s3: raise Exception("S3 credentials not found!")
-    
     remote_path = f"temp/{job_id}/processed.zip"
-    file_size = zip_path.stat().st_size / (1024 * 1024)
-    print(f"📦 Uploading {zip_path.name} ({file_size:.2f} MB) to S3: {remote_path}...", flush=True)
-    
     s3.upload_file(str(zip_path), S3_BUCKET, remote_path)
-    print(f"✅ S3 Upload successful.", flush=True)
     
     update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")
-    return {"status": "success", "step": "process", "s3_path": remote_path}
+    return {"status": "success"}
 
-# --- Sub-Task: TRAIN (Nerfstudio) ---
+# --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    # แก้ไขจุดที่ 1: ดึงข้อมูลเดิมจาก DB มาเก็บไว้ก่อนที่จะอัปเดตสถานะ (เพื่อไม่ให้ S3_PATH หาย)
     supabase = get_supabase_client()
     job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = job_data.data.get("message", "")
     
-    if "S3_PATH:" not in msg:
-        raise Exception(f"S3 path not found in message (Ensure stage 1 finished): {msg}")
-    
+    if "S3_PATH:" not in msg: raise Exception(f"S3 path missing in DB")
     remote_temp_path = msg.split("S3_PATH:")[1]
     
-    # แจ้งสถานะใหม่
-    update_status(job_id, "training", "Step 2: Training Gaussian Splatting (Trainer Image)")
+    update_status(job_id, "training", "Step 2: Training Started")
     
     zip_path = work_dir / "processed.zip"
     data_dir = work_dir / "data"
-    train_out = work_dir / "train_output"
-
-    # 1. Download from S3
-    print(f"📥 Downloading temp data from S3: {remote_temp_path}...", flush=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 1. Download & Extract
     s3 = get_s3_client()
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(data_dir)
     
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(data_dir)
+    # [DIAGNOSTIC] เช็คโครงสร้างไฟล์
+    list_files(str(data_dir))
 
     # 2. Train
-    cmd = f"ns-train splatfacto --data {data_dir} --output-dir {train_out} --max-num-iterations 7000 --vis none --viewer.launch-viewer False colmap"
+    # เพิ่ม --viewer.launch-viewer False และเช็คพาธ data_dir
+    cmd = f"ns-train splatfacto --data {data_dir} --vis none --viewer.launch-viewer False --max-num-iterations 2000 colmap"
     success, err = run_command(cmd)
-    if not success: raise Exception(f"Training Failed: {err}")
-
-    # 3. Export & Upload Result to S3
-    config_file = list(train_out.glob("**/config.yml"))[0]
-    ply_path = work_dir / "result.ply"
-    run_command(f"ns-export gaussian-splat --load-config {config_file} --output-path {ply_path}")
     
-    final_path = f"results/{job_id}/model.ply"
-    print(f"📦 Uploading final model to S3: {final_path}...", flush=True)
-    s3 = get_s3_client()
-    s3.upload_file(str(ply_path), S3_BUCKET, final_path)
-    
-    res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
-    
-    # 4. Cleanup S3 Temp
-    print(f"🧹 Cleaning up temp data in S3 for job {job_id}...")
-    try:
-        s3.delete_object(Bucket=S3_BUCKET, Key=remote_temp_path)
-    except: pass
+    if not success:
+        raise Exception(f"Training Failed (Code 2). Last Output: {err}")
 
-    update_status(job_id, "completed", "Job Finished! Model ready on S3.", result_url=res_url)
-    return {"status": "success", "result_url": res_url}
+    update_status(job_id, "completed", "Training Finished")
+    return {"status": "success"}
 
-# --- Main Handler ---
 def handler(job):
     job_input = job["input"]
     job_id = job_input.get("id")
     video_url = job_input.get("video_url")
-    
     work_dir = Path(f"/tmp/job_{job_id}")
     if work_dir.exists(): shutil.rmtree(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        if WORKER_MODE == "PROCESS":
-            return run_process_mode(job_id, video_url, work_dir)
-        else:
-            return run_train_mode(job_id, work_dir)
+        if WORKER_MODE == "PROCESS": return run_process_mode(job_id, video_url, work_dir)
+        else: return run_train_mode(job_id, work_dir)
     except Exception as e:
-        import traceback
-        error_msg = str(e)
-        stack_trace = traceback.format_exc()
-        update_status(job_id, "failed", error_msg)
-        report_crash_log(job_id, error_msg, stack_trace)
-        return {"status": "error", "message": error_msg}
+        update_status(job_id, "failed", str(e))
+        return {"status": "error", "message": str(e)}
     finally:
         if work_dir.exists(): shutil.rmtree(work_dir)
 
