@@ -55,6 +55,13 @@ def run_command(cmd, cwd=None):
     except Exception as e:
         return False, str(e)
 
+def get_dir_structure(path):
+    structure = []
+    for root, dirs, files in os.walk(path):
+        rel_path = os.path.relpath(root, path)
+        structure.append(f"{rel_path}/: {files}")
+    return "\n".join(structure)
+
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
     supabase = get_supabase_client()
@@ -77,41 +84,35 @@ def run_train_mode(job_id, work_dir):
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(raw_data_dir)
     
-    print(f"📁 Raw Data Structure after extraction:")
-    for root, dirs, files in os.walk(raw_data_dir):
-        print(f"  {root}: {files}")
-
-    # 🛠️ Force Restructure: สร้างโครงสร้างที่ Nerfstudio ต้องการ
+    # 🛠️ Force Restructure
     final_images_dir = final_data_dir / "images"
     final_images_dir.mkdir(parents=True, exist_ok=True)
-    
     colmap_sparse_dir = final_data_dir / "colmap" / "sparse" / "0"
     colmap_sparse_dir.mkdir(parents=True, exist_ok=True)
 
-    # ค้นหาและย้ายรูปภาพ (Recursive)
-    found_images = 0
+    # ค้นหาและย้ายรูปภาพ
     for img_path in Path(raw_data_dir).rglob("*.jpg"):
         shutil.copy(img_path, final_images_dir / img_path.name)
-        found_images += 1
-    print(f"✅ Copied {found_images} images to {final_images_dir}")
 
-    # ค้นหาและย้ายไฟล์ COLMAP .bin (Recursive)
+    # ค้นหาและย้ายไฟล์ COLMAP .bin
     found_bins = 0
     for bin_path in Path(raw_data_dir).rglob("*.bin"):
         shutil.copy(bin_path, colmap_sparse_dir / bin_path.name)
         found_bins += 1
-    print(f"✅ Copied {found_bins} COLMAP bin files to {colmap_sparse_dir}")
 
-    # กรณีพิเศษ: ถ้าเป็นไฟล์ .json (เช่น transforms.json) ให้ย้ายมาที่รูทของ data/
-    for json_path in Path(raw_data_dir).rglob("transforms.json"):
-        shutil.copy(json_path, final_data_dir / "transforms.json")
-        print(f"✅ Copied transforms.json to {final_data_dir}")
+    # ตรวจสอบความถูกต้อง
+    if found_bins == 0:
+        struct = get_dir_structure(raw_data_dir)
+        raise Exception(f"CRITICAL: No .bin files found in zip! Structure:\n{struct}")
 
     # 2. Train
-    cmd = f"ns-train splatfacto --data {final_data_dir} --vis tensorboard --max-num-iterations 2000 colmap"
-    success, err = run_command(cmd)
+    # รันใน final_data_dir เพื่อความชัวร์
+    cmd = f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 colmap"
+    success, err = run_command(cmd, cwd=str(final_data_dir))
     
-    if not success: raise Exception(f"Training Failed. Log: {err}")
+    if not success:
+        struct = get_dir_structure(final_data_dir)
+        raise Exception(f"Training Failed. Structure:\n{struct}\nLog: {err}")
 
     update_status(job_id, "completed", "Training Finished")
     return {"status": "success"}
@@ -125,7 +126,7 @@ def handler(job):
     work_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        if WORKER_MODE == "PROCESS": return {"status": "success", "message": "PROCESS stage skipped"}
+        if WORKER_MODE == "PROCESS": return {"status": "success"}
         else: return run_train_mode(job_id, work_dir)
     except Exception as e:
         update_status(job_id, "failed", str(e))
