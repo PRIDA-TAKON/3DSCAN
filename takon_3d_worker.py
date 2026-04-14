@@ -28,8 +28,20 @@ def get_s3_client():
     if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
     access = S3_ACCESS_KEY.strip()
     secret = S3_SECRET_KEY.strip()
-    s3_config = Config(signature_version='s3v4', retries={'max_attempts': 3}, s3={'addressing_style': 'path'})
-    return boto3.client('s3', endpoint_url=S3_ENDPOINT, aws_access_key_id=access, aws_secret_access_key=secret, config=s3_config, region_name='us-il-1')
+    # ระบุ region_name ให้ชัดเจนเป็น us-il-1 ตามที่ RunPod S3 ต้องการ
+    s3_config = Config(
+        signature_version='s3v4',
+        retries={'max_attempts': 3},
+        s3={'addressing_style': 'path'}
+    )
+    return boto3.client(
+        's3',
+        endpoint_url=S3_ENDPOINT,
+        aws_access_key_id=access,
+        aws_secret_access_key=secret,
+        config=s3_config,
+        region_name='us-il-1'
+    )
 
 def update_status(job_id, status, message="", result_url=None):
     print(f"🔔 [{job_id}] {status}: {message}", flush=True)
