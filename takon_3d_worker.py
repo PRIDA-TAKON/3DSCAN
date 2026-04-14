@@ -61,22 +61,34 @@ def run_process_mode(job_id, video_url, work_dir):
     images_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Download
+    # 1. Download Video
+    print(f"📥 Downloading video: {video_url}", flush=True)
     resp = requests.get(video_url, stream=True)
+    if resp.status_code != 200: raise Exception(f"Video download failed: {resp.status_code}")
     with open(video_path, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=8192): f.write(chunk)
 
     # 2. Extract Frames
+    print("🎞️ Extracting frames...", flush=True)
     run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=4,scale=-1:720\" -frames:v 100 {images_dir}/frame_%04d.jpg")
+    
+    # 📝 Safety Check: ตรวจสอบจำนวนภาพที่ได้
+    extracted_imgs = list(images_dir.glob("*.jpg"))
+    print(f"📸 Extracted {len(extracted_imgs)} images.", flush=True)
+    if len(extracted_imgs) == 0: raise Exception("FFMPEG failed to extract any frames!")
 
     # 3. SfM
+    print("🎬 Running SfM...", flush=True)
     run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}")
 
-    # 4. Packaging (Fixed images path)
+    # 4. Packaging
+    print("📦 Packaging data...", flush=True)
     zip_path = work_dir / "processed.zip"
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # ใส่ไฟล์จาก output_dir
         for root, dirs, files in os.walk(output_dir):
             for file in files: zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), output_dir))
+        # ใส่รูปภาพ
         for root, dirs, files in os.walk(images_dir):
             for file in files: zipf.write(os.path.join(root, file), os.path.join("images", os.path.relpath(os.path.join(root, file), images_dir)))
 
@@ -84,6 +96,7 @@ def run_process_mode(job_id, video_url, work_dir):
     s3 = get_s3_client()
     remote_path = f"temp/{job_id}/processed.zip"
     s3.upload_file(str(zip_path), S3_BUCKET, remote_path)
+    
     update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")
     return {"status": "success"}
 
@@ -103,12 +116,10 @@ def run_train_mode(job_id, work_dir):
     raw_data_dir.mkdir(parents=True, exist_ok=True)
     final_data_dir.mkdir(parents=True, exist_ok=True)
     
-    # 1. Download & Extract
     s3 = get_s3_client()
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(raw_data_dir)
     
-    # 2. Restructure (Fixed: Robust Search)
     print("🛠️ Restructuring data...", flush=True)
     img_dest = final_data_dir / "images"
     img_dest.mkdir(parents=True, exist_ok=True)
@@ -130,11 +141,9 @@ def run_train_mode(job_id, work_dir):
     if found_imgs == 0 or found_bins == 0:
         raise Exception(f"Missing critical data: Images={found_imgs}, Bins={found_bins}")
 
-    # 3. Train
     success, _ = run_command(f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 colmap", cwd=str(final_data_dir))
     if not success: raise Exception("Training failed")
 
-    # 4. Export
     update_status(job_id, "exporting", "Exporting model...")
     train_out = final_data_dir / "outputs"
     config_file = list(train_out.rglob("config.yml"))[0]
