@@ -25,30 +25,11 @@ def get_supabase_client():
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def get_s3_client():
-    if not S3_ACCESS_KEY or not S3_SECRET_KEY:
-        print("❌ S3 Keys missing in Environment!", flush=True)
-        return None
-    
-    # Clean keys from potential whitespace
+    if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
     access = S3_ACCESS_KEY.strip()
     secret = S3_SECRET_KEY.strip()
-    
-    print(f"📡 Connecting to S3 at {S3_ENDPOINT} (Bucket: {S3_BUCKET})", flush=True)
-    
-    s3_config = Config(
-        signature_version='s3v4',
-        retries={'max_attempts': 3},
-        s3={'addressing_style': 'path'} # Force path style for RunPod
-    )
-    
-    return boto3.client(
-        's3',
-        endpoint_url=S3_ENDPOINT,
-        aws_access_key_id=access,
-        aws_secret_access_key=secret,
-        config=s3_config,
-        region_name='us-il-1'
-    )
+    s3_config = Config(signature_version='s3v4', retries={'max_attempts': 3}, s3={'addressing_style': 'path'})
+    return boto3.client('s3', endpoint_url=S3_ENDPOINT, aws_access_key_id=access, aws_secret_access_key=secret, config=s3_config, region_name='us-il-1')
 
 def update_status(job_id, status, message="", result_url=None):
     print(f"🔔 [{job_id}] {status}: {message}", flush=True)
@@ -80,7 +61,7 @@ def run_process_mode(job_id, video_url, work_dir):
     images_dir.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Download Video
+    # 1. Download
     resp = requests.get(video_url, stream=True)
     with open(video_path, 'wb') as f:
         for chunk in resp.iter_content(chunk_size=8192): f.write(chunk)
@@ -91,7 +72,7 @@ def run_process_mode(job_id, video_url, work_dir):
     # 3. SfM
     run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}")
 
-    # 4. Packaging
+    # 4. Packaging (Fixed images path)
     zip_path = work_dir / "processed.zip"
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(output_dir):
@@ -101,10 +82,8 @@ def run_process_mode(job_id, video_url, work_dir):
 
     # 5. Upload
     s3 = get_s3_client()
-    if not s3: raise Exception("S3 client init failed")
     remote_path = f"temp/{job_id}/processed.zip"
     s3.upload_file(str(zip_path), S3_BUCKET, remote_path)
-    
     update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")
     return {"status": "success"}
 
@@ -113,7 +92,6 @@ def run_train_mode(job_id, work_dir):
     supabase = get_supabase_client()
     job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = job_data.data.get("message", "")
-    
     if "S3_PATH:" not in msg: raise Exception(f"S3 path missing in DB")
     remote_temp_path = msg.split("S3_PATH:")[1]
     
@@ -127,18 +105,30 @@ def run_train_mode(job_id, work_dir):
     
     # 1. Download & Extract
     s3 = get_s3_client()
-    if not s3: raise Exception("S3 client init failed")
-    
-    print(f"📥 Downloading {remote_temp_path} from bucket {S3_BUCKET}...", flush=True)
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(raw_data_dir)
     
-    # 2. Restructure
-    shutil.copytree(raw_data_dir / "images", final_data_dir / "images", dirs_exist_ok=True)
+    # 2. Restructure (Fixed: Robust Search)
+    print("🛠️ Restructuring data...", flush=True)
+    img_dest = final_data_dir / "images"
+    img_dest.mkdir(parents=True, exist_ok=True)
     colmap_dest = final_data_dir / "colmap" / "sparse" / "0"
     colmap_dest.mkdir(parents=True, exist_ok=True)
-    for bin_file in raw_data_dir.rglob("*.bin"):
-        shutil.copy(bin_file, colmap_dest / bin_file.name)
+
+    # กวาดหาไฟล์รูปภาพทั้งหมด
+    found_imgs = 0
+    for img in Path(raw_data_dir).rglob("*.jpg"):
+        shutil.copy(img, img_dest / img.name)
+        found_imgs += 1
+    
+    # กวาดหาไฟล์ COLMAP ทั้งหมด
+    found_bins = 0
+    for bin_f in Path(raw_data_dir).rglob("*.bin"):
+        shutil.copy(bin_f, colmap_dest / bin_f.name)
+        found_bins += 1
+
+    if found_imgs == 0 or found_bins == 0:
+        raise Exception(f"Missing critical data: Images={found_imgs}, Bins={found_bins}")
 
     # 3. Train
     success, _ = run_command(f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 colmap", cwd=str(final_data_dir))
@@ -154,7 +144,6 @@ def run_train_mode(job_id, work_dir):
     final_path = f"results/{job_id}/model.ply"
     s3.upload_file(str(ply_path), S3_BUCKET, final_path)
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
-    
     update_status(job_id, "completed", "Job Finished!", result_url=res_url)
     return {"status": "success"}
 
@@ -165,7 +154,6 @@ def handler(job):
     work_dir = Path(f"/tmp/job_{job_id}")
     if work_dir.exists(): shutil.rmtree(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
-
     try:
         if WORKER_MODE == "PROCESS": return run_process_mode(job_id, video_url, work_dir)
         else: return run_train_mode(job_id, work_dir)
