@@ -70,30 +70,42 @@ def run_train_mode(job_id, work_dir):
     raw_data_dir = work_dir / "raw_data"
     final_data_dir = work_dir / "data"
     raw_data_dir.mkdir(parents=True, exist_ok=True)
+    final_data_dir.mkdir(parents=True, exist_ok=True)
     
     # 1. Download & Extract
     s3 = get_s3_client()
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     with zipfile.ZipFile(zip_path, 'r') as zip_ref: zip_ref.extractall(raw_data_dir)
     
-    # 🛠️ Fix: เตรียมโครงสร้างไฟล์ให้ถูกตามที่ Nerfstudio ต้องการ
-    # ย้ายรูปภาพไปที่ data/images
+    print(f"📁 Raw Data Structure after extraction:")
+    for root, dirs, files in os.walk(raw_data_dir):
+        print(f"  {root}: {files}")
+
+    # 🛠️ Force Restructure: สร้างโครงสร้างที่ Nerfstudio ต้องการ
     final_images_dir = final_data_dir / "images"
     final_images_dir.mkdir(parents=True, exist_ok=True)
-    for img in (raw_data_dir / "images").glob("*.jpg"):
-        shutil.copy(img, final_images_dir / img.name)
     
-    # ย้าย COLMAP sparse data ไปที่ data/colmap/sparse/0
     colmap_sparse_dir = final_data_dir / "colmap" / "sparse" / "0"
     colmap_sparse_dir.mkdir(parents=True, exist_ok=True)
-    
-    # หาว่าไฟล์ .bin ของ COLMAP อยู่ไหนแล้วย้ายมา
-    for bin_file in raw_data_dir.glob("**/sparse/0/*.bin"):
-        shutil.copy(bin_file, colmap_sparse_dir / bin_file.name)
-    
-    # กรณีไฟล์อยู่รูท (จาก GLOMAP)
-    for bin_file in raw_data_dir.glob("*.bin"):
-        shutil.copy(bin_file, colmap_sparse_dir / bin_file.name)
+
+    # ค้นหาและย้ายรูปภาพ (Recursive)
+    found_images = 0
+    for img_path in Path(raw_data_dir).rglob("*.jpg"):
+        shutil.copy(img_path, final_images_dir / img_path.name)
+        found_images += 1
+    print(f"✅ Copied {found_images} images to {final_images_dir}")
+
+    # ค้นหาและย้ายไฟล์ COLMAP .bin (Recursive)
+    found_bins = 0
+    for bin_path in Path(raw_data_dir).rglob("*.bin"):
+        shutil.copy(bin_path, colmap_sparse_dir / bin_path.name)
+        found_bins += 1
+    print(f"✅ Copied {found_bins} COLMAP bin files to {colmap_sparse_dir}")
+
+    # กรณีพิเศษ: ถ้าเป็นไฟล์ .json (เช่น transforms.json) ให้ย้ายมาที่รูทของ data/
+    for json_path in Path(raw_data_dir).rglob("transforms.json"):
+        shutil.copy(json_path, final_data_dir / "transforms.json")
+        print(f"✅ Copied transforms.json to {final_data_dir}")
 
     # 2. Train
     cmd = f"ns-train splatfacto --data {final_data_dir} --vis tensorboard --max-num-iterations 2000 colmap"
@@ -113,11 +125,8 @@ def handler(job):
     work_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        if WORKER_MODE == "PROCESS": 
-            # (คงโค้ด PROCESS ไว้เหมือนเดิม...)
-            return {"status": "success", "message": "PROCESS stage skipped in debug mode"}
-        else: 
-            return run_train_mode(job_id, work_dir)
+        if WORKER_MODE == "PROCESS": return {"status": "success", "message": "PROCESS stage skipped"}
+        else: return run_train_mode(job_id, work_dir)
     except Exception as e:
         update_status(job_id, "failed", str(e))
         return {"status": "error", "message": str(e)}
