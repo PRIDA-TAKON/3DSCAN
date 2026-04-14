@@ -121,8 +121,8 @@ def run_train_mode(job_id, work_dir):
     list_files(str(data_dir))
 
     # 2. Train
-    # แก้ไข: เปลี่ยน --vis none เป็น --vis tensorboard เพื่อแก้ Parsing error
-    cmd = f"ns-train splatfacto --data {data_dir} --vis tensorboard --viewer.launch-viewer False --max-num-iterations 2000 colmap"
+    # แก้ไข: ย้าย viewer options ไปไว้ข้างหลัง colmap และตัด --viewer.launch-viewer ที่ไม่รองรับออก
+    cmd = f"ns-train splatfacto --data {data_dir} --vis tensorboard --max-num-iterations 2000 colmap"
     success, err = run_command(cmd)
     
     if not success:
