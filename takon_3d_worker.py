@@ -114,20 +114,30 @@ def run_process_mode(job_id, video_url, work_dir):
         
         # ใส่รูปภาพ
         img_count = 0
+        print(f"📁 Checking images in: {images_dir}", flush=True)
         for root, dirs, files in os.walk(images_dir):
             for file in files:
-                abs_path = os.path.join(root, file)
-                rel_path = os.path.join("images", os.path.relpath(abs_path, images_dir))
-                zipf.write(abs_path, rel_path)
-                img_count += 1
+                if file.lower().endswith(('.jpg', '.jpeg', '.png')):
+                    abs_path = os.path.join(root, file)
+                    rel_path = os.path.join("images", os.path.relpath(abs_path, images_dir))
+                    zipf.write(abs_path, rel_path)
+                    img_count += 1
         
     print(f"✅ Packaged {files_count} data files and {img_count} images.", flush=True)
+    
+    # 📝 Final Integrity Check
+    if img_count == 0:
+        raise Exception("Packaging failed: No images were added to the zip file!")
+    
+    zip_size = os.path.getsize(zip_path) / (1024 * 1024)
+    print(f"📦 Final Zip Size: {zip_size:.2f} MB", flush=True)
 
     # 5. Upload
     s3 = get_s3_client()
     if not s3: raise Exception("S3 Client configuration missing!")
     
     remote_path = f"temp/{job_id}/processed.zip"
+    print(f"📤 Uploading to S3: {remote_path}...", flush=True)
     s3.upload_file(str(zip_path), S3_BUCKET, remote_path)
     
     update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")

@@ -236,9 +236,13 @@ def run_glomap_sfm(images_dir, output_dir):
     return True
 
 if __name__ == "__main__":
+    import sys
     parser = argparse.ArgumentParser(description="Run Glomap SfM and Prepare for 3DGS")
     parser.add_argument("--images_dir", required=True)
     parser.add_argument("--output_dir", required=True)
     args = parser.parse_args()
     
-    run_glomap_sfm(args.images_dir, args.output_dir)
+    success = run_glomap_sfm(args.images_dir, args.output_dir)
+    if not success:
+        sys.exit(1)
+    sys.exit(0)
