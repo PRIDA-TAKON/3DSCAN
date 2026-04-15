@@ -37,10 +37,10 @@
 - **สถานะ:** ✅ **แก้ไขแล้ว (v1.0.5)**
 
 ### [ISSUE-005] ns-train Syntax Error (Unrecognized options)
-- **อาการ:** โปรแกรมฟ้องว่าไม่รู้จักคำสั่ง `--pipeline...`
-- **สาเหตุ:** Nerfstudio บังคับลำดับ Argument (Model Flags ต้องอยู่ก่อน Subcommand `colmap`)
-- **การแก้ไข:** จัดเรียงลำดับคำสั่งใหม่ในสคริปต์รันเทรน
-- **สถานะ:** ⏳ **รอทดสอบรัน (v1.0.5)**
+- **อาการ:** โปรแกรมฟ้องว่าไม่รู้จักคำสั่ง หรือวาง Argument ผิดตำแหน่ง
+- **สาเหตุ:** Nerfstudio บังคับลำดับ Argument อย่างเคร่งครัด (Method Flags ต้องอยู่ก่อน Subcommand `colmap` และ Dataparser Flags ต้องอยู่หลังสุด)
+- **การแก้ไข:** ปรับโครงสร้างคำสั่งใหม่ตามเอกสาร Nerfstudio Documentation (v1.0.7)
+- **สถานะ:** ✅ **แก้ไขแล้ว (v1.0.7-doc-aligned)**
 
 ---
 
