@@ -214,11 +214,11 @@ def run_train_mode(job_id, work_dir):
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # ใช้ Flag ที่ help แนะนำมา: --pipeline.datamanager.camera-res-scale-factor 1.0
+    # 📝 แก้ไขตำแหน่ง Flag: --pipeline... ต้องอยู่ก่อนหน้า subcommand 'colmap'
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
-        f"colmap --colmap-path colmap/sparse/0 --images-path images "
-        f"--pipeline.datamanager.camera-res-scale-factor 1.0"
+        f"--pipeline.datamanager.camera-res-scale-factor 1.0 "
+        f"colmap --colmap-path colmap/sparse/0 --images-path images"
     )
     print(f"🚀 Executing: {train_cmd}", flush=True)
     
