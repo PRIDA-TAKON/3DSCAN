@@ -214,12 +214,17 @@ def run_train_mode(job_id, work_dir):
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # แก้ไข: เพิ่ม .dataparser. เข้าไปใน Flag ให้ถูกต้อง
+    # ใช้ Flag ที่ help แนะนำมา: --pipeline.datamanager.camera-res-scale-factor 1.0
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
         f"colmap --colmap-path colmap/sparse/0 --images-path images "
-        f"--pipeline.datamanager.dataparser.downscale-factor 1"
+        f"--pipeline.datamanager.camera-res-scale-factor 1.0"
     )
+    print(f"🚀 Executing: {train_cmd}", flush=True)
+    
+    # Debug: List directories to be 100% sure
+    run_command("ls -R .")
+    
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
     if not success:
