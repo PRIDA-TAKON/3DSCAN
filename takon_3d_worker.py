@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.0.4-robust-train
+# Version: v1.0.5-final-syntax
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -90,7 +90,7 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] v1.0.4-robust | Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.0.5-final | Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     res = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = res.data.get("message") if res.data else ""
@@ -99,16 +99,17 @@ def run_train_mode(job_id, work_dir):
         raise Exception(f"Invalid message in DB: {msg}. Need S3_PATH.")
     
     remote_temp_path = msg.split("S3_PATH:")[1].strip()
-    print(f"🔗 [TRAIN] S3 Path found: {remote_temp_path}", flush=True)
+    print(f"🔗 [TRAIN] S3 Path: {remote_temp_path}", flush=True)
     
-    update_status(job_id, "training", f"Step 2: Training (v1.0.4) | S3_PATH:{remote_temp_path}")
+    update_status(job_id, "training", f"Step 2: Training (v1.0.5) | S3_PATH:{remote_temp_path}")
     
     zip_path = work_dir / "processed.zip"
     final_data_dir = work_dir / "data"
     final_data_dir.mkdir(parents=True, exist_ok=True)
     
+    s3 = get_s3_client()
     print(f"📥 [TRAIN] Downloading data...", flush=True)
-    get_s3_client().download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+    s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(work_dir / "raw")
@@ -123,9 +124,10 @@ def run_train_mode(job_id, work_dir):
     for bin_f in (work_dir / "raw").rglob("*.bin"): shutil.copy(bin_f, colmap_dest / bin_f.name)
 
     print("🔥 [TRAIN] Starting ns-train...", flush=True)
+    # 📝 v1.0.5: ใช้ Flag ที่ถูกต้องและวางไว้ก่อน subcommand colmap
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
-        f"--pipeline.datamanager.dataparser.downscale-factor 1 "
+        f"--pipeline.datamanager.camera-res-scale-factor 1.0 "
         f"colmap --colmap-path colmap/sparse/0 --images-path images"
     )
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
