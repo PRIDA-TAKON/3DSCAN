@@ -214,8 +214,13 @@ def run_train_mode(job_id, work_dir):
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # เพิ่ม --max-num-iterations เป็นค่าที่เห็นชัดเจน (เช่น 2000)
-    success, err = run_command(f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 colmap", cwd=str(final_data_dir))
+    # เพิ่ม --pipeline.datamanager.downscale-factor 1 เพื่อป้องกัน interactive prompt ที่ทำให้เกิด EOFError
+    train_cmd = (
+        f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
+        f"colmap --colmap-path colmap/sparse/0 --images-path images "
+        f"--pipeline.datamanager.downscale-factor 1"
+    )
+    success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
     if not success:
         print(f"❌ [TRAIN] ns-train failed: {err}", flush=True)
