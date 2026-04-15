@@ -158,7 +158,7 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] Starting Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.0.2-syntax-fixed | Starting Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = job_data.data.get("message", "")
@@ -214,10 +214,9 @@ def run_train_mode(job_id, work_dir):
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # 📝 แก้ไขตำแหน่ง Flag: --pipeline... ต้องอยู่ก่อนหน้า subcommand 'colmap'
+    # 📝 ลบ Flag เจ้าปัญหาออก และจัดลำดับใหม่ให้เรียบง่ายที่สุด
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
-        f"--pipeline.datamanager.camera-res-scale-factor 1.0 "
         f"colmap --colmap-path colmap/sparse/0 --images-path images"
     )
     print(f"🚀 Executing: {train_cmd}", flush=True)
