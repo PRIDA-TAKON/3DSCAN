@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.0.7-doc-aligned
+# Version: v1.0.9-export-cwd-fix
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -90,7 +90,7 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] v1.0.7-doc-aligned | Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.0.9-export-fix | Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     res = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = res.data.get("message") if res.data else ""
@@ -99,21 +99,19 @@ def run_train_mode(job_id, work_dir):
         raise Exception(f"Invalid message in DB: {msg}. Need S3_PATH.")
     
     remote_temp_path = msg.split("S3_PATH:")[1].strip()
-    print(f"🔗 [TRAIN] S3 Path: {remote_temp_path}", flush=True)
-    
-    update_status(job_id, "training", f"Step 2: Training (v1.0.7) | S3_PATH:{remote_temp_path}")
+    update_status(job_id, "training", f"Step 2: Training (v1.0.9) | S3_PATH:{remote_temp_path}")
     
     zip_path = work_dir / "processed.zip"
     final_data_dir = work_dir / "data"
     final_data_dir.mkdir(parents=True, exist_ok=True)
     
-    s3 = get_s3_client()
     print(f"📥 [TRAIN] Downloading data...", flush=True)
-    s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+    get_s3_client().download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(work_dir / "raw")
     
+    # Restructure for Nerfstudio
     img_dest = final_data_dir / "images"
     img_dest.mkdir(parents=True, exist_ok=True)
     colmap_dest = final_data_dir / "colmap" / "sparse" / "0"
@@ -123,8 +121,6 @@ def run_train_mode(job_id, work_dir):
     for bin_f in (work_dir / "raw").rglob("*.bin"): shutil.copy(bin_f, colmap_dest / bin_f.name)
 
     print("🔥 [TRAIN] Starting ns-train...", flush=True)
-    # 📝 v1.0.7: ปรับโครงสร้างคำสั่งตามเอกสาร Nerfstudio เป๊ะๆ
-    # Format: ns-train <method> [method_flags] <dataparser> [dataparser_flags]
     train_cmd = (
         f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard "
         f"colmap --data . --colmap-path colmap/sparse/0 --images-path images --downscale-factor 1"
@@ -137,21 +133,21 @@ def run_train_mode(job_id, work_dir):
 
     print("📤 [TRAIN] Exporting PLY...", flush=True)
     config_yml = list((final_data_dir / "outputs").rglob("config.yml"))[0]
-    # 📝 v1.0.8: เปลี่ยนจาก --output-path เป็น --output-dir ตามเอกสาร Nerfstudio
     export_dir = work_dir / "export"
     export_dir.mkdir(parents=True, exist_ok=True)
     
-    success, err = run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-dir {export_dir}")
+    # 📝 v1.0.9: สำคัญ! ต้องรันใน cwd เดิม (final_data_dir) เพื่อให้มันหาไฟล์ COLMAP เจอ
+    success, err = run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-dir {export_dir}", cwd=str(final_data_dir))
     if not success: raise Exception(f"Export failed: {err}")
     
-    # ปกติไฟล์จะชื่อ splat.ply ใน export_dir
-    ply_file = list(export_dir.glob("*.ply"))[0]
+    ply_files = list(export_dir.glob("*.ply"))
+    if not ply_files: raise Exception("Export finished but no .ply file found!")
     
     final_path = f"results/{job_id}/model.ply"
-    get_s3_client().upload_file(str(ply_file), S3_BUCKET, final_path)
+    get_s3_client().upload_file(str(ply_files[0]), S3_BUCKET, final_path)
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
-    update_status(job_id, "completed", "Done!", result_url=res_url)
+    update_status(job_id, "completed", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
 
 def handler(job):
