@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.0.5-final-syntax
+# Version: v1.0.6-final-fix
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -66,12 +66,12 @@ def run_process_mode(job_id, video_url, work_dir):
         for chunk in resp.iter_content(chunk_size=8192): f.write(chunk)
 
     print("🎞️ Extracting frames...", flush=True)
-    success, err = run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=2\" -frames:v 300 {images_dir}/frame_%04d.jpg")
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=2\" -frames:v 300 {images_dir}/frame_%04d.jpg")
     
     print("🎬 Running SfM Pipeline...", flush=True)
     success, err = run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}")
     if not success:
-        success, err = run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {output_dir}")
+        run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {output_dir}")
 
     print("📦 Packaging data...", flush=True)
     zip_path = work_dir / "processed.zip"
@@ -90,7 +90,7 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] v1.0.5-final | Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.0.6-final | Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     res = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = res.data.get("message") if res.data else ""
@@ -101,15 +101,14 @@ def run_train_mode(job_id, work_dir):
     remote_temp_path = msg.split("S3_PATH:")[1].strip()
     print(f"🔗 [TRAIN] S3 Path: {remote_temp_path}", flush=True)
     
-    update_status(job_id, "training", f"Step 2: Training (v1.0.5) | S3_PATH:{remote_temp_path}")
+    update_status(job_id, "training", f"Step 2: Training (v1.0.6) | S3_PATH:{remote_temp_path}")
     
     zip_path = work_dir / "processed.zip"
     final_data_dir = work_dir / "data"
     final_data_dir.mkdir(parents=True, exist_ok=True)
     
-    s3 = get_s3_client()
     print(f"📥 [TRAIN] Downloading data...", flush=True)
-    s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+    get_s3_client().download_file(S3_BUCKET, remote_temp_path, str(zip_path))
     
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(work_dir / "raw")
@@ -123,12 +122,14 @@ def run_train_mode(job_id, work_dir):
     for img in (work_dir / "raw").rglob("*.jpg"): shutil.copy(img, img_dest / img.name)
     for bin_f in (work_dir / "raw").rglob("*.bin"): shutil.copy(bin_f, colmap_dest / bin_f.name)
 
-    print("🔥 [TRAIN] Starting ns-train...", flush=True)
-    # 📝 v1.0.5: ใช้ Flag ที่ถูกต้องและวางไว้ก่อน subcommand colmap
+    print("📁 [DEBUG] Files in training dir:", flush=True)
+    run_command("ls -R .", cwd=str(final_data_dir))
+
+    print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
+    # 📝 v1.0.6: ใช้ --downscale-factor 1 หลังคำว่า colmap เพื่อป้องกันการถามคำถาม
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
-        f"--pipeline.datamanager.camera-res-scale-factor 1.0 "
-        f"colmap --colmap-path colmap/sparse/0 --images-path images"
+        f"colmap --colmap-path colmap/sparse/0 --images-path images --downscale-factor 1"
     )
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
