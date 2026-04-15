@@ -258,12 +258,23 @@ def handler(job):
     job_input = job["input"]
     job_id = job_input.get("id")
     video_url = job_input.get("video_url")
+    
+    # 🎯 เพิ่มตรงนี้: ให้ความสำคัญกับ mode ที่ส่งมาใน Request ก่อน Environment Variable
+    current_mode = job_input.get("mode", WORKER_MODE) 
+    
+    print(f"🚀 [WORKER] Job ID: {job_id} | Mode: {current_mode}", flush=True)
+    
     work_dir = Path(f"/tmp/job_{job_id}")
     if work_dir.exists(): shutil.rmtree(work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
+    
     try:
-        if WORKER_MODE == "PROCESS": return run_process_mode(job_id, video_url, work_dir)
-        else: return run_train_mode(job_id, work_dir)
+        if current_mode == "PROCESS": 
+            return run_process_mode(job_id, video_url, work_dir)
+        elif current_mode == "TRAIN":
+            return run_train_mode(job_id, work_dir)
+        else:
+            raise Exception(f"Unknown mode: {current_mode}")
     except Exception as e:
         update_status(job_id, "failed", str(e))
         return {"status": "error", "message": str(e)}
