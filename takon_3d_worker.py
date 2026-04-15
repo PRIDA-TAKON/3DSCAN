@@ -214,11 +214,11 @@ def run_train_mode(job_id, work_dir):
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # เพิ่ม --pipeline.datamanager.downscale-factor 1 เพื่อป้องกัน interactive prompt ที่ทำให้เกิด EOFError
+    # แก้ไข: เพิ่ม .dataparser. เข้าไปใน Flag ให้ถูกต้อง
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
         f"colmap --colmap-path colmap/sparse/0 --images-path images "
-        f"--pipeline.datamanager.downscale-factor 1"
+        f"--pipeline.datamanager.dataparser.downscale-factor 1"
     )
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
