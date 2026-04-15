@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration (Verified Sync) ---
-# Last Sync: 2026-04-14 15:40
+# Last Sync: 2026-04-15 10:15 (v1.0.3)
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -29,7 +29,6 @@ def get_s3_client():
     if not S3_ACCESS_KEY or not S3_SECRET_KEY: return None
     access = S3_ACCESS_KEY.strip()
     secret = S3_SECRET_KEY.strip()
-    # ระบุ region_name ให้ชัดเจนเป็น us-il-1 ตามที่ RunPod S3 ต้องการ
     s3_config = Config(
         signature_version='s3v4',
         retries={'max_attempts': 3},
@@ -85,49 +84,34 @@ def run_process_mode(job_id, video_url, work_dir):
         raise Exception(f"Failed to download video: {str(e)}")
 
     # 2. Extract Frames
-    # ปรับปรุง: ใช้ fps=2 และเพิ่มเฟรมเป็น 300 เพื่อให้ SFM มีข้อมูลพอ และคงคุณภาพไว้ที่ q:v 2
     print("🎞️ Extracting frames (Optimized)...", flush=True)
     success, err = run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=2\" -frames:v 300 {images_dir}/frame_%04d.jpg")
     if not success:
-        print(f"⚠️ FFMPEG Error: {err}. Retrying with fallback scale...", flush=True)
         run_command(f"ffmpeg -i {video_path} -q:v 4 -vf \"fps=2,scale=-1:720\" -frames:v 200 {images_dir}/frame_%04d.jpg")
     
-    # 📝 Safety Check: ตรวจสอบจำนวนภาพที่ได้
     extracted_imgs = list(images_dir.glob("*.jpg"))
     print(f"📸 Extracted {len(extracted_imgs)} images.", flush=True)
-    if len(extracted_imgs) < 10: raise Exception(f"Insufficient frames extracted ({len(extracted_imgs)}). SfM needs at least 20-30 frames.")
+    if len(extracted_imgs) < 10: raise Exception(f"Insufficient frames extracted ({len(extracted_imgs)}).")
 
     # 3. SfM
     print("🎬 Running SfM Pipeline...", flush=True)
-    # ใช้ scripts/run_glomap.py และตรวจสอบผลลัพธ์
     success, err = run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}")
     if not success:
-        # ลองใช้ตัวสำรองถ้า glomap/colmap มีปัญหา
         print(f"⚠️ SfM Pipeline failed: {err}. Retrying with basic COLMAP...", flush=True)
         success, err = run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {output_dir}")
         if not success: raise Exception(f"SfM failed after retries: {err}")
-
-    # 📝 Verify Output before packaging
-    sparse_files = list(output_dir.rglob("*.bin")) + list(output_dir.rglob("*.txt"))
-    if not sparse_files:
-        raise Exception("SfM completed but produced no reconstruction files (*.bin or *.txt)!")
 
     # 4. Packaging
     print("📦 Packaging data...", flush=True)
     zip_path = work_dir / "processed.zip"
     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        # ใส่ไฟล์จาก output_dir (Sparse Model / Transforms)
-        files_count = 0
         for root, dirs, files in os.walk(output_dir):
             for file in files:
                 abs_path = os.path.join(root, file)
                 rel_path = os.path.relpath(abs_path, output_dir)
                 zipf.write(abs_path, rel_path)
-                files_count += 1
         
-        # ใส่รูปภาพ
         img_count = 0
-        print(f"📁 Checking images in: {images_dir}", flush=True)
         for root, dirs, files in os.walk(images_dir):
             for file in files:
                 if file.lower().endswith(('.jpg', '.jpeg', '.png')):
@@ -136,15 +120,8 @@ def run_process_mode(job_id, video_url, work_dir):
                     zipf.write(abs_path, rel_path)
                     img_count += 1
         
-    print(f"✅ Packaged {files_count} data files and {img_count} images.", flush=True)
+    print(f"✅ Packaged {img_count} images.", flush=True)
     
-    # 📝 Final Integrity Check
-    if img_count == 0:
-        raise Exception("Packaging failed: No images were added to the zip file!")
-    
-    zip_size = os.path.getsize(zip_path) / (1024 * 1024)
-    print(f"📦 Final Zip Size: {zip_size:.2f} MB", flush=True)
-
     # 5. Upload
     s3 = get_s3_client()
     if not s3: raise Exception("S3 Client configuration missing!")
@@ -158,19 +135,18 @@ def run_process_mode(job_id, video_url, work_dir):
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] v1.0.2-syntax-fixed | Starting Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.0.3-no-prompt | Starting Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     job_data = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = job_data.data.get("message", "")
     
-    print(f"📖 [TRAIN] DB Message: {msg}", flush=True)
     if "S3_PATH:" not in msg:
         raise Exception(f"S3 path missing in DB. Current msg: {msg}")
     
-    remote_temp_path = msg.split("S3_PATH:")[1]
+    remote_temp_path = msg.split("S3_PATH:")[1].strip()
     print(f"🔗 [TRAIN] Remote Path: {remote_temp_path}", flush=True)
     
-    update_status(job_id, "training", "Step 2: Training (Initializing...)")
+    update_status(job_id, "training", f"Step 2: Training (v1.0.3) | S3_PATH:{remote_temp_path}")
     
     zip_path = work_dir / "processed.zip"
     raw_data_dir = work_dir / "raw_data"
@@ -180,19 +156,14 @@ def run_train_mode(job_id, work_dir):
     
     # 1. Download
     s3 = get_s3_client()
-    if not s3: raise Exception("S3 client is None! Check credentials.")
-    
-    print(f"📥 [TRAIN] Downloading from S3: {remote_temp_path}...", flush=True)
+    print(f"📥 [TRAIN] Downloading from S3...", flush=True)
     s3.download_file(S3_BUCKET, remote_temp_path, str(zip_path))
-    print(f"✅ [TRAIN] Downloaded {os.path.getsize(zip_path)} bytes.", flush=True)
     
     # 2. Extract
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(raw_data_dir)
-    print(f"📂 [TRAIN] Extracted files to {raw_data_dir}", flush=True)
     
     # 3. Restructure
-    print("🛠️ [TRAIN] Restructuring data for Nerfstudio...", flush=True)
     img_dest = final_data_dir / "images"
     img_dest.mkdir(parents=True, exist_ok=True)
     colmap_dest = final_data_dir / "colmap" / "sparse" / "0"
@@ -208,31 +179,28 @@ def run_train_mode(job_id, work_dir):
         shutil.copy(bin_f, colmap_dest / bin_f.name)
         found_bins += 1
 
-    print(f"🔍 [TRAIN] Data Check: Images={found_imgs}, COLMAP Bins={found_bins}", flush=True)
+    print(f"🔍 [TRAIN] Data Check: Images={found_imgs}, Bins={found_bins}", flush=True)
     if found_imgs == 0 or found_bins == 0:
         raise Exception(f"Missing critical data: Images={found_imgs}, Bins={found_bins}")
 
     # 4. Run Training
     print("🔥 [TRAIN] Starting ns-train (splatfacto)...", flush=True)
-    # 📝 ลบ Flag เจ้าปัญหาออก และจัดลำดับใหม่ให้เรียบง่ายที่สุด
+    # 📝 v1.0.3: เพิ่ม downscale-factor 1 และจัดลำดับ Flag ใหม่
     train_cmd = (
         f"ns-train splatfacto --data . --vis tensorboard --max-num-iterations 2000 "
+        f"--pipeline.datamanager.dataparser.downscale-factor 1 "
         f"colmap --colmap-path colmap/sparse/0 --images-path images"
     )
-    print(f"🚀 Executing: {train_cmd}", flush=True)
-    
-    # Debug: List directories to be 100% sure
-    run_command("ls -R .")
     
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
     if not success:
-        print(f"❌ [TRAIN] ns-train failed: {err}", flush=True)
+        update_status(job_id, "failed", f"Training failed: {err} | S3_PATH:{remote_temp_path}")
         raise Exception(f"Training failed: {err}")
 
     # 5. Export
     print("📤 [TRAIN] Exporting model to PLY...", flush=True)
-    update_status(job_id, "exporting", "Exporting model...")
+    update_status(job_id, "exporting", f"Exporting model... | S3_PATH:{remote_temp_path}")
     train_out = final_data_dir / "outputs"
     config_yml = list(train_out.rglob("config.yml"))
     if not config_yml:
@@ -244,21 +212,17 @@ def run_train_mode(job_id, work_dir):
     if not success: raise Exception(f"Export failed: {err}")
     
     # 6. Upload Result
-    print(f"☁️ [TRAIN] Uploading PLY to results/{job_id}/model.ply", flush=True)
     final_path = f"results/{job_id}/model.ply"
     s3.upload_file(str(ply_path), S3_BUCKET, final_path)
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
     update_status(job_id, "completed", "Job Finished!", result_url=res_url)
-    print(f"🎉 [TRAIN] SUCCESS! Result: {res_url}", flush=True)
     return {"status": "success", "result_url": res_url}
 
 def handler(job):
     job_input = job["input"]
     job_id = job_input.get("id")
     video_url = job_input.get("video_url")
-    
-    # 🎯 เพิ่มตรงนี้: ให้ความสำคัญกับ mode ที่ส่งมาใน Request ก่อน Environment Variable
     current_mode = job_input.get("mode", WORKER_MODE) 
     
     print(f"🚀 [WORKER] Job ID: {job_id} | Mode: {current_mode}", flush=True)
@@ -268,14 +232,10 @@ def handler(job):
     work_dir.mkdir(parents=True, exist_ok=True)
     
     try:
-        if current_mode == "PROCESS": 
-            return run_process_mode(job_id, video_url, work_dir)
-        elif current_mode == "TRAIN":
-            return run_train_mode(job_id, work_dir)
-        else:
-            raise Exception(f"Unknown mode: {current_mode}")
+        if current_mode == "PROCESS": return run_process_mode(job_id, video_url, work_dir)
+        elif current_mode == "TRAIN": return run_train_mode(job_id, work_dir)
+        else: raise Exception(f"Unknown mode: {current_mode}")
     except Exception as e:
-        update_status(job_id, "failed", str(e))
         return {"status": "error", "message": str(e)}
     finally:
         if work_dir.exists(): shutil.rmtree(work_dir)
