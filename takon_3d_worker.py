@@ -137,11 +137,18 @@ def run_train_mode(job_id, work_dir):
 
     print("📤 [TRAIN] Exporting PLY...", flush=True)
     config_yml = list((final_data_dir / "outputs").rglob("config.yml"))[0]
-    ply_path = work_dir / "result.ply"
-    run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-path {ply_path}")
+    # 📝 v1.0.8: เปลี่ยนจาก --output-path เป็น --output-dir ตามเอกสาร Nerfstudio
+    export_dir = work_dir / "export"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    
+    success, err = run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-dir {export_dir}")
+    if not success: raise Exception(f"Export failed: {err}")
+    
+    # ปกติไฟล์จะชื่อ splat.ply ใน export_dir
+    ply_file = list(export_dir.glob("*.ply"))[0]
     
     final_path = f"results/{job_id}/model.ply"
-    get_s3_client().upload_file(str(ply_path), S3_BUCKET, final_path)
+    get_s3_client().upload_file(str(ply_file), S3_BUCKET, final_path)
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
     update_status(job_id, "completed", "Done!", result_url=res_url)
