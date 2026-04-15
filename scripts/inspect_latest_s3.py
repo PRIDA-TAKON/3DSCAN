@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 
 def inspect_latest_s3_zip():
-    JOB_ID = "0dbf87a8-9de9-453c-9ff4-61ab21df22c3"
+    JOB_ID = "c345c2a0-d781-4752-8250-60494b3d6c30"
     BUCKET = os.getenv('RUNPOD_BUCKET_NAME', '53kzs49kuf')
     KEY = f"temp/{JOB_ID}/processed.zip"
     LOCAL_ZIP = "inspect_latest_processed.zip"

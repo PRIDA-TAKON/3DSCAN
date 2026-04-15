@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { jobId, videoUrl } = body;
+        const { jobId, videoUrl, mode } = body;
 
         if (!jobId || !videoUrl) {
             return NextResponse.json({ error: 'Missing jobId or videoUrl' }, { status: 400 });
@@ -22,7 +22,8 @@ export async function POST(req: Request) {
         const payload = {
             input: {
                 id: jobId,
-                video_url: videoUrl
+                video_url: videoUrl,
+                mode: mode || "PROCESS"
             }
         };
 

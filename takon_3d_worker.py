@@ -53,7 +53,7 @@ def run_command(cmd, cwd=None):
 
 # --- Sub-Task: PROCESS ---
 def run_process_mode(job_id, video_url, work_dir):
-    update_status(job_id, "processing", "Step 1: Extracting Frames & SfM")
+    update_status(job_id, "SFM_RUNNING", "Step 1: Extracting Frames & SfM")
     video_path = work_dir / "input_video.mp4"
     images_dir = work_dir / "images"
     output_dir = work_dir / "processed_data"
@@ -71,7 +71,10 @@ def run_process_mode(job_id, video_url, work_dir):
     print("🎬 Running SfM Pipeline...", flush=True)
     success, err = run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {output_dir}")
     if not success:
-        run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {output_dir}")
+        success, err = run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {output_dir}")
+        if not success:
+            update_status(job_id, "SFM_FAILED", f"SfM Error: {err}")
+            return {"status": "error", "message": err}
 
     print("📦 Packaging data...", flush=True)
     zip_path = work_dir / "processed.zip"
@@ -85,7 +88,7 @@ def run_process_mode(job_id, video_url, work_dir):
     
     remote_path = f"temp/{job_id}/processed.zip"
     get_s3_client().upload_file(str(zip_path), S3_BUCKET, remote_path)
-    update_status(job_id, "ready_to_train", f"S3_PATH:{remote_path}")
+    update_status(job_id, "SFM_COMPLETED", f"S3_PATH:{remote_path}")
     return {"status": "success"}
 
 # --- Sub-Task: TRAIN ---
@@ -96,10 +99,11 @@ def run_train_mode(job_id, work_dir):
     msg = res.data.get("message") if res.data else ""
     
     if not msg or "S3_PATH:" not in msg:
+        update_status(job_id, "TRAINING_FAILED", "Invalid message in DB: S3_PATH missing.")
         raise Exception(f"Invalid message in DB: {msg}. Need S3_PATH.")
     
     remote_temp_path = msg.split("S3_PATH:")[1].strip()
-    update_status(job_id, "training", f"Step 2: Training (v1.0.9) | S3_PATH:{remote_temp_path}")
+    update_status(job_id, "TRAINING_RUNNING", f"Step 2: Training (v1.0.9) | S3_PATH:{remote_temp_path}")
     
     zip_path = work_dir / "processed.zip"
     final_data_dir = work_dir / "data"
@@ -128,7 +132,7 @@ def run_train_mode(job_id, work_dir):
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
     
     if not success:
-        update_status(job_id, "failed", f"Train error: {err} | S3_PATH:{remote_temp_path}")
+        update_status(job_id, "TRAINING_FAILED", f"Train error: {err} | S3_PATH:{remote_temp_path}")
         raise Exception(f"ns-train failed: {err}")
 
     print("📤 [TRAIN] Exporting PLY...", flush=True)
@@ -138,17 +142,22 @@ def run_train_mode(job_id, work_dir):
     
     # 📝 v1.0.9: สำคัญ! ต้องรันใน cwd เดิม (final_data_dir) เพื่อให้มันหาไฟล์ COLMAP เจอ
     success, err = run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-dir {export_dir}", cwd=str(final_data_dir))
-    if not success: raise Exception(f"Export failed: {err}")
+    if not success:
+        update_status(job_id, "TRAINING_FAILED", f"Export failed: {err}")
+        raise Exception(f"Export failed: {err}")
     
     ply_files = list(export_dir.glob("*.ply"))
-    if not ply_files: raise Exception("Export finished but no .ply file found!")
+    if not ply_files:
+        update_status(job_id, "TRAINING_FAILED", "Export finished but no .ply file found!")
+        raise Exception("Export finished but no .ply file found!")
     
     final_path = f"results/{job_id}/model.ply"
     get_s3_client().upload_file(str(ply_files[0]), S3_BUCKET, final_path)
     res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
     
-    update_status(job_id, "completed", "Job Finished!", result_url=res_url)
+    update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
+
 
 def handler(job):
     try:

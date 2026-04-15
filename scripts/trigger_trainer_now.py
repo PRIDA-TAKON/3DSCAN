@@ -9,7 +9,10 @@ load_dotenv(override=True)
 # --- Config ---
 JOB_ID = "c345c2a0-d781-4752-8250-60494b3d6c30" 
 VIDEO_URL = "https://nrkhqeavnypzklqqfatf.supabase.co/storage/v1/object/public/3d-scans/videos/video_car.mp4"
-ENDPOINT_ID = os.getenv('RUNPOD_ENDPOINT_ID_TRAINER', 'grdg3rydqbsj9p')
+ENDPOINT_ID = os.getenv('RUNPOD_ENDPOINT_ID_TRAINER')
+if not ENDPOINT_ID:
+    print("❌ ERROR: RUNPOD_ENDPOINT_ID_TRAINER not found in .env")
+    exit(1)
 API_KEY = os.getenv('RUNPOD_API_KEY')
 
 def trigger_trainer():
