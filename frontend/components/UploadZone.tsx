@@ -25,10 +25,15 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
         const filePath = `videos/${fileName}`;
 
         try {
-            // 1. Upload to Storage
+            // 1. Upload to Storage with Progress Tracking
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('3d-scans')
-                .upload(filePath, file);
+                .upload(filePath, file, {
+                    onUploadProgress: (progressEvent) => {
+                        const percent = (progressEvent.bytesTransferred / progressEvent.totalBytes) * 100;
+                        setProgress(Math.round(percent));
+                    }
+                });
 
             if (uploadError) throw uploadError;
 
@@ -81,7 +86,8 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
             </div>
 
             <h3 className="text-xl font-semibold mb-2">New 3D Scan</h3>
-            <p className="text-gray-400 text-sm mb-6">Upload video file to start reconstruction (MP4/MOV)</p>
+            <p className="text-gray-400 text-sm mb-1">Upload video file to start reconstruction</p>
+            <p className="text-primary/60 text-[10px] font-bold uppercase tracking-widest mb-6">Max file size: 50MB</p>
 
             <label className="w-full">
                 <input
@@ -92,16 +98,23 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
                     disabled={isUploading}
                 />
                 <div className={`
-          cursor-pointer py-3 px-6 rounded-xl font-medium transition-all
-          ${isUploading ? 'bg-gray-700 opacity-50' : 'bg-primary hover:scale-[1.02] active:scale-[0.98]'}
+          cursor-pointer py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-center gap-2
+          ${isUploading ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]'}
         `}>
-                    {isUploading ? 'Uploading...' : 'Select Video File'}
+                    {isUploading ? (
+                        <>
+                            <Loader2 className="animate-spin" size={18} />
+                            Uploading {progress}%
+                        </>
+                    ) : 'Select Video File'}
                 </div>
             </label>
 
             {isUploading && (
-                <div className="mt-4 w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                    <div className="bg-primary h-full transition-all" style={{ width: `${progress}%` }} />
+                <div className="mt-4 w-full">
+                    <div className="bg-white/5 h-1.5 rounded-full overflow-hidden">
+                        <div className="bg-primary h-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                    </div>
                 </div>
             )}
         </div>
