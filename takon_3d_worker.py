@@ -152,8 +152,19 @@ def run_train_mode(job_id, work_dir):
         raise Exception("Export finished but no .ply file found!")
     
     final_path = f"results/{job_id}/model.ply"
-    get_s3_client().upload_file(str(ply_files[0]), S3_BUCKET, final_path)
-    res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
+    s3 = get_s3_client()
+    s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
+    
+    # Generate Presigned URL (Valid for 7 days)
+    try:
+        res_url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': S3_BUCKET, 'Key': final_path},
+            ExpiresIn=604800
+        )
+    except Exception as e:
+        print(f"โณเธ URL Generation failed: {e}")
+        res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}" # Fallback
     
     update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
