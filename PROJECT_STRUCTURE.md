@@ -1,37 +1,39 @@
-# โครงสร้างโปรเจค 3DSCAN (Cloud Edition)
+# โครงสร้างโปรเจกต์ 3DSCAN (RunPod Edition)
 
-โปรเจคนี้ถูกออกแบบมาเพื่อรันกระบวนการ **3D Gaussian Splatting** บน **Google Cloud Run** โดยใช้สถาปัตยกรรมแบบ Worker-based ที่ทำงานครบวงจรในตัวเดียว
+โปรเจกต์นี้ถูกออกแบบมาเพื่อรันกระบวนการ **3D Gaussian Splatting** บน **RunPod Serverless** โดยใช้สถาปัตยกรรมแบบ 2-Step Pipeline ที่เน้นความยืดหยุ่นและการพัฒนาที่รวดเร็ว
 
 ## 📁 โครงสร้างไฟล์ (File Structure)
 
 | ไฟล์/โฟลเดอร์ (File/Folder) | หน้าที่ (Description) |
 | :--- | :--- |
-| **`cloud_run_worker.py`** | **หัวใจหลัก:** สคริปต์ที่รันบน Cloud รับหน้าที่ดึงงานจาก Supabase, ดาวน์โหลดวิดีโอ, และรัน 4 ขั้นตอนการประมวลผลจนจบ |
-| **`Dockerfile`** | **Container Config:** สำหรับสร้างสถาพแวดล้อม Ubuntu + CUDA ที่ติดตั้ง COLMAP และ Taichi เรียบร้อยแล้ว |
-| **`frontend/`** | **Dashboard:** หน้าเว็บ Next.js สำหรับให้ผู้ใช้ส่งงาน (Upload) และรอรับลิงก์ดาวน์โหลดผลลัพธ์ |
-| **`scripts/`** | **Processing Scripts:** ไฟล์ Python ย่อยสำหรับงานเฉพาะทาง เช่น `step1_extract_frames.py` หรือ `run_glomap.py` |
-| **`taichi-splatting-kaggle/`** | **Core Library:** ตัวเทรน 3D Gaussian Splatting ที่ใช้ภาษา Taichi เพื่อความรวดเร็ว |
-| `supabase_schema.sql` | **Database:** โครงสร้างตาราง `jobs` สำหรับใช้ใน Supabase |
+| **`takon_3d_worker.py`** | **หัวใจหลัก:** สคริปต์ที่รันบน RunPod รับหน้าที่ดึงงานจาก Supabase, ดาวน์โหลดวิดีโอ, และรัน SfM หรือ Training ตาม Mode ที่ได้รับ |
+| **`loader.py`** | **Git Sync:** ดึงโค้ดล่าสุดจาก GitHub เข้าสู่คอนเทนเนอร์ก่อนเริ่ม Worker เพื่อให้แก้ไขโค้ดได้ทันที |
+| **`Dockerfile`** | **Container Config:** ใช้ฐานจาก `nerfstudio/nerfstudio` พร้อมติดตั้ง COLMAP และเครื่องมือที่จำเป็น |
+| **`frontend/`** | **Dashboard:** หน้าเว็บ Next.js สำหรับให้ผู้ใช้ส่งงาน (Upload) และติดตามสถานะแบบ Real-time |
+| **`scripts/`** | **Dev & Utils:** สคริปต์สำหรับทดสอบระบบ (`test_cycle.py`) และประมวลผล SfM (`run_glomap.py`) |
+| **`taichi-splatting-kaggle/`** | **Legacy/Alternative:** โค้ดต้นฉบับสำหรับการเทรนด้วย Taichi |
+| `supabase_schema.sql` | **Database:** โครงสร้างตาราง `jobs` และ `job_status` enum |
 
 ---
 
 ## ⚙️ ขั้นตอนการรันงาน (Workflow)
 
-ระบบเปลี่ยนจากแบบ Manual บน Kaggle มาเป็นแบบอัตโนมัติ (Automated):
+ระบบทำงานแบบ Serverless และแยกส่วนประมวลผล:
 
-1. **User Action:** อัปโหลดวิดีโอผ่านหน้าเว็บ (จำกัด 50MB) -> ข้อมูลบันทึกลง Supabase
-2. **Cloud Trigger:** เมื่อมีการสร้าง Job ใหม่ (สามารถใช้ Supabase Edge Function หรือ Trigger ภายนอก) สั่งรัน Cloud Run Job
-3. **Worker Process:**
+1. **User Action:** อัปโหลดวิดีโอผ่านหน้าเว็บ -> ข้อมูลบันทึกลง Supabase
+2. **SFM Phase (Worker Mode: PROCESS):**
     - `Step 1:` แปลงวิดีโอเป็นเฟรมภาพ
-    - `Step 2:` ทำ Sparse Reconstruction (SfM) เพื่อหาตำแหน่งกล้อง
-    - `Step 3:` เทรนโมเดลด้วย Taichi 3DGS (30,000 Iterations)
-    - `Step 4:` ส่งออกไฟล์ `.splat` และ Zip ผลลัพธ์
-4. **Result Delivery:** อัปโหลดไฟล์ Zip ขึ้น **Google Drive** และส่งลิงก์กลับไปที่ Supabase
-5. **Realtime Update:** หน้าเว็บของผู้ใช้เปลี่ยนสถานะเป็น `Ready` พร้อมปุ่มดาวน์โหลด
+    - `Step 2:` ทำ Sparse Reconstruction (SfM) ด้วย Glomap/COLMAP
+    - `Step 3:` อัปโหลดไฟล์ประมวลผลเบื้องต้น (`processed.zip`) ไปยัง S3
+3. **Training Phase (Worker Mode: TRAIN):**
+    - `Step 1:` ดาวน์โหลดข้อมูลจาก S3
+    - `Step 2:` เทรนโมเดลด้วย `ns-train splatfacto` (2,000 Iterations)
+    - `Step 3:` ส่งออกไฟล์ `.ply` และอัปโหลดขึ้น S3
+4. **Result Delivery:** สร้าง Presigned URL สำหรับดาวน์โหลดผลลัพธ์และอัปเดตสถานะเป็น `COMPLETED`
 
 ---
 
-## 🚀 ข้อดีของการใช้ Cloud Run
-- **No Idle Cost:** เสียเงินเฉพาะวินาทีที่รันงานประมวลผลจริง
-- **GPU Power:** เข้าถึง GPU L4 ที่ประสิทธิภาพสูงกว่า Kaggle รุ่นฟรี
-- **Clean Architecture:** แยกส่วนประมวลผล (Worker) ออกจากส่วนแสดงผล (Frontend) อย่างชัดเจน
+## 🚀 ข้อดีของสถาปัตยกรรมนี้
+- **Fast Iteration:** แก้ไขโค้ด Python และ Push Git เพื่อทดสอบได้ทันที (ไม่ต้องรอ Build Docker)
+- **Scalability:** RunPod Serverless รองรับการรันงานขนานกันได้ตามต้องการ
+- **Separation of Concerns:** แยกขั้นตอน SfM ที่ใช้ CPU/GPU ปานกลาง ออกจาก Training ที่ใช้ GPU สูง
