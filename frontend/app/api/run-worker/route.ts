@@ -10,13 +10,15 @@ export async function POST(req: Request) {
         }
 
         const apiKey = process.env.RUNPOD_API_KEY;
-        const endpointId = process.env.RUNPOD_ENDPOINT_ID_PROCESSOR;
+        const processorId = process.env.RUNPOD_ENDPOINT_ID_PROCESSOR;
+        const trainerId = process.env.RUNPOD_ENDPOINT_ID_TRAINER;
 
-        if (!apiKey || !endpointId) {
-            console.error('Missing RUNPOD_API_KEY or RUNPOD_ENDPOINT_ID environment variables');
+        if (!apiKey || !processorId || !trainerId) {
+            console.error('Missing RUNPOD_API_KEY, PROCESSOR or TRAINER environment variables');
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
+        const endpointId = mode === 'TRAIN' ? trainerId : processorId;
         const url = `https://api.runpod.ai/v2/${endpointId}/run`;
 
         const payload = {
