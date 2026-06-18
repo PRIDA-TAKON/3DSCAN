@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.0.9-export-cwd-fix
+# Version: v1.1.0-error-fix-handler
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -186,7 +186,12 @@ def handler(job):
         elif mode == "TRAIN": return run_train_mode(job_id, work_dir)
         else: raise Exception(f"Unknown mode: {mode}")
     except Exception as e:
-        print(f"❌ [CRITICAL ERROR]: {str(e)}", flush=True)
+        err_msg = f"❌ [CRITICAL ERROR]: {str(e)}"
+        print(err_msg, flush=True)
+        if mode == "TRAIN":
+            update_status(job_id, "TRAINING_FAILED", err_msg)
+        elif mode == "PROCESS":
+            update_status(job_id, "SFM_FAILED", err_msg)
         return {"status": "error", "message": str(e)}
 
 runpod.serverless.start({"handler": handler})
