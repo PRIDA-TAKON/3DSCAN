@@ -1,50 +1,57 @@
-# 📸 3D Scan & Gaussian Splatting (Cloud Version)
+# 📸 3D Scan & Gaussian Splatting (RunPod Serverless Edition)
 
-โปรเจคสำหรับสร้างโมเดล 3D (.splat) จากไฟล์วิดีโอ โดยใช้เทคนิค **3D Gaussian Splatting** บน **Google Cloud Run (GPU L4)**
+โปรเจกต์สำหรับสร้างโมเดล 3D (.ply) จากไฟล์วิดีโอ โดยใช้เทคนิค **3D Gaussian Splatting (Nerfstudio)** ประมวลผลบน **RunPod GPU (Serverless)**
 
-## 🚀 ระบบใหม่: Cloud Run Worker
-เราได้ย้ายระบบจาก Kaggle มาเป็นการรันบน **Google Cloud Run Jobs** เพื่อความเสถียรและความเร็วที่เหนือกว่า:
-- **One-pot Execution:** รัน 4 ขั้นตอน (Data Prep -> SfM -> Training -> Export) จบในคำสั่งเดียว
-- **Auto-Scale:** รันงานได้พร้อมกันและจ่ายเงินตามการใช้งานจริง (Pay-per-use)
-- **High Performance:** ใช้ GPU L4 สำหรับการเทรนที่รวดเร็ว
+## 🚀 สถาปัตยกรรมปัจจุบัน: RunPod Serverless
+เราใช้ระบบประมวลผลแบบ Serverless เพื่อประสิทธิภาพและความประหยัดสูงสุด:
+- **Two-Step Pipeline:** แยกส่วนการคำนวณตำแหน่งกล้อง (SfM) และการเทรนโมเดล (Training)
+- **Git-Synced Worker:** ใช้ `loader.py` ดึงโค้ดล่าสุดจาก GitHub ทุกครั้งที่เริ่มงาน (แก้ไขโค้ดได้ไม่ต้องรอ Build Image)
+- **S3 Storage:** เก็บข้อมูลกลางทางและผลลัพธ์บน S3-compatible storage (RunPod S3)
+- **Auto-Scale:** จ่ายเงินตามวินาทีที่ประมวลผลจริง และรองรับการทำงานพร้อมกันหลาย Job
 
 ---
 
-## 📂 โครงสร้างโปรเจค (Project Structure)
+## 📂 โครงสร้างโปรเจกต์ (Project Structure)
 
 | ไฟล์/โฟลเดอร์ | หน้าที่ |
 | :--- | :--- |
-| **`frontend/`** | หน้าเว็บ Next.js สำหรับอัปโหลดวีดีโอและติดตามสถานะงาน |
-| **`Dockerfile`** | สำหรับ Build เป็น Container เพื่อรันบน Google Cloud |
-| **`cloud_run_worker.py`** | สคริปต์หลักที่รันบน Cloud ทำหน้าที่ Download -> SfM -> Train -> Upload |
-| **`scripts/`** | โฟลเดอร์เก็บสคริปต์ประมวลผล (Extract frames, SfM, Export) |
-| **`taichi-splatting-kaggle/`** | ไลบรารีหลักสำหรับการเทรน 3D Gaussian Splatting (Taichi) |
+| **`frontend/`** | หน้าเว็บ Next.js 16/19 สำหรับอัปโหลดวีดีโอและติดตามสถานะงานแบบ Real-time |
+| **`takon_3d_worker.py`** | **สคริปต์หลัก:** ควบคุม Logic ทั้งหมด (SfM -> Training -> Export) |
+| **`loader.py`** | **Bootstrap:** อยู่ใน Docker Image ทำหน้าที่ Sync โค้ดล่าสุดและเตรียม Environment |
+| **`Dockerfile`** | Base Image จาก `nerfstudio/nerfstudio` พร้อมติดตั้ง COLMAP/Glomap |
+| **`scripts/`** | สคริปต์เสริมสำหรับการทดสอบและกระบวนการ SfM (`run_glomap.py`, `test_cycle.py`) |
+| **`taichi-splatting-kaggle/`** | (Legacy/Option) ไลบรารี Taichi สำหรับการเทรนแบบทางเลือก |
 
 ---
 
-## 🛠️ วิธีการติดตั้งและใช้งาน
+## ⚙️ ขั้นตอนการทำงาน (Workflow)
 
-### 1. ฝั่งคลาวด์ (Cloud Setups)
-1. **Google Cloud Project:** สร้างโปรเจคและเปิดใช้งาน Cloud Run API, Artifact Registry
-2. **Build Image:**
-   ```bash
-   docker build -t gcr.io/[PROJECT_ID]/3d-scan-worker .
-   docker push gcr.io/[PROJECT_ID]/3d-scan-worker
-   ```
-3. **Environment Variables:** ตั้งค่าตัวแปรดังนี้ใน Cloud Run Job:
-   - `SUPABASE_URL`, `SUPABASE_KEY`
-   - `GDRIVE_SERVICE_ACCOUNT` (JSON Content)
-   - `GDRIVE_OUTPUT_FOLDER_ID` (ID โฟลเดอร์ปลายทาง)
+ระบบทำงานอัตโนมัติ 2 ขั้นตอนหลัก:
 
-### 2. ฝั่ง Frontend
-1. เข้าไปที่โฟลเดอร์ `frontend/`
-2. ตั้งค่า `.env.local` เพื่อเชื่อมต่อกับ Supabase
-3. รันด้วย `npm run dev` หรือ Deploy ขึ้น Vercel
+1.  **Step 1: SFM (SfM Running)**
+    - สกัดเฟรมจากวิดีโอด้วย `ffmpeg`
+    - คำนวณตำแหน่งกล้องด้วย `Glomap` หรือ `COLMAP`
+    - อัปโหลด `processed.zip` ขึ้น S3 เพื่อเตรียมเทรน
+2.  **Step 2: Training (Training Running)**
+    - ดึงข้อมูลจาก S3 มาเทรนด้วย `ns-train splatfacto` (Nerfstudio)
+    - ส่งออกผลลัพธ์เป็นไฟล์ `.ply` ด้วย `ns-export`
+    - อัปโหลดผลลัพธ์ขึ้น S3 และสร้าง Presigned URL (7 วัน) กลับไปที่ Supabase
 
-### 3. Workflow การใช้งาน
-1. **Upload:** อัปโหลดวีดีโอ (.mp4) ขนาดไม่เกิน **50MB** ผ่านหน้าเว็บ
-2. **Process:** ระบบจะสร้าง Job ใน Supabase
-3. **Download:** เมื่อประมวลผลเสร็จ ลิงก์ดาวน์โหลดจาก **Google Drive** จะปรากฏขึ้นอัตโนมัติ
+---
+
+## 🛠️ การติดตั้งและพัฒนา (Development Guide)
+
+### 1. การตั้งค่า Environment (.env)
+ต้องมีตัวแปรต่อไปนี้ใน Root และ RunPod Config:
+- `SUPABASE_URL`, `SUPABASE_KEY`
+- `RUNPOD_API_KEY`, `RUNPOD_ENDPOINT_ID`
+- `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET`
+- `GIT_REPO_URL`, `GIT_TOKEN` (สำหรับ `loader.py`)
+
+### 2. Autonomous Loop (ไม่ต้อง Build Image ใหม่)
+หากแก้ไขเฉพาะไฟล์ `.py` สามารถทดสอบได้ทันที:
+1. `git push` โค้ดขึ้น GitHub
+2. รัน `python scripts/test_cycle.py` เพื่อสั่งรันงานและดู Log แบบ Real-time
 
 ---
 
