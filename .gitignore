@@ -74,3 +74,10 @@ tmp/
 .idea/
 *.swp
 *.swo
+lab-nerft.ipynb
+.gitignore
+takon_3d_worker.py.bak
+lab-nerft.log
+logs-process3 -fb (1).txt
+result_c345c2a0-d781-4752-8250-60494b3d6c30.ply
+log/logs-process5 (Copy) -fb (1).txt

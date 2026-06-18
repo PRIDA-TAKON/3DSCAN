@@ -10,7 +10,7 @@ export async function POST(req: Request) {
         }
 
         const apiKey = process.env.RUNPOD_API_KEY;
-        const endpointId = process.env.RUNPOD_ENDPOINT_ID;
+        const endpointId = process.env.RUNPOD_ENDPOINT_ID_PROCESSOR;
 
         if (!apiKey || !endpointId) {
             console.error('Missing RUNPOD_API_KEY or RUNPOD_ENDPOINT_ID environment variables');
