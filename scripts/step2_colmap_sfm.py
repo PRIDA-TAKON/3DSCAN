@@ -179,16 +179,27 @@ def run_colmap(images_dir, output_dir):
         pass
 
     print("--- Feature Extraction ---")
-    run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model OPENCV --SiftExtraction.use_gpu 0")
+    try:
+        run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model SIMPLE_RADIAL --SiftExtraction.max_num_features 8192 --SiftExtraction.use_gpu 1")
+    except Exception:
+        print("⚠️ GPU Feature Extraction failed. Retrying with CPU...")
+        run_step(f"{colmap_binary} feature_extractor --database_path {db_path} --image_path {images_dir} --ImageReader.camera_model SIMPLE_RADIAL --SiftExtraction.max_num_features 8192 --SiftExtraction.use_gpu 0")
     
     print("--- Matching ---")
-    run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SiftMatching.use_gpu 0")
+    try:
+        run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SequentialMatching.overlap 20 --SiftMatching.use_gpu 1")
+    except Exception:
+        print("⚠️ GPU Matching failed. Retrying with CPU...")
+        run_step(f"{colmap_binary} sequential_matcher --database_path {db_path} --SequentialMatching.overlap 20 --SiftMatching.use_gpu 0")
     
     print("--- Reconstruction (Mapper) ---")
     sparse_dir = colmap_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
-    # Force CPU for mapper and BA
-    run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir} --Mapper.ba_global_use_gpu 0 --Mapper.ba_local_use_gpu 0")
+    try:
+        run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir}")
+    except Exception:
+        print("⚠️ GPU Mapper failed. Retrying with CPU...")
+        run_step(f"{colmap_binary} mapper --database_path {db_path} --image_path {images_dir} --output_path {sparse_dir} --Mapper.ba_global_use_gpu 0 --Mapper.ba_local_use_gpu 0")
     
     print("--- Converting to Text ---")
     text_dir = colmap_dir / "text"
