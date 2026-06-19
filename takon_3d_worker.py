@@ -21,6 +21,12 @@ S3_SECRET_KEY = os.environ.get("RUNPOD_S3_SECRET_KEY") or os.environ.get("S3_SEC
 S3_ENDPOINT = os.environ.get("RUNPOD_S3_ENDPOINT") or "https://s3api-us-il-1.runpod.io"
 S3_BUCKET = os.environ.get("RUNPOD_BUCKET_NAME") or os.environ.get("S3_BUCKET_NAME") or os.environ.get("BUCKET_NAME")
 
+print(f"🔍 [S3 CONFIG DEBUG] Endpoint: {S3_ENDPOINT} | Bucket: {S3_BUCKET}", flush=True)
+if S3_ACCESS_KEY:
+    print(f"🔍 [S3 CONFIG DEBUG] Access Key Prefix: {S3_ACCESS_KEY[:5]}...", flush=True)
+if S3_SECRET_KEY:
+    print(f"🔍 [S3 CONFIG DEBUG] Secret Key Prefix: {S3_SECRET_KEY[:5]}... Length: {len(S3_SECRET_KEY)}", flush=True)
+
 def get_supabase_client():
     if not SUPABASE_URL or not SUPABASE_KEY: return None
     return create_client(SUPABASE_URL, SUPABASE_KEY)
