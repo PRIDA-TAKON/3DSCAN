@@ -181,19 +181,20 @@ def run_full_mode(job_id, video_url, work_dir):
         return {"status": "error", "message": "Export finished but no .ply file found!"}
     
     final_path = f"results/{job_id}/model.ply"
-    s3 = get_s3_client()
-    s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
-    
-    # Generate Presigned URL
+    print(f"📤 Uploading final PLY to Supabase Storage: {final_path}...", flush=True)
     try:
-        res_url = s3.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': S3_BUCKET, 'Key': final_path},
-            ExpiresIn=604800
-        )
+        supabase = get_supabase_client()
+        with open(str(ply_files[0]), 'rb') as f:
+            supabase.storage.from_("3d-scans").upload(
+                path=final_path,
+                file=f,
+                file_options={"content-type": "application/octet-stream", "x-upsert": "true"}
+            )
+        res_url = supabase.storage.from_("3d-scans").get_public_url(final_path)
+        print(f"✅ Uploaded to Supabase! Public URL: {res_url}", flush=True)
     except Exception as e:
-        print(f"URL Generation failed: {e}")
-        res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
+        print(f"❌ Supabase Storage upload failed: {e}", flush=True)
+        raise Exception(f"Supabase Storage upload failed: {e}")
     
     update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
@@ -259,19 +260,20 @@ def run_train_mode(job_id, work_dir):
         raise Exception("Export finished but no .ply file found!")
     
     final_path = f"results/{job_id}/model.ply"
-    s3 = get_s3_client()
-    s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
-    
-    # Generate Presigned URL (Valid for 7 days)
+    print(f"📤 Uploading final PLY to Supabase Storage: {final_path}...", flush=True)
     try:
-        res_url = s3.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': S3_BUCKET, 'Key': final_path},
-            ExpiresIn=604800
-        )
+        supabase = get_supabase_client()
+        with open(str(ply_files[0]), 'rb') as f:
+            supabase.storage.from_("3d-scans").upload(
+                path=final_path,
+                file=f,
+                file_options={"content-type": "application/octet-stream", "x-upsert": "true"}
+            )
+        res_url = supabase.storage.from_("3d-scans").get_public_url(final_path)
+        print(f"✅ Uploaded to Supabase! Public URL: {res_url}", flush=True)
     except Exception as e:
-        print(f"โณเธ URL Generation failed: {e}")
-        res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}" # Fallback
+        print(f"❌ Supabase Storage upload failed: {e}", flush=True)
+        raise Exception(f"Supabase Storage upload failed: {e}")
     
     update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
