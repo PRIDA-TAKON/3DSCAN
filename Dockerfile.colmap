@@ -1,19 +1,17 @@
-FROM nerfstudio/nerfstudio:latest
+FROM ghcr.io/nerfstudio-project/nerfstudio:latest
 # Refresh Build: 2026-04-13 11:20
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
     xvfb ffmpeg libsm6 libxext6 libgl1-mesa-glx git \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-USER user
 WORKDIR /app
 
 # เพิ่ม websockets>=13.0, pandas/pyarrow และ boto3 สำหรับ S3 storage
-RUN pip install --no-cache-dir --user supabase runpod requests "websockets>=13.0" pandas pyarrow boto3
+RUN python3 -m pip install --no-cache-dir supabase runpod requests "websockets>=13.0" pandas pyarrow boto3
 
-COPY --chown=user:user loader.py .
+COPY loader.py .
 
-ENV PATH="/home/user/.local/bin:${PATH}"
 ENV WORKER_MODE="PROCESS"
 
 ENTRYPOINT ["python3", "/app/loader.py"]
