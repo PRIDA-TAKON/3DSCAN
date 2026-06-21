@@ -3,19 +3,14 @@
 เอกสารนี้รวบรวมหลักการทำงานของระบบประมวลผล 3D Gaussian Splatting (3DGS) ระหว่าง Worker และ Frontend เพื่อใช้ในการตรวจสอบและกู้คืนระบบ (Recovery).
 
 ## 1. ผังการทำงาน (Job Workflow)
-ระบบทำงานแบบ 2 ขั้นตอน (Two-Step Pipeline) ผ่าน RunPod Serverless:
+ระบบทำงานแบบขั้นตอนเดียวจบ (Single-step FULL Pipeline) ผ่าน RunPod Serverless เพื่อประสิทธิภาพและความประหยัด:
 
-### Step 1: SFM Process (Image Extraction & Pose Estimation)
+### FULL Mode Pipeline (End-to-End)
 1.  **Input:** วิดีโอ (MP4/MOV) จาก Supabase Storage.
-2.  **Logic:** `ffmpeg` สกัดเฟรมภาพ -> `Glomap`/`COLMAP` คำนวณตำแหน่งกล้อง (SfM).
-3.  **Output:** ไฟล์ `processed.zip` (ประกอบด้วยภาพและข้อมูลตำแหน่งกล้อง) ถูกอัปโหลดไปที่ S3 (`temp/{job_id}/processed.zip`).
-4.  **Status:** `SFM_RUNNING` -> `SFM_COMPLETED`.
-
-### Step 2: Training (3DGS Model Generation)
-1.  **Input:** ไฟล์ `processed.zip` จาก S3.
-2.  **Logic:** `ns-train` (Nerfstudio) เทรนโมเดล -> `ns-export` ส่งออกไฟล์ `.ply`.
-3.  **Output:** ไฟล์ `model.ply` ถูกอัปโหลดไปที่ S3 (`results/{job_id}/model.ply`).
-4.  **Status:** `TRAINING_RUNNING` -> `COMPLETED`.
+2.  **SfM Phase:** `ffmpeg` สกัดเฟรมภาพ -> `Glomap`/`COLMAP` คำนวณตำแหน่งกล้อง (SfM) เก็บไว้ในเครื่องชั่วคราว.
+3.  **Training Phase:** `ns-train` (Nerfstudio) ทำการเทรนโมเดล (2000 Iterations) และแปลงผลลัพธ์ผ่าน `ns-export` ได้ไฟล์โมเดล `.ply`.
+4.  **Output:** ไฟล์ผลลัพธ์ `model.ply` ถูกอัปโหลดขึ้นไปยัง **Supabase Storage** ใน Bucket `3d-scans` โฟลเดอร์ `results/{job_id}/model.ply`.
+5.  **Status Transition:** `PENDING` -> `SFM_RUNNING` -> `TRAINING_RUNNING` -> `COMPLETED` (หรือ `FAILED`).
 
 ---
 
@@ -26,9 +21,8 @@
 | :--- | :--- |
 | `PENDING` | รอคิว Worker รับงาน |
 | `SFM_RUNNING` | กำลังสกัดเฟรมภาพและคำนวณ SfM |
-| `SFM_COMPLETED` | เตรียมข้อมูล SfM สำเร็จ (พร้อมเทรน) |
 | `TRAINING_RUNNING` | กำลังเทรนโมเดล 3DGS (2000 Iterations) |
-| `COMPLETED` | งานเสร็จสมบูรณ์ (พร้อมให้ดาวน์โหลด) |
+| `COMPLETED` | งานเสร็จสมบูรณ์ (พร้อมให้ดาวน์โหลดไฟล์ .ply จาก Supabase) |
 | `FAILED` | เกิดข้อผิดพลาดในขั้นตอนใดขั้นตอนหนึ่ง |
 
 ---

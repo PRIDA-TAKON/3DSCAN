@@ -43,7 +43,7 @@
 ## 4. การ Deploy Backend Worker ไปยัง RunPod Serverless
 
 ### ก. การเตรียม Docker Image:
-ระบบจะทำงานผ่าน GitHub Actions อัตโนมัติ (ตรวจสอบสถานะได้ที่เมนู **Actions** ใน GitHub)
+ระบบจะทำงานผ่าน GitHub Actions อัตโนมัติ โดยทำการบิวด์อิมเมจจาก `Dockerfile.colmap` ซึ่งเป็นอิมเมจตัวเดียวที่รวมทั้ง Nerfstudio และ Colmap เข้าไว้ด้วยกัน (ตรวจสอบสถานะการบิวด์ได้ที่เมนู **Actions** ใน GitHub)
 
 ### ข. การตั้งค่าใน RunPod เพื่อดึง Image จาก Docker Hub:
 เนื่องจากเราเก็บ Image ไว้ที่ Docker Hub เราสามารถตั้งค่าใน RunPod ได้ดังนี้:
@@ -57,11 +57,14 @@
     *   **Password:** (Access Token หรือรหัสผ่าน)
 
 3.  **สร้าง Endpoint ใน RunPod:**
-    *   ระบุ Image URL: `ramayana4/worker-3d-scan:latest`
-    *   เลือก GPU ที่ต้องการ (แนะนำ **RTX 3090** หรือ **4090**)
+    *   ระบุ Image URL: `ramayana4/worker-3d-scan:processor`
+    *   เลือก GPU ที่ต้องการ (แนะนำ **RTX 3090** หรือ **4090** เพื่อให้ขั้นตอนการเทรนเร็วขึ้น)
     *   ตั้งค่า Environment Variables:
-        *   `SUPABASE_URL`
-        *   `SUPABASE_KEY` (Service Role Key)
+        *   `SUPABASE_URL`: (จาก Supabase Project)
+        *   `SUPABASE_KEY`: (ต้องใช้ **Service Role Key** เพื่อสิทธิ์ในการเขียนไฟล์ลง Storage)
+        *   `WORKER_MODE`: `FULL` (เพื่อรันกระบวนการตั้งแต่สกัดเฟรมภาพไปจนถึงเทรนและส่งออกโมเดลทีเดียวจบ)
+
+*หมายเหตุ: ไม่จำเป็นต้องกำหนดค่าการเชื่อมต่อ S3 อีกต่อไป เนื่องจากตัวประมวลผลเวอร์ชันใหม่จะส่งไฟล์ผลลัพธ์ (.ply) ขึ้นไปเก็บบน Supabase Storage โดยตรง*
 
 ---
 
@@ -70,7 +73,7 @@
 เพื่อให้เป็นไปตามนโยบายการเก็บข้อมูล 24 ชั่วโมง แนะนำให้ตั้งค่าใน **Supabase Storage**:
 
 1.  ไปที่ **Storage** > **Buckets**
-2.  เลือก Bucket `scans`
+2.  เลือก Bucket `3d-scans`
 3.  ไปที่ **Policies** (หรือ Bucket Settings ขึ้นอยู่กับเวอร์ชัน Dashboard)
 4.  ตั้งค่า **Auto-deletion** (ถ้ามี) หรือใช้ **Supabase Edge Functions** ที่ตั้งเวลา (Cron) ไว้ให้ลบไฟล์ที่มี `created_at` เกิน 24 ชั่วโมง
 
