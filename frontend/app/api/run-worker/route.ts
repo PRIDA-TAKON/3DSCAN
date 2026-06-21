@@ -18,14 +18,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
-        const endpointId = mode === 'TRAIN' ? trainerId : processorId;
+        const endpointId = mode === 'TRAIN' ? trainerId : (process.env.RUNPOD_ENDPOINT_ID || processorId);
         const url = `https://api.runpod.ai/v2/${endpointId}/run`;
 
         const payload = {
             input: {
                 id: jobId,
                 video_url: videoUrl,
-                mode: mode || "PROCESS"
+                mode: mode || "FULL"
             }
         };
 

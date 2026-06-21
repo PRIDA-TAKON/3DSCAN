@@ -97,6 +97,107 @@ def run_process_mode(job_id, video_url, work_dir):
     update_status(job_id, "SFM_COMPLETED", f"S3_PATH:{remote_path}")
     return {"status": "success"}
 
+# --- Sub-Task: FULL (End-to-End) ---
+def run_full_mode(job_id, video_url, work_dir):
+    print(f"🚀 [FULL] End-to-End Processing | Job: {job_id}", flush=True)
+    update_status(job_id, "SFM_RUNNING", "Step 1/2: Extracting Frames & SfM")
+    
+    video_path = work_dir / "input_video.mp4"
+    images_dir = work_dir / "images"
+    sfm_output_dir = work_dir / "processed_data"
+    images_dir.mkdir(parents=True, exist_ok=True)
+    sfm_output_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"📥 Downloading video: {video_url}", flush=True)
+    resp = requests.get(video_url, stream=True, timeout=30)
+    with open(video_path, 'wb') as f:
+        for chunk in resp.iter_content(chunk_size=8192): f.write(chunk)
+
+    print("🎞️ Extracting frames...", flush=True)
+    run_command(f"ffmpeg -i {video_path} -q:v 2 -vf \"fps=2\" -frames:v 300 {images_dir}/frame_%04d.jpg")
+    
+    print("🎬 Running SfM Pipeline...", flush=True)
+    success, err = run_command(f"python3 scripts/run_glomap.py --images_dir {images_dir} --output_dir {sfm_output_dir}")
+    if not success:
+        success, err = run_command(f"python3 step2_colmap_sfm.py --images_dir {images_dir} --output_dir {sfm_output_dir}")
+        if not success:
+            update_status(job_id, "FAILED", f"SfM Error: {err}")
+            return {"status": "error", "message": err}
+
+    update_status(job_id, "TRAINING_RUNNING", "Step 2/2: Training 3DGS Model (2000 Iterations)")
+
+    # Restructure for Nerfstudio directly
+    final_data_dir = work_dir / "data"
+    final_data_dir.mkdir(parents=True, exist_ok=True)
+    img_dest = final_data_dir / "images"
+    img_dest.mkdir(parents=True, exist_ok=True)
+    colmap_dest = final_data_dir / "colmap" / "sparse" / "0"
+    colmap_dest.mkdir(parents=True, exist_ok=True)
+
+    # Copy files
+    for img in images_dir.glob("*.jpg"): 
+        shutil.copy(img, img_dest / img.name)
+        
+    bin_files_copied = 0
+    for bin_f in sfm_output_dir.rglob("*.bin"):
+        shutil.copy(bin_f, colmap_dest / bin_f.name)
+        bin_files_copied += 1
+
+    if bin_files_copied == 0:
+        # Fallback to sparse root
+        for bin_f in (sfm_output_dir / "sparse").glob("*.bin"):
+            shutil.copy(bin_f, colmap_dest / bin_f.name)
+            bin_files_copied += 1
+
+    if bin_files_copied == 0:
+        err_msg = "SfM finished but no camera sparse binaries (.bin) found!"
+        update_status(job_id, "FAILED", err_msg)
+        return {"status": "error", "message": err_msg}
+
+    print("🔥 Starting ns-train...", flush=True)
+    train_cmd = (
+        f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard "
+        f"colmap --data . --colmap-path colmap/sparse/0 --images-path images --downscale-factor 1"
+    )
+    success, err = run_command(train_cmd, cwd=str(final_data_dir))
+    
+    if not success:
+        update_status(job_id, "FAILED", f"Train error: {err}")
+        return {"status": "error", "message": f"ns-train failed: {err}"}
+
+    print("📤 Exporting PLY...", flush=True)
+    config_yml = list((final_data_dir / "outputs").rglob("config.yml"))[0]
+    export_dir = work_dir / "export"
+    export_dir.mkdir(parents=True, exist_ok=True)
+    
+    success, err = run_command(f"ns-export gaussian-splat --load-config {config_yml} --output-dir {export_dir}", cwd=str(final_data_dir))
+    if not success:
+        update_status(job_id, "FAILED", f"Export failed: {err}")
+        return {"status": "error", "message": f"Export failed: {err}"}
+    
+    ply_files = list(export_dir.glob("*.ply"))
+    if not ply_files:
+        update_status(job_id, "FAILED", "Export finished but no .ply file found!")
+        return {"status": "error", "message": "Export finished but no .ply file found!"}
+    
+    final_path = f"results/{job_id}/model.ply"
+    s3 = get_s3_client()
+    s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
+    
+    # Generate Presigned URL
+    try:
+        res_url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': S3_BUCKET, 'Key': final_path},
+            ExpiresIn=604800
+        )
+    except Exception as e:
+        print(f"URL Generation failed: {e}")
+        res_url = f"{S3_ENDPOINT}/{S3_BUCKET}/{final_path}"
+    
+    update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
+    return {"status": "success", "result_url": res_url}
+
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
     print(f"🧠 [TRAIN] v1.0.9-export-fix | Job: {job_id}", flush=True)
@@ -190,6 +291,7 @@ def handler(job):
         
         if mode == "PROCESS": return run_process_mode(job_id, vdo, work_dir)
         elif mode == "TRAIN": return run_train_mode(job_id, work_dir)
+        elif mode in ["FULL", "ALL"]: return run_full_mode(job_id, vdo, work_dir)
         else: raise Exception(f"Unknown mode: {mode}")
     except Exception as e:
         err_msg = f"❌ [CRITICAL ERROR]: {str(e)}"
@@ -198,6 +300,8 @@ def handler(job):
             update_status(job_id, "TRAINING_FAILED", err_msg)
         elif mode == "PROCESS":
             update_status(job_id, "SFM_FAILED", err_msg)
+        elif mode in ["FULL", "ALL"]:
+            update_status(job_id, "FAILED", err_msg)
         return {"status": "error", "message": str(e)}
 
 runpod.serverless.start({"handler": handler})
