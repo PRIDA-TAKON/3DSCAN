@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.2.0-supabase-storage
+# Version: v1.2.1-quit-on-completion
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -169,7 +169,7 @@ def run_full_mode(job_id, video_url, work_dir):
 
     print("🔥 Starting ns-train...", flush=True)
     train_cmd = (
-        f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard "
+        f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard --viewer.quit-on-train-completion True "
         f"colmap --data . --colmap-path colmap/sparse/0 --images-path images --downscale-factor 1"
     )
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
@@ -255,7 +255,7 @@ def run_train_mode(job_id, work_dir):
 
     print("🔥 [TRAIN] Starting ns-train...", flush=True)
     train_cmd = (
-        f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard "
+        f"ns-train splatfacto --max-num-iterations 2000 --vis tensorboard --viewer.quit-on-train-completion True "
         f"colmap --data . --colmap-path colmap/sparse/0 --images-path images --downscale-factor 1"
     )
     success, err = run_command(train_cmd, cwd=str(final_data_dir))
