@@ -26,6 +26,9 @@ export async function POST(req: Request) {
                 id: jobId,
                 video_url: videoUrl,
                 mode: mode || "FULL"
+            },
+            policy: {
+                executionTimeout: 3600000 // 1 hour in milliseconds
             }
         };
 
