@@ -11,7 +11,7 @@ import boto3
 from botocore.config import Config
 
 # --- Configuration ---
-# Version: v1.2.1-quit-on-completion
+# Version: v1.3.0-back-to-s3
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 WORKER_MODE = os.environ.get("WORKER_MODE", "PROCESS")
@@ -93,19 +93,13 @@ def run_process_mode(job_id, video_url, work_dir):
             zipf.write(str(img), f"images/{img.name}")
     
     remote_path = f"temp/{job_id}/processed.zip"
-    print(f"📤 Uploading processed.zip to Supabase Storage: {remote_path}...", flush=True)
+    print(f"📤 Uploading processed.zip to RunPod S3: {remote_path}...", flush=True)
     try:
-        supabase = get_supabase_client()
-        with open(str(zip_path), 'rb') as f:
-            supabase.storage.from_("3d-scans").upload(
-                path=remote_path,
-                file=f,
-                file_options={"content-type": "application/zip", "x-upsert": "true"}
-            )
-        print("✅ Uploaded processed.zip to Supabase Storage successfully!", flush=True)
+        get_s3_client().upload_file(str(zip_path), S3_BUCKET, remote_path)
+        print("✅ Uploaded processed.zip to S3 successfully!", flush=True)
     except Exception as e:
-        print(f"❌ Supabase Storage upload failed: {e}", flush=True)
-        raise Exception(f"Supabase Storage upload failed: {e}")
+        print(f"❌ S3 upload failed: {e}", flush=True)
+        raise Exception(f"S3 upload failed: {e}")
         
     update_status(job_id, "SFM_COMPLETED", f"S3_PATH:{remote_path}")
     return {"status": "success"}
@@ -194,27 +188,28 @@ def run_full_mode(job_id, video_url, work_dir):
         return {"status": "error", "message": "Export finished but no .ply file found!"}
     
     final_path = f"results/{job_id}/model.ply"
-    print(f"📤 Uploading final PLY to Supabase Storage: {final_path}...", flush=True)
+    print(f"📤 Uploading final PLY to RunPod S3: {final_path}...", flush=True)
     try:
-        supabase = get_supabase_client()
-        with open(str(ply_files[0]), 'rb') as f:
-            supabase.storage.from_("3d-scans").upload(
-                path=final_path,
-                file=f,
-                file_options={"content-type": "application/octet-stream", "x-upsert": "true"}
-            )
-        res_url = supabase.storage.from_("3d-scans").get_public_url(final_path)
-        print(f"✅ Uploaded to Supabase! Public URL: {res_url}", flush=True)
+        s3 = get_s3_client()
+        s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
+        
+        # Generate new Presigned URL for 7 days
+        res_url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': S3_BUCKET, 'Key': final_path},
+            ExpiresIn=604800  # 7 days
+        )
+        print(f"✅ Uploaded to RunPod S3! Presigned URL generated.", flush=True)
     except Exception as e:
-        print(f"❌ Supabase Storage upload failed: {e}", flush=True)
-        raise Exception(f"Supabase Storage upload failed: {e}")
+        print(f"❌ RunPod S3 upload failed: {e}", flush=True)
+        raise Exception(f"RunPod S3 upload failed: {e}")
     
     update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
 
 # --- Sub-Task: TRAIN ---
 def run_train_mode(job_id, work_dir):
-    print(f"🧠 [TRAIN] v1.2.0-supabase-storage | Job: {job_id}", flush=True)
+    print(f"🧠 [TRAIN] v1.3.0-back-to-s3 | Job: {job_id}", flush=True)
     supabase = get_supabase_client()
     res = supabase.table("jobs").select("message").eq("id", job_id).single().execute()
     msg = res.data.get("message") if res.data else ""
@@ -230,16 +225,13 @@ def run_train_mode(job_id, work_dir):
     final_data_dir = work_dir / "data"
     final_data_dir.mkdir(parents=True, exist_ok=True)
     
-    print(f"📥 [TRAIN] Downloading data from Supabase Storage: {remote_temp_path}...", flush=True)
+    print(f"📥 [TRAIN] Downloading data from RunPod S3: {remote_temp_path}...", flush=True)
     try:
-        supabase = get_supabase_client()
-        with open(str(zip_path), "wb") as f:
-            res = supabase.storage.from_("3d-scans").download(remote_temp_path)
-            f.write(res)
-        print("✅ [TRAIN] Downloaded data from Supabase Storage successfully!", flush=True)
+        get_s3_client().download_file(S3_BUCKET, remote_temp_path, str(zip_path))
+        print("✅ [TRAIN] Downloaded data from S3 successfully!", flush=True)
     except Exception as e:
-        print(f"❌ [TRAIN] Supabase Storage download failed: {e}", flush=True)
-        raise Exception(f"Supabase Storage download failed: {e}")
+        print(f"❌ [TRAIN] S3 download failed: {e}", flush=True)
+        raise Exception(f"S3 download failed: {e}")
     
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(work_dir / "raw")
@@ -281,20 +273,21 @@ def run_train_mode(job_id, work_dir):
         raise Exception("Export finished but no .ply file found!")
     
     final_path = f"results/{job_id}/model.ply"
-    print(f"📤 Uploading final PLY to Supabase Storage: {final_path}...", flush=True)
+    print(f"📤 Uploading final PLY to RunPod S3: {final_path}...", flush=True)
     try:
-        supabase = get_supabase_client()
-        with open(str(ply_files[0]), 'rb') as f:
-            supabase.storage.from_("3d-scans").upload(
-                path=final_path,
-                file=f,
-                file_options={"content-type": "application/octet-stream", "x-upsert": "true"}
-            )
-        res_url = supabase.storage.from_("3d-scans").get_public_url(final_path)
-        print(f"✅ Uploaded to Supabase! Public URL: {res_url}", flush=True)
+        s3 = get_s3_client()
+        s3.upload_file(str(ply_files[0]), S3_BUCKET, final_path)
+        
+        # Generate new Presigned URL for 7 days
+        res_url = s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': S3_BUCKET, 'Key': final_path},
+            ExpiresIn=604800  # 7 days
+        )
+        print(f"✅ Uploaded to RunPod S3! Presigned URL generated.", flush=True)
     except Exception as e:
-        print(f"❌ Supabase Storage upload failed: {e}", flush=True)
-        raise Exception(f"Supabase Storage upload failed: {e}")
+        print(f"❌ RunPod S3 upload failed: {e}", flush=True)
+        raise Exception(f"RunPod S3 upload failed: {e}")
     
     update_status(job_id, "COMPLETED", "Job Finished!", result_url=res_url)
     return {"status": "success", "result_url": res_url}
