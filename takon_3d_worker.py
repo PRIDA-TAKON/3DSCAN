@@ -50,10 +50,8 @@ def update_status(job_id, status, message="", result_url=None):
 def run_command(cmd, cwd=None):
     print(f"🚀 Running: {cmd}", flush=True)
     try:
-        with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, cwd=cwd) as sp:
-            for line in sp.stdout:
-                print(line, end="", flush=True)
-        return sp.returncode == 0, ""
+        res = subprocess.run(cmd, shell=True, cwd=cwd)
+        return res.returncode == 0, f"Exit code {res.returncode}"
     except Exception as e:
         return False, str(e)
 
