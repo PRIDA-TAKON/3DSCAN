@@ -12,10 +12,10 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Check file size (50MB limit)
-        const MAX_SIZE = 50 * 1024 * 1024; // 50MB
+        // Check file size (200MB limit)
+        const MAX_SIZE = 200 * 1024 * 1024; // 200MB
         if (file.size > MAX_SIZE) {
-            alert('File is too large! Maximum size allowed is 50MB.');
+            alert('File is too large! Maximum size allowed is 200MB.');
             return;
         }
 
@@ -81,13 +81,13 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
 
     return (
         <div className="glass p-8 rounded-3xl border-dashed border-2 border-white/10 flex flex-col items-center text-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                {isUploading ? <Loader2 className="animate-spin text-primary" /> : <Upload className="text-primary" />}
+            <div className="w-16 h-16 rounded-2xl bg-yellow-500/10 flex items-center justify-center mb-6">
+                {isUploading ? <Loader2 className="animate-spin text-yellow-500" /> : <Upload className="text-yellow-500" />}
             </div>
 
             <h3 className="text-xl font-semibold mb-2">New 3D Scan</h3>
             <p className="text-gray-400 text-sm mb-1">Upload video file to start reconstruction</p>
-            <p className="text-primary/60 text-[10px] font-bold uppercase tracking-widest mb-6">Max file size: 50MB</p>
+            <p className="text-yellow-500/80 text-[10px] font-bold uppercase tracking-widest mb-6">Max file size: 200MB</p>
 
             <label className="w-full">
                 <input
@@ -99,7 +99,7 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
                 />
                 <div className={`
           cursor-pointer py-3 px-6 rounded-xl font-medium transition-all flex items-center justify-center gap-2
-          ${isUploading ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-primary text-black hover:scale-[1.02] active:scale-[0.98]'}
+          ${isUploading ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-yellow-500 text-black hover:bg-yellow-400 hover:scale-[1.02] active:scale-[0.98]'}
         `}>
                     {isUploading ? (
                         <>
@@ -113,7 +113,7 @@ export function UploadZone({ onUploadSuccess }: { onUploadSuccess: () => void })
             {isUploading && (
                 <div className="mt-4 w-full">
                     <div className="bg-white/5 h-1.5 rounded-full overflow-hidden">
-                        <div className="bg-primary h-full transition-all duration-300" style={{ width: `${progress}%` }} />
+                        <div className="bg-yellow-500 h-full transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                 </div>
             )}
